@@ -45,8 +45,43 @@ class CustomerProfile(BaseModel):
     weight = models.IntegerField(null=True, blank=True)
 
 class StaffSpecialty(BaseModel):
-    staff = models.ForeignKey(StaffProfile, on_delete=models.CASCADE, related_name="staff_specialties")
+    staff = models.ForeignKey(StaffProfile, on_delete=models.CASCADE)
     specialty = models.ForeignKey(Specialty, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         unique_together = [("staff", "specialty")]
+
+class WorkDay(BaseModel):
+    class DayOfWeek(models.TextChoices):
+        MONDAY = "Monday"
+        TUESDAY = "Tuesday"
+        WEDNESDAY = "Wednesday"
+        THURSDAY = "Thursday"
+        FRIDAY = "Friday"
+        SATURDAY = "Saturday"
+        SUNDAY = "Sunday"
+
+    staff_profile = models.ForeignKey("StaffProfile", on_delete=models.CASCADE)
+    day_of_week = models.CharField(max_length=20,choices=DayOfWeek.choices)
+    class Meta:
+        unique_together = ("staff_profile", "day_of_week")
+        ordering = ["day_of_week"]
+
+class TimeSlot(BaseModel):
+    class Status(models.TextChoices):
+        AVAILABLE = "Available"
+        BOOKED = "Booked"
+
+    work_day = models.ForeignKey(WorkDay, on_delete=models.CASCADE)
+    start_time = models.TimeField()
+    end_time   = models.TimeField()
+    status     = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default=Status.AVAILABLE,
+    )
+
+    class Meta:
+        unique_together = ("work_day", "start_time")
+        ordering = ["start_time"]
+

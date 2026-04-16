@@ -1,29 +1,51 @@
 import { ScrollView, View, FlatList } from 'react-native';
 import { Text } from 'react-native';
-import React from 'react';
+import React, { use, useEffect, useState } from 'react';
 import DoctorCard from '../../components/User/Doctors/DoctorCard';
 import StylesDoctorCard from '../../components/User/Doctors/StylesDoctorCard';
 import { Searchbar } from 'react-native-paper';
-import Mystyles from '../../styles/Mystyles';
+import Apis, { endpoints } from '../../utils/Apis';
+import { useNavigation } from '@react-navigation/native';
 
-const MOCK_DOCTORS = [
-  { id: 1, name: 'Ngô Trung Nam', degree: 'BS CKII', specialty: 'Sản phụ khoa', price: '200.000đ', avatar: null },
-  { id: 2, name: 'Lê Tuấn', degree: 'BS', specialty: 'Nội khoa', price: '150.000đ', avatar: null },
-  { id: 3, name: 'Trần Minh', degree: 'ThS', specialty: 'Tim mạch', price: '180.000đ', avatar: null },
-  { id: 4, name: 'Nguyễn Hoa', degree: 'CKI', specialty: 'Nhi khoa', price: '160.000đ', avatar: null },
-];
+const Home = ({navigation}) => {
+    const [doctors, setDoctors] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const formatDoctors = (data) => {
+        return data.map(item => ({
+            id: item.id,
+            name: item.first_name + " " + item.last_name,
+            degree: item.profile?.degree,
+            specialty: item.profile?.specialties?.map(s => s.name).join(", "),
+            price: "200.000đ",
+            avatar: item.avatar || null
+        }));
+    };
 
+    // chua try catch
+    const loadDoctors = async () => {
+        try {
+            const res = await Apis.get(endpoints.doctors, { params: { page } });
+            const results = res.data.results;
+            if (!results || results.length === 0) {
+                setDoctors([]);
+                setDetailDoctor([]);
+                setPage(1);
+            } else {
+                setDoctors(prev => [...prev, ...formatDoctors(results)]);
+            }
+        } catch (err) {
+            console.error("Lỗi:", err);
+        }
+    }
 
-const handlePress = (doctor) => {
-    navigation.navigate('DoctorDetail', { doctor });
-  };
+    useEffect(() => {
+        loadDoctors();
+    }, [page]);
 
-const Home = () => {
-
-    const [searchQuery, setSearchQuery] = React.useState('');
 
     return (
-        <ScrollView  style = {Mystyles.container} showsVerticalScrollIndicator={false}>
+        <ScrollView   showsVerticalScrollIndicator={false}>
             <Text style={{ fontSize: 24, fontWeight: '600', marginVertical: 36 }}>Home Screen</Text>
             <Searchbar placeholder="Search" onChangeText={setSearchQuery} value={searchQuery}/>
             <View style={{ marginVertical: 30 }}>
@@ -36,12 +58,16 @@ const Home = () => {
                     <Text style={StylesDoctorCard.seeAll}>Xem tất cả »</Text>
                 </View>
                 <FlatList
-                    data={MOCK_DOCTORS}
+                    data={doctors}
                     keyExtractor={(item) => item.id.toString()}
                     horizontal
+                    onEndReached={() => setPage(prev => prev + 1)}
+                    onEndReachedThreshold={0.3}
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={StylesDoctorCard.listContainer}
-                    renderItem={({ item }) => (<DoctorCard item={item} onPress={handlePress} />)}
+                    renderItem={({ item }) => {
+                        return (<DoctorCard item={item} navigation={navigation}/>);
+                    }}
                 />
             </View>
         
