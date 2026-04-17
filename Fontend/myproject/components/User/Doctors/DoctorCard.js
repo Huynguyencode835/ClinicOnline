@@ -4,10 +4,13 @@ import { View , Text, Dimensions} from "react-native";
 import StylesDoctorCard from "./StylesDoctorCard";
 
 
-const DoctorCard = ({ item, onPress }) => {
+const DoctorCard = ({ item ,navigation}) => {
     return (
         <>
-            <Card style={StylesDoctorCard.card} onPress={() => onPress(item)} mode="elevated">
+            <Card style={StylesDoctorCard.card} 
+                onPress={() => {
+                    navigation.navigate("DoctorDetail", { doctorId: item.id });
+                }} mode="elevated">
                 <Card.Content style={StylesDoctorCard.cardContent}>
                     {/* Avatar */}
                     <View style={StylesDoctorCard.avatarWrapper}>
@@ -28,7 +31,7 @@ const DoctorCard = ({ item, onPress }) => {
                     </View>
                     <View style={StylesDoctorCard.infoRow}>
                         <Text style = {{fontSize: 12}}>🩺</Text>
-                        <Text style={StylesDoctorCard.infoText} numberOfLines={1}>{item.specialty}</Text>
+                        <Text style={StylesDoctorCard.infoText} numberOfLines={2}>{item.specialty}</Text>
                     </View>
                     <View style={StylesDoctorCard.infoRow}>
                         <Text style = {{fontSize: 12}}>💰</Text>

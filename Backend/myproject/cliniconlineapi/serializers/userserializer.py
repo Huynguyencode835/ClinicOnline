@@ -1,23 +1,30 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from cliniconlineapi.models import User, StaffProfile, CustomerProfile, Specialty, StaffSpecialty
+from cliniconlineapi.models import User, StaffProfile, CustomerProfile, Specialty, StaffSpecialty, WorkDay, TimeSlot
 from cliniconlineapi.validators import NameValidator, PhoneNumberValidator, MaxLengthValidator
 
 
-class UserNormalSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'first_name', 'last_name', 'avatar', 'phone', 'email']
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserNormalSerializer.Meta.model
-        fields = UserNormalSerializer.Meta.fields + ['username', 'password','gender', 'role']
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'avatar', 'phone', 'email','username', 'password','gender', 'role']
         extra_kwargs = {
             'password': {
                 'write_only': True
             }
         }
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.avatar:
+            data['avatar'] = instance.avatar.url
+
+        if instance.role == User.Role.CUSTOMER:
+            data["profile"] = CustomerProfileSerializer(instance.customerprofile).data
+        else:
+            data["profile"] = StaffProfileSerializer(instance.staffprofile).data
+
+        return data
 
     def validate_phone(self, value):
         if value: PhoneNumberValidator()(value)
@@ -40,12 +47,6 @@ class UserSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Chỉ admin mới có thể gán quyền này.")
         return value
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        if instance.avatar:
-            data['avatar'] = instance.avatar.url
-        return data
-
     def create(self, validated_data):
         user = User(**validated_data)
         user.set_password(user.password)
@@ -61,12 +62,42 @@ class SpecialtySerializer(serializers.ModelSerializer):
         model = Specialty
         fields = ["id", "name", "description"]
 
+# chưa validate
+class TimeSlotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TimeSlot
+        fields = ["id", "status", "start_time", "end_time"]
+
+    def validate(self, attrs):
+        if attrs["start_time"] >= attrs["end_time"]:
+            raise serializers.ValidationError("start_time phải nhỏ hơn end_time.")
+        return attrs
+
+# chưa validate
+class WorkDaySerializer(serializers.ModelSerializer):
+    timeslot_set = TimeSlotSerializer(many=True)
+    class Meta:
+        model = WorkDay
+        fields = ["id", "day_of_week", 'timeslot_set']
+
+    def create(self, validated_data):
+        time_slots_data = validated_data.pop("timeslot_set", [])
+        workday = WorkDay(**validated_data)
+        workday.save()
+        for slot in time_slots_data:
+            TimeSlot.objects.create(work_day=workday, **slot)
+        return workday
+
 class StaffProfileSerializer(serializers.ModelSerializer):
-    user = UserNormalSerializer(read_only=True)
-    specialties = SpecialtySerializer(many=True, read_only=True)
     class Meta:
         model = StaffProfile
-        fields = ["id","user" ,"specialties", "degree", "experience", "bio"]
+        fields = ["id", "specialties", "degree", "experience", "bio"]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["workday_set"] = WorkDaySerializer(instance.workday_set.all(), many=True).data
+        data["specialties"] = SpecialtySerializer(instance.specialties.all(), many=True).data
+        return data
 
     def validate_experience(self, value):
         if value:
@@ -76,10 +107,16 @@ class StaffProfileSerializer(serializers.ModelSerializer):
                 raise ValidationError("ko dược nhỏ hơn 1")
         return value
 
+# chưa validate
 class CustomerProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
     class Meta:
         model = CustomerProfile
-        fields = ["user", "id", "height", "weight"]
+        fields = ["height", "weight"]
+
+
+
+
+
+
 
 

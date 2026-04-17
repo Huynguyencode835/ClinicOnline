@@ -65,6 +65,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+ALLOWED_HOSTS = [
+    '192.168.100.110',
+    'localhost'
+]
+
 ROOT_URLCONF = 'myproject.urls'
 
 DATABASES = {
