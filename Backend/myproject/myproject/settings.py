@@ -66,7 +66,7 @@ MIDDLEWARE = [
 ]
 
 ALLOWED_HOSTS = [
-    '192.168.100.110',
+    '192.168.219.1',
     'localhost'
 ]
 
@@ -77,7 +77,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'cliniconline',
         'USER': 'root',
-        'PASSWORD': 'Abc123',
+        'PASSWORD': '123456',
         'HOST': '' # mặc định localhost
     }
 }
@@ -87,6 +87,8 @@ AUTH_USER_MODEL = 'cliniconlineapi.User'
 import pymysql
 pymysql.version_info = (2, 2, 1, 'final', 0)
 pymysql.install_as_MySQLdb()
+
+
 
 import cloudinary.api
 cloudinary.config(
@@ -150,3 +152,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+
+CLIENT_ID="0fDRceS0qSEiEIVUvcXtzgOSZ3guI3GsP6IjSoP7"
+CLIENT_SECRET="hwU1KU36A5RC1u0w9b8ipShwKqYVGuaol4ijEQTpdKzH6FQrHiwkno5LWgiZA1jq9omjBRPGzQf2YTPLGimvRzJxjq4FxVJ1FU652tHTZRZS3WVPQMBcGdvtBZw9WIrw"

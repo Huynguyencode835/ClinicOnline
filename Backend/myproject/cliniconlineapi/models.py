@@ -31,18 +31,27 @@ class Specialty(BaseModel):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
 
+    def __str__(self):
+        return self.name
+
 class StaffProfile(BaseModel):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE,related_name="staff_profile")
     specialties = models.ManyToManyField(Specialty, through="StaffSpecialty", blank=True)
     degree = models.CharField(max_length=20, blank=True)
     experience = models.IntegerField(null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
     price = models.FloatField(null=True, blank=True,default=0)
 
+    def __str__(self):
+        return f"BS. {self.user.get_full_name()}"
+
 class CustomerProfile(BaseModel):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE,related_name="customer_profile")
     height = models.IntegerField(null=True, blank=True)
     weight = models.IntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return f"BN. {self.user.get_full_name()}"
 
 class StaffSpecialty(BaseModel):
     staff = models.ForeignKey(StaffProfile, on_delete=models.CASCADE)
@@ -50,6 +59,9 @@ class StaffSpecialty(BaseModel):
 
     class Meta:
         unique_together = [("staff", "specialty")]
+
+    def __str__(self):
+        return f"{self.staff} - {self.specialty}"
 
 class WorkDay(BaseModel):
     class DayOfWeek(models.TextChoices):
@@ -61,18 +73,22 @@ class WorkDay(BaseModel):
         SATURDAY = "Saturday"
         SUNDAY = "Sunday"
 
-    staff_profile = models.ForeignKey("StaffProfile", on_delete=models.CASCADE)
+    staff_profile = models.ForeignKey("StaffProfile", on_delete=models.CASCADE,related_name="work_days")
     day_of_week = models.CharField(max_length=20,choices=DayOfWeek.choices)
     class Meta:
         unique_together = ("staff_profile", "day_of_week")
         ordering = ["day_of_week"]
+
+    def __str__(self):
+        return f"{self.staff_profile} - {self.day_of_week}"
 
 class TimeSlot(BaseModel):
     class Status(models.TextChoices):
         AVAILABLE = "Available"
         BOOKED = "Booked"
 
-    work_day = models.ForeignKey(WorkDay, on_delete=models.CASCADE)
+    work_day = models.ForeignKey(WorkDay, on_delete=models.CASCADE,related_name="time_slots")
+    specific_date = models.DateField(default="2026-04-21")
     start_time = models.TimeField()
     end_time   = models.TimeField()
     status     = models.CharField(
@@ -82,6 +98,102 @@ class TimeSlot(BaseModel):
     )
 
     class Meta:
-        unique_together = ("work_day", "start_time")
-        ordering = ["start_time"]
+        unique_together = ("work_day", "specific_date", "start_time")
+        ordering = ["specific_date", "start_time"]
 
+    def __str__(self):
+        return f"{self.work_day.day_of_week} {self.specific_date} {self.start_time}-{self.end_time} ({self.status})"
+
+
+# Lịch hẹn
+class Appointment(BaseModel):
+    class Status(models.TextChoices):
+        PENDING = "Pending"
+        CONFIRMED = "Confirmed"
+        COMPLETED = "Completed"
+        CANCELED = "Canceled"
+
+    reason = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    time_slot=models.OneToOneField(TimeSlot, on_delete=models.CASCADE,related_name="appointment")
+    customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE,related_name="appointments")
+
+    class Meta:
+        ordering = ["-created_date"]
+
+    def __str__(self):
+        return f"Lịch hẹn: {self.customer} lúc {self.time_slot}"
+
+    def get_doctor(self):
+        return self.time_slot.work_day.staff_profile
+
+# bệnh án
+class MedicalRecord(BaseModel):
+    appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE,related_name="medical_record")
+    diagnosis = models.TextField()           # Chẩn đoán
+    symptoms = models.TextField(blank=True)  # Triệu chứng
+    notes = models.TextField(blank=True)
+    follow_up_date = models.DateField(null=True, blank=True)  # Ngày tái khám
+
+    def __str__(self):
+        return f"Bệnh án: {self.appointment.customer} - {self.created_date.date()}"
+
+    def get_customer(self):
+        return self.appointment.customer.user
+
+    def get_doctor(self):
+        return self.appointment.get_doctor().user
+
+# thuốc
+class Medicine(BaseModel):
+    name = models.CharField(max_length=200, unique=True)
+    unit = models.CharField(max_length=50)       #  viên, chai, ống...
+    description = models.TextField(blank=True)
+    stock = models.IntegerField(default=0)
+    expiry_date = models.DateField(null=True,blank=True)
+    price = models.FloatField(default=0)
+
+    def __str__(self):
+        return f"{self.name} ({self.stock} {self.unit})"
+
+    def is_low_stock(self):
+        return self.stock < 10
+
+    def is_expiring_soon(self):
+        from django.utils import timezone
+        import datetime
+        if not self.expiry_date:
+            return False
+        return self.expiry_date <= (timezone.now().date() + datetime.timedelta(days=30))
+
+
+# đơn thuốc
+class Prescription(BaseModel):
+    medical_record = models.OneToOneField(MedicalRecord, on_delete=models.CASCADE,related_name="prescription")
+    notes = models.TextField(blank=True)   # Hướng dẫn chung
+
+    def __str__(self):
+        return f"Đơn thuốc: {self.medical_record}"
+
+class PrescriptionDetail(BaseModel):
+    prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE, related_name="details")
+    medicine = models.ForeignKey(Medicine, on_delete=models.PROTECT)
+    quantity = models.IntegerField()
+    dosage = models.CharField(max_length=200)   # Liều dùng: "2 viên/ngày, sau ăn"
+    unit_price = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = ("prescription", "medicine")
+
+    def __str__(self):
+        return f"{self.medicine.name} x{self.quantity}"
+
+#kết quả xét nghiệm
+class TestResult(BaseModel):
+    medical_record = models.ForeignKey(MedicalRecord, on_delete=models.CASCADE, related_name="test_results")
+    test_name = models.CharField(max_length=200)
+    result = models.TextField()
+    file = CloudinaryField(null=True, blank=True)   # Upload file PDF/ảnh
+
+    def __str__(self):
+        return f"{self.test_name} - {self.medical_record}"

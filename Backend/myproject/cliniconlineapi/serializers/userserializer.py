@@ -5,9 +5,10 @@ from cliniconlineapi.validators import NameValidator, PhoneNumberValidator, MaxL
 
 
 class UserSerializer(serializers.ModelSerializer):
+    profile = serializers.DictField(write_only=True, required=False)
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'avatar', 'phone', 'email','username', 'password','gender', 'role']
+        fields = ['id', 'first_name', 'last_name', 'avatar', 'phone', 'email','username', 'password','gender', 'role','profile']
         extra_kwargs = {
             'password': {
                 'write_only': True
@@ -19,10 +20,17 @@ class UserSerializer(serializers.ModelSerializer):
         if instance.avatar:
             data['avatar'] = instance.avatar.url
 
-        if instance.role == User.Role.CUSTOMER:
-            data["profile"] = CustomerProfileSerializer(instance.customerprofile).data
-        else:
-            data["profile"] = StaffProfileSerializer(instance.staffprofile).data
+        try:
+            if instance.role == User.Role.CUSTOMER:
+                data["profile"] = CustomerProfileSerializer(instance.customer_profile).data
+            elif instance.role in [User.Role.DOCTOR, User.Role.HEALTHCARE]:
+                data["profile"] = StaffProfileSerializer(instance.staff_profile).data
+            else:
+                # Admin hoặc superuser không có profile
+                data["profile"] = None
+        except Exception as e:
+            print(f"Profile error: {e}")
+            data["profile"] = None
 
         return data
 
@@ -48,13 +56,18 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
+        profile_data = validated_data.pop('profile', {})
         user = User(**validated_data)
         user.set_password(user.password)
         user.save()
         if user.role in [User.Role.DOCTOR, User.Role.HEALTHCARE]:
             StaffProfile.objects.create(user=user)
         elif user.role == User.Role.CUSTOMER:
-            CustomerProfile.objects.create(user=user)
+            CustomerProfile.objects.create(
+                user=user,
+                height=profile_data.get('height'),
+                weight=profile_data.get('weight')
+            )
         return user
 
 class SpecialtySerializer(serializers.ModelSerializer):
@@ -75,13 +88,13 @@ class TimeSlotSerializer(serializers.ModelSerializer):
 
 # chưa validate
 class WorkDaySerializer(serializers.ModelSerializer):
-    timeslot_set = TimeSlotSerializer(many=True)
+    time_slots = TimeSlotSerializer(many=True)
     class Meta:
         model = WorkDay
-        fields = ["id", "day_of_week", 'timeslot_set']
+        fields = ["id", "day_of_week", 'time_slots']
 
     def create(self, validated_data):
-        time_slots_data = validated_data.pop("timeslot_set", [])
+        time_slots_data = validated_data.pop("time_slots", [])
         workday = WorkDay(**validated_data)
         workday.save()
         for slot in time_slots_data:
@@ -95,7 +108,7 @@ class StaffProfileSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data["workday_set"] = WorkDaySerializer(instance.workday_set.all(), many=True).data
+        data["work_days"] = WorkDaySerializer(instance.work_days.all(), many=True).data
         data["specialties"] = SpecialtySerializer(instance.specialties.all(), many=True).data
         return data
 
