@@ -10,7 +10,13 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'first_name', 'last_name', 'avatar', 'phone', 'email','username', 'password','gender', 'role']
         extra_kwargs = {
             'password': {
-                'write_only': True
+                'write_only': True,
+            },
+            'username': {
+                'write_only': True,
+            },
+            'role': {
+                'write_only': True,
             }
         }
 
@@ -57,6 +63,19 @@ class UserSerializer(serializers.ModelSerializer):
             CustomerProfile.objects.create(user=user)
         return user
 
+class UserDetailSerializer(UserSerializer):
+    class Meta:
+        model = UserSerializer.Meta.model
+        fields = UserSerializer.Meta.fields
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.role == User.Role.CUSTOMER:
+            data["profile"] = CustomerProfileSerializer(instance.customerprofile).data
+        else:
+            data["profile"] = StaffProfileDetailSerializer(instance.staffprofile).data
+        return data
+
 class SpecialtySerializer(serializers.ModelSerializer):
     class Meta:
         model = Specialty
@@ -73,12 +92,17 @@ class TimeSlotSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("start_time phải nhỏ hơn end_time.")
         return attrs
 
+class WorkDayLiteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkDay
+        fields = ["id", "day_of_week"]
+
 # chưa validate
 class WorkDaySerializer(serializers.ModelSerializer):
     timeslot_set = TimeSlotSerializer(many=True)
     class Meta:
-        model = WorkDay
-        fields = ["id", "day_of_week", 'timeslot_set']
+        model = WorkDayLiteSerializer.Meta.model
+        fields = WorkDayLiteSerializer.Meta.fields+['timeslot_set']
 
     def create(self, validated_data):
         time_slots_data = validated_data.pop("timeslot_set", [])
@@ -95,7 +119,7 @@ class StaffProfileSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data["workday_set"] = WorkDaySerializer(instance.workday_set.all(), many=True).data
+        data["workday_set"] = WorkDayLiteSerializer(instance.workday_set.all(), many=True).data
         data["specialties"] = SpecialtySerializer(instance.specialties.all(), many=True).data
         return data
 
@@ -106,6 +130,16 @@ class StaffProfileSerializer(serializers.ModelSerializer):
             elif value < 2:
                 raise ValidationError("ko dược nhỏ hơn 1")
         return value
+
+class StaffProfileDetailSerializer(StaffProfileSerializer):
+    class Meta:
+        model = StaffProfileSerializer.Meta.model
+        fields = StaffProfileSerializer.Meta.fields
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["workday_set"] = WorkDaySerializer(instance.workday_set.all(), many=True).data
+        return data
 
 # chưa validate
 class CustomerProfileSerializer(serializers.ModelSerializer):

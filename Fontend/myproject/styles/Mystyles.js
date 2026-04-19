@@ -8,6 +8,16 @@ export default StyleSheet.create({
     paddingTop: 60,
   },
 
+  padding: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+
+  margin: {
+    marginHorizontal: 16,
+    marginVertical: 12,
+  },
+
   row: {
     flexDirection: 'row',
     alignItems: 'center',
