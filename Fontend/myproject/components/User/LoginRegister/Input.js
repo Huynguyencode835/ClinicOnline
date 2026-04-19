@@ -1,4 +1,4 @@
-import { TextInput } from 'react-native-paper';
+import { HelperText, TextInput } from 'react-native-paper';
 import StylesLoginRegister from './StylesLoginRegister';
 import { useState } from 'react';
 import { View } from 'react-native';
@@ -50,20 +50,34 @@ const InputItem = ({
     );
 }
 
-const InputField = ({ list = [], user = {}, setUser }) => {
+const InputField = ({ list = [], user = {}, setUser , setErrors}) => {
     return (
         <>
             {list.map((item) => (
-                <InputItem
-                    key={item.field}
-                    label={item.label}
-                    icon={item.icon}
-                    value={user[item.field]}
-                    onChangeText={(v) => setUser({ ...user, [item.field]: v })}
-                    placeholder={item.placeholder}
-                    secureText={item.secureText}
-                    inputProps={item.inputProps}
-                />
+                <View key={item.field}>
+                    <InputItem
+                        label={item.label}
+                        icon={item.icon}
+                        value={user[item.field]}
+                        onChangeText={(v) => {
+                            setUser({ ...user, [item.field]: v })
+                            setErrors(prev => {
+                                const newErrors = { ...prev };
+                                delete newErrors[item.field];
+                                return newErrors;
+                            });
+                        }}
+                        error={!!item.error}
+                        placeholder={item.placeholder}
+                        secureText={item.secureText}
+                        inputProps={item.inputProps}
+                    />
+                    {item.error && (
+                        <HelperText type="error" visible={true}>
+                            • {item.errorText}
+                        </HelperText>
+                    )}
+                </View>
             ))}
         </>
     );

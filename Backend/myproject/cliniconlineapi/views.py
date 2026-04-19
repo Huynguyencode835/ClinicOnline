@@ -1,3 +1,4 @@
+from django.conf.global_settings import AUTHENTICATION_BACKENDS
 from oauth2_provider.contrib.rest_framework import permissions
 from rest_framework import viewsets, generics, parsers, status, pagination
 from rest_framework.decorators import action
@@ -105,5 +106,5 @@ class DoctorProfileViewSet(viewsets.ViewSet, generics.ListAPIView):
             "staffprofile__specialties",
             "staffprofile__workday_set__timeslot_set"
         ).get(pk=pk)
-        return Response(userserializer.UserSerializer(user).data, status=status.HTTP_200_OK)
+        return Response(userserializer.UserDetailSerializer(user).data, status=status.HTTP_200_OK)
 

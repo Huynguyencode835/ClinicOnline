@@ -1,0 +1,312 @@
+import React from 'react';
+import {
+    View,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    StatusBar,
+} from 'react-native';
+import {
+    Avatar,
+    Button,
+    Divider,
+    List,
+    Text,
+    useTheme,
+    Surface,
+} from 'react-native-paper';
+import { MyUserContext } from '../../utils/contexts/MyUserContext';
+
+const MENU_SECTIONS = [
+    {
+        title: 'Điều khoản & quy định',
+        items: [
+            { id: 'terms', icon: 'shield-check-outline', label: 'Quy định sử dụng', iconBg: '#E1F5EE', iconColor: '#0F6E56' },
+            { id: 'privacy', icon: 'lock-outline', label: 'Chính sách bảo mật', iconBg: '#EDE7F6', iconColor: '#6200EA' },
+            { id: 'service', icon: 'file-document-outline', label: 'Điều khoản dịch vụ', iconBg: '#FFEBEE', iconColor: '#C62828' },
+        ],
+    },
+    {
+        title: 'Tiện ích',
+        items: [
+            { id: 'health', icon: 'heart-pulse', label: 'Xem/Lưu thông tin sức khoẻ', iconBg: '#E3F2FD', iconColor: '#1565C0' },
+            { id: 'hotline', icon: 'phone-outline', label: 'Hỗ trợ tư vấn/đặt khám 19002115', iconBg: '#E0F7FA', iconColor: '#00695C' },
+        ],
+    },
+    {
+        title: 'Khác',
+        items: [
+            { id: 'rate', icon: 'star-outline', label: 'Đánh giá ứng dụng', iconBg: '#FFF8E1', iconColor: '#F57F17' },
+            { id: 'community', icon: 'account-group-outline', label: 'Tham gia cộng đồng Medpro', iconBg: '#F1F8E9', iconColor: '#33691E' },
+        ],
+    },
+];
+
+const UserProfile = ({ navigation, onLogin, onRegister, onMenuItem}) => {
+    const theme = useTheme();
+    const { user } = React.useContext(MyUserContext);
+    return (
+        <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
+            <StatusBar barStyle="light-content" backgroundColor={theme.colors.primary} />
+
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scroll}
+            >
+                {/* ── Hero header ── */}
+                <Surface style={[styles.hero, { backgroundColor: theme.colors.primary }]} elevation={0}>
+                    <View style={styles.heroInner}>
+                        <Surface style={styles.avatarRing} elevation={2}>
+                            <Avatar.Icon
+                                size={84}
+                                icon="account-outline"
+                                style={{ backgroundColor: theme.colors.surfaceVariant }}
+                                color={theme.colors.onSurfaceVariant}
+                            />
+                        </Surface>
+
+                        <Text
+                            variant="headlineSmall"
+                            style={[styles.heroName, { color: theme.colors.onPrimary }]}
+                        >
+                            Xin chào, Khách!
+                        </Text>
+
+                        {user ? (
+                            <>
+                                <View>
+                                    <Text
+                                        variant="bodyMedium"
+                                        style={[styles.heroSub, { color: theme.colors.onPrimary, opacity: 0.8 }]}
+                                    >
+                                        Chào mừng bạn đã trở lại! Hãy khám phá các dịch vụ của chúng tôi.
+                                    </Text>
+                                </View>
+                                {user.role=="doctor"}
+                                <Button icon="camera" mode="contained" onPress={() => navigation.navigate('Schedule')}>
+                                    Tạo Lich Khám bệnh
+                                </Button>
+                            </>
+                        ):(
+                            <>
+                            <Text
+                            variant="bodyMedium"
+                            style={[styles.heroSub, { color: theme.colors.onPrimary, opacity: 0.8 }]}
+                        >
+                            Đăng nhập để trải nghiệm đầy đủ tính năng
+                        </Text>
+
+                        {/* Nút đăng nhập / đăng ký */}
+                        <View style={styles.authRow}>
+                            <Button
+                                mode="contained"
+                                onPress={onLogin}
+                                contentStyle={styles.btnContent}
+                                style={[styles.btnLogin, { backgroundColor: theme.colors.onPrimary }]}
+                                labelStyle={[styles.btnLabel, { color: theme.colors.primary }]}
+                                onPressIn={() => { navigation.navigate('Login'); }}
+                            >
+                                Đăng nhập
+                            </Button>
+
+                            <Button
+                                mode="outlined"
+                                onPress={onRegister}
+                                contentStyle={styles.btnContent}
+                                style={styles.btnRegister}
+                                labelStyle={[styles.btnLabel, { color: theme.colors.onPrimary }]}
+                                textColor={theme.colors.onPrimary}
+                                onPressIn={() => { navigation.navigate('Register'); }}
+                            >
+                                Đăng ký
+                            </Button>
+                        </View>
+                            </>
+                        )}
+                        
+                    </View>
+
+                    {/* Wave bottom */}
+                    <View style={[styles.wave, { backgroundColor: theme.colors.background }]} />
+                </Surface>
+
+                {/* ── Menu sections ── */}
+                <View style={styles.menuWrap}>
+                    {MENU_SECTIONS.map((section, si) => (
+                        <View key={section.title} style={styles.section}>
+                            <Text
+                                variant="labelSmall"
+                                style={[styles.sectionTitle, { color: theme.colors.onSurfaceVariant }]}
+                            >
+                                {section.title.toUpperCase()}
+                            </Text>
+
+                            <Surface
+                                style={[styles.sectionCard, { backgroundColor: theme.colors.surface }]}
+                                elevation={1}
+                            >
+                                {section.items.map((item, ii) => (
+                                    <React.Fragment key={item.id}>
+                                        <TouchableOpacity
+                                            activeOpacity={0.7}
+                                            onPress={() => onMenuItem?.(item.id)}
+                                        >
+                                            <List.Item
+                                                title={item.label}
+                                                titleStyle={[styles.itemTitle, { color: theme.colors.onSurface }]}
+                                                style={styles.listItem}
+                                                left={() => (
+                                                    <View
+                                                        style={[
+                                                            styles.iconWrap,
+                                                            { backgroundColor: item.iconBg },
+                                                        ]}
+                                                    >
+                                                        <List.Icon
+                                                            icon={item.icon}
+                                                            color={item.iconColor}
+                                                            style={styles.iconInner}
+                                                        />
+                                                    </View>
+                                                )}
+                                                right={(props) => (
+                                                    <List.Icon
+                                                        {...props}
+                                                        icon="chevron-right"
+                                                        color={theme.colors.onSurfaceVariant}
+                                                    />
+                                                )}
+                                            />
+                                        </TouchableOpacity>
+                                        {ii < section.items.length - 1 && (
+                                            <Divider style={{ marginLeft: 64 }} />
+                                        )}
+                                    </React.Fragment>
+                                ))}
+                            </Surface>
+                        </View>
+                    ))}
+
+                    {/* App version */}
+                    <Text
+                        variant="bodySmall"
+                        style={[styles.version, { color: theme.colors.onSurfaceVariant }]}
+                    >
+                        Phiên bản 1.0.0
+                    </Text>
+                </View>
+            </ScrollView>
+        </View>
+    );
+};
+
+const styles = StyleSheet.create({
+    root: {
+        flex: 1,
+    },
+    scroll: {
+        paddingBottom: 40,
+    },
+
+    /* Hero */
+    hero: {
+        paddingBottom: 0,
+        overflow: 'hidden',
+    },
+    heroInner: {
+        alignItems: 'center',
+        paddingTop: 56,
+        paddingBottom: 48,
+        paddingHorizontal: 24,
+    },
+    avatarRing: {
+        borderRadius: 999,
+        padding: 4,
+        backgroundColor: 'rgba(255,255,255,0.25)',
+        marginBottom: 16,
+    },
+    heroName: {
+        fontWeight: '700',
+        marginBottom: 6,
+        textAlign: 'center',
+    },
+    heroSub: {
+        textAlign: 'center',
+        marginBottom: 28,
+    },
+    authRow: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    btnContent: {
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+    },
+    btnLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        letterSpacing: 0.2,
+    },
+    btnLogin: {
+        borderRadius: 10,
+        minWidth: 130,
+    },
+    btnRegister: {
+        borderRadius: 10,
+        minWidth: 130,
+        borderColor: 'rgba(255,255,255,0.6)',
+        borderWidth: 1.5,
+    },
+
+    /* Wave separator */
+    wave: {
+        height: 24,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+    },
+
+    /* Menu */
+    menuWrap: {
+        paddingHorizontal: 16,
+        gap: 16,
+    },
+    section: {
+        gap: 8,
+    },
+    sectionTitle: {
+        paddingHorizontal: 4,
+        letterSpacing: 0.8,
+    },
+    sectionCard: {
+        borderRadius: 14,
+        overflow: 'hidden',
+    },
+    listItem: {
+        paddingVertical: 2,
+        paddingHorizontal: 8,
+    },
+    itemTitle: {
+        fontSize: 14,
+    },
+    iconWrap: {
+        width: 38,
+        height: 38,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        alignSelf: 'center',
+        marginLeft: 4,
+        overflow: 'hidden',
+    },
+    iconInner: {
+        margin: 0,
+    },
+
+    version: {
+        textAlign: 'center',
+        marginTop: 8,
+        opacity: 0.5,
+    },
+});
+
+export default UserProfile;
