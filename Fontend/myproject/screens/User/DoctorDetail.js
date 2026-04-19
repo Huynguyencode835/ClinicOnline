@@ -18,7 +18,7 @@ import {
   Surface,
   useTheme,
 } from 'react-native-paper';
-import Apis, { endpoints } from "../../utils/Apis";
+import Apis, { endpoints } from "../../configs/Apis";
 
 // "id": 2,
 // "first_name": "A",

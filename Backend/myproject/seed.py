@@ -57,7 +57,6 @@ for i, letter in enumerate(alphabet):
         user.phone = f"09{str(i).zfill(2)}111{str(i).zfill(3)}"
         user.email = f"bsnguyenvan{letter.lower()}@gmail.com"
         user.role = User.Role.DOCTOR
-        user.price = random.uniform(100, 1000000)
         user.gender = genders[i % len(genders)]
         user.save()
 
@@ -69,7 +68,8 @@ for i, letter in enumerate(alphabet):
             user=user,
             degree=degrees[i % len(degrees)],
             experience=experience,
-            bio=f"Bác sĩ Nguyễn Văn {letter} có {experience} năm kinh nghiệm trong lĩnh vực {specialty_names}."
+            bio=f"Bác sĩ Nguyễn Văn {letter} có {experience} năm kinh nghiệm trong lĩnh vực {specialty_names}.",
+            price=round(random.uniform(100000, 1000000), 0)  # ← THÊM VÀO ĐÂY
         )
 
         # Gán nhiều chuyên khoa

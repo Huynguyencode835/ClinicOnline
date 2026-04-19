@@ -4,7 +4,7 @@ import React, { use, useEffect, useState } from 'react';
 import DoctorCard from '../../components/User/Doctors/DoctorCard';
 import StylesDoctorCard from '../../components/User/Doctors/StylesDoctorCard';
 import { Searchbar } from 'react-native-paper';
-import Apis, { endpoints } from '../../utils/Apis';
+import Apis, { endpoints } from '../../configs/Apis';
 import { useNavigation } from '@react-navigation/native';
 
 const Home = ({navigation}) => {
