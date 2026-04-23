@@ -3,6 +3,7 @@ import Register from './screens/User/Register';
 import Home from './screens/Home/Home';
 import DoctorDetail from './screens/User/DoctorDetail';
 import UserProfile from './screens/User/UserProfile';
+import Booking from './screens/Appointment/Booking';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -46,10 +47,19 @@ const StackHomeNavigator = () => {
   );
 }
 
+const BookingNavigator = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Booking" component={Booking} />
+    </Stack.Navigator>
+  );
+}
+
 const TabNavigatior = () => {
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }}>
       <Tab.Screen name="Home" component={StackHomeNavigator} options={{tabBarIcon: () => <Icon size={20} source="home" /> } } />
+      <Tab.Screen name="Booking" component={BookingNavigator} options={{tabBarIcon: () => <Icon size={20} source="calendar" /> }} />
       <Tab.Screen name="User" component={StackUserNavigator} options={{tabBarIcon: () => <Icon size={20} source="account" /> }} />
     </Tab.Navigator>
   );
@@ -59,7 +69,8 @@ const TabNavigatior = () => {
 
 const App = () => {
   const saved = SecureStore.getItem("user");
-  const [user, dispatch] = useReducer(MyUserReducer, saved ? JSON.parse(saved) : null);
+  // saved ? JSON.parse(saved) : 
+  const [user, dispatch] = useReducer(MyUserReducer, null);
   return (
     <MyUserContext.Provider value={{ user, dispatch }}>
       <NavigationContainer>

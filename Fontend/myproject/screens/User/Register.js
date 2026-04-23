@@ -4,7 +4,7 @@ import { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
 import { Button, HelperText, Icon } from "react-native-paper";
 import * as ImagePicker from 'expo-image-picker';
-import Apis, { endpoints } from "../../utils/Apis";
+import Apis, { endpoints } from "../../configs/Apis";
 
 
 const Register = ({ navigation }) => {

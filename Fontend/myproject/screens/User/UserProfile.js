@@ -16,6 +16,7 @@ import {
     Surface,
 } from 'react-native-paper';
 import { MyUserContext } from '../../utils/contexts/MyUserContext';
+import COLORS from '../../styles/Colors';
 
 const MENU_SECTIONS = [
     {
@@ -54,7 +55,7 @@ const UserProfile = ({ navigation, onLogin, onRegister, onMenuItem}) => {
                 contentContainerStyle={styles.scroll}
             >
                 {/* ── Hero header ── */}
-                <Surface style={[styles.hero, { backgroundColor: theme.colors.primary }]} elevation={0}>
+                <Surface style={[styles.hero, { backgroundColor: COLORS.primary }]} elevation={0}>
                     <View style={styles.heroInner}>
                         <Surface style={styles.avatarRing} elevation={2}>
                             <Avatar.Icon

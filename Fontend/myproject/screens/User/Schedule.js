@@ -19,6 +19,36 @@ const Schedule = () => {
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
 
+
+    const generateSlots = (fromHour, toHour, duration = 60, step = 15) => {
+        const slots = [];
+        let startMinutes = fromHour * 60;
+        const limitMinutes = toHour * 60;
+
+        const fmt = (m) => {
+            const h = Math.floor(m / 60).toString().padStart(2, '0');
+            const min = (m % 60).toString().padStart(2, '0');
+            return `${h}:${min}`;
+        };
+
+        while (startMinutes + duration <= limitMinutes) {
+            const endMinutes = startMinutes + duration;
+            slots.push({
+                start: fmt(startMinutes),
+                end: fmt(endMinutes),
+                label: `${fmt(startMinutes)} - ${fmt(endMinutes)}`,
+            });
+            startMinutes += step;
+        }
+        return slots;
+    };
+
+    const SLOTS = {
+        morning: generateSlots(6, 12),
+        afternoon: generateSlots(12, 18),
+        evening: generateSlots(18, 22),
+    };
+
     return (
         <ScrollView
             style={{
@@ -202,6 +232,7 @@ const Schedule = () => {
                     <TimeSlot
                         shift={shift}
                         selectedSlots={selectedSlots}
+                        SLOTS={SLOTS}
                         onSlotsChange={(slots) => setSelectedSlots(slots)}
                     />
 
@@ -226,7 +257,7 @@ const Schedule = () => {
                         }}>
                             Đã chọn ({selectedSlots.length})
                         </Text>
-                        
+
                         {selectedSlots.map((s, i) => (
                             <Text key={i} style={{ color: '#0f172a' }}>
                                 • {s.start} - {s.end}
@@ -319,7 +350,7 @@ const Schedule = () => {
             >
                 Lưu lịch trình
             </Button>
-            
+
         </ScrollView>
     );
 };

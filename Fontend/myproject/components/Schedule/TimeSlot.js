@@ -2,55 +2,53 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Chip, Text } from 'react-native-paper';
 
-const generateSlots = (fromHour, toHour, duration = 60, step = 15) => {
-  const slots = [];
-  let startMinutes = fromHour * 60;
-  const limitMinutes = toHour * 60;
 
-  const fmt = (m) => {
-    const h = Math.floor(m / 60).toString().padStart(2, '0');
-    const min = (m % 60).toString().padStart(2, '0');
-    return `${h}:${min}`;
-  };
-
-  while (startMinutes + duration <= limitMinutes) {
-    const endMinutes = startMinutes + duration;
-    slots.push({
-      start: fmt(startMinutes),
-      end: fmt(endMinutes),
-      label: `${fmt(startMinutes)} - ${fmt(endMinutes)}`,
-    });
-    startMinutes += step;
-  }
-  return slots;
-};
-
-const SLOTS = {
-  morning: generateSlots(6, 12),
-  afternoon: generateSlots(12, 18),
-  evening: generateSlots(18, 22),
-};
-
-const TimeSlot = ({ shift, selectedSlots = [], onSlotsChange }) => {
+const TimeSlot = ({ shift, selectedSlots, onSlotsChange, SLOTS, multiple = true }) => {
   const slots = SLOTS[shift];
 
-  const isSelected = (slot) =>
-    selectedSlots.some(s => s.start === slot.start && s.end === slot.end);
+  const isSelected = (slot) => {
+  if (multiple) {
+    return selectedSlots?.some(
+      s => s.start === slot.start && s.end === slot.end
+    );
+  } else {
+    return selectedSlots &&
+      selectedSlots.start === slot.start &&
+      selectedSlots.end === slot.end;
+  }
+};
 
   const handlePress = (slot) => {
-    if (isSelected(slot)) {
+  const exists = isSelected(slot);
+
+  if (multiple) {
+    if (exists) {
       onSlotsChange(
-        selectedSlots.filter(s => !(s.start === slot.start && s.end === slot.end))
+        selectedSlots.filter(
+          s => !(s.start === slot.start && s.end === slot.end)
+        )
       );
     } else {
-      onSlotsChange([...selectedSlots, { start: slot.start, end: slot.end }]);
+      onSlotsChange([
+        ...selectedSlots,
+        { start: slot.start, end: slot.end }
+      ]);
     }
-  };
+  } else {
+    if (exists) {
+      onSlotsChange(null); // bỏ chọn
+    } else {
+      onSlotsChange({ start: slot.start, end: slot.end }); // chỉ 1 slot
+    }
+  }
+};
+
+
 
   return (
     <View>
       <Text variant="labelSmall" style={styles.label}>
-        Chọn khung giờ {selectedSlots.length > 0 && `(${selectedSlots.length} đã chọn)`}
+        Chọn khung giờ
       </Text>
       <View style={styles.row}>
         {slots.map(slot => (

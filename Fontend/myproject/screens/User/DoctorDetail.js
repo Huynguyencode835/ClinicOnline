@@ -18,7 +18,7 @@ import {
     Surface,
     useTheme,
 } from 'react-native-paper';
-import Apis, { endpoints } from "../../utils/Apis";
+import Apis, { endpoints } from "../../configs/Apis";
 import ProfileHeader from "../../components/User/Profile/ProfileHeader";
 import SectionCard from "../../components/User/Profile/SectionCard";
 import ProfileInfoRow from "../../components/User/Profile/ProfileInforow";

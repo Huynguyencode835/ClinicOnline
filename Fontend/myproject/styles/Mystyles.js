@@ -78,5 +78,16 @@ export default StyleSheet.create({
     marginTop: 15,
     gap: 10,
     paddingBottom: 8,
+
+  },
+  backdrop: {
+    position: "absolute",
+    top: 60, // chỉnh tùy header cao bao nhiêu
+    left: 0,
+    right: 0,
+    zIndex: 999,
+    elevation: 10, // Android
+    backgroundColor: "#fff",
+    borderRadius: 12,
   },
 });

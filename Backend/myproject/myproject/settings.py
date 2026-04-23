@@ -66,7 +66,7 @@ MIDDLEWARE = [
 ]
 
 ALLOWED_HOSTS = [
-    '192.168.219.1',
+    '192.168.100.173',
     'localhost'
 ]
 
@@ -77,7 +77,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'cliniconline',
         'USER': 'root',
-        'PASSWORD': '123456',
+        'PASSWORD': 'Abc123',
         'HOST': '' # mặc định localhost
     }
 }

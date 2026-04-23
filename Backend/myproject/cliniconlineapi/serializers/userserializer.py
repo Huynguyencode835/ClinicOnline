@@ -8,7 +8,9 @@ class UserSerializer(serializers.ModelSerializer):
     profile = serializers.DictField(write_only=True, required=False)
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'avatar', 'phone', 'email','username', 'password','gender', 'role','profile']
+        fields = ['id', 'first_name', 'last_name', 'avatar', 'phone', 'email',
+                  'username', 'password','gender',
+                  'role','profile']
         extra_kwargs = {
             'password': {
                 'write_only': True,
@@ -84,9 +86,9 @@ class UserDetailSerializer(UserSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         if instance.role == User.Role.CUSTOMER:
-            data["profile"] = CustomerProfileSerializer(instance.customerprofile).data
+            data["profile"] = CustomerProfileSerializer(instance.customer_profile).data
         else:
-            data["profile"] = StaffProfileDetailSerializer(instance.staffprofile).data
+            data["profile"] = StaffProfileDetailSerializer(instance.staff_profile).data
         return data
 
 class SpecialtySerializer(serializers.ModelSerializer):
@@ -103,6 +105,7 @@ class TimeSlotSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if attrs["start_time"] >= attrs["end_time"]:
             raise serializers.ValidationError("start_time phải nhỏ hơn end_time.")
+
         return attrs
 
 class WorkDayLiteSerializer(serializers.ModelSerializer):
@@ -113,14 +116,14 @@ class WorkDayLiteSerializer(serializers.ModelSerializer):
 # chưa validate
 class WorkDaySerializer(serializers.ModelSerializer):
     time_slots = TimeSlotSerializer(many=True)
+
     class Meta:
         model = WorkDayLiteSerializer.Meta.model
-        fields = WorkDayLiteSerializer.Meta.fields+['timeslot_set']
+        fields = WorkDayLiteSerializer.Meta.fields + ['time_slots']
 
     def create(self, validated_data):
         time_slots_data = validated_data.pop("time_slots", [])
-        workday = WorkDay(**validated_data)
-        workday.save()
+        workday = WorkDay.objects.create(**validated_data)
         for slot in time_slots_data:
             TimeSlot.objects.create(work_day=workday, **slot)
         return workday
@@ -132,7 +135,7 @@ class StaffProfileSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data["workday_set"] = WorkDayLiteSerializer(instance.workday_set.all(), many=True).data
+        data["workday_set"] = WorkDayLiteSerializer(instance.work_days.all(), many=True).data
         data["specialties"] = SpecialtySerializer(instance.specialties.all(), many=True).data
         return data
 
@@ -151,7 +154,7 @@ class StaffProfileDetailSerializer(StaffProfileSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data["workday_set"] = WorkDaySerializer(instance.workday_set.all(), many=True).data
+        data["workday_set"] = WorkDaySerializer(instance.work_days.all(), many=True).data
         return data
 
 # chưa validate
