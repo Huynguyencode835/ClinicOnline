@@ -49,7 +49,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
                 profile_serializer.is_valid(raise_exception=True)
                 profile_serializer.save()
             else:
-                instance = user.staf_profile
+                instance = user.staff_profile
                 profile_serializer = userserializer.StaffProfileSerializer(
                     instance, data=request.data, partial=True, context={"request": request}
                 )
@@ -72,12 +72,12 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
             permission_classes=[permission.IsStaffRole])
     def workday_staff(self, request):
         if request.method == "POST":
-            s = userserializer.WorkDaySerializer(data=request.data, context={"request": request})
+            s = WorkDaySerializer(data=request.data, context={"request": request})
             s.is_valid(raise_exception=True)
-            c = s.save(staff_profile=request.user.staffprofile)
-            return Response(userserializer.WorkDaySerializer(c).data, status=status.HTTP_200_OK)
+            c = s.save(staff_profile=request.user.staff_profile)
+            return Response(WorkDaySerializer(c).data, status=status.HTTP_201_CREATED)
         else:
-            querry = WorkDay.objects.filter(staff_profile = request.user.staffprofile)
+            querry = WorkDay.objects.filter(staff_profile = request.user.staff_profile)
             return Response(WorkDaySerializer(querry, many=True).data, status=status.HTTP_200_OK)
 
     @action(
@@ -106,7 +106,7 @@ class DoctorProfileViewSet(viewsets.ViewSet, generics.ListAPIView):
             role__in=[User.Role.DOCTOR, User.Role.HEALTHCARE]
         ).select_related("staff_profile").prefetch_related(
             "staff_profile__specialties",
-            "staff_profile__workday_set__timeslot_set"
+            "staff_profile__work_days__time_slots"
         ).get(pk=pk)
         return Response(userserializer.UserDetailSerializer(user).data, status=status.HTTP_200_OK)
 

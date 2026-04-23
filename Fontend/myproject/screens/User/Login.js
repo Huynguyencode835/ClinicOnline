@@ -5,10 +5,11 @@ import { useContext, useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Button, HelperText, Snackbar } from "react-native-paper";
 import AppSnackbar from "../../components/AppSnackbar";
-import Apis, { authApis, endpoints } from "../../utils/Apis";
+import Apis, { authApis, endpoints } from "../../configs/Apis";
 import { MyUserContext } from "../../utils/contexts/MyUserContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from 'expo-secure-store';
+import {CLIENT_ID_APP, CLIENT_SECRET_APP} from "@env"
 
 const Login = ({ navigation, route }) => {
     const [user, setUser] = useState({
@@ -80,8 +81,8 @@ const Login = ({ navigation, route }) => {
                 let formData = new FormData();
                 formData.append("username", user.username);
                 formData.append("password", user.password);
-                formData.append("client_id", "21URW7MFQyR61GDwWRIYgUS7T2oLAzG1rbKpDNBW");
-                formData.append("client_secret", "TZqWe7Yhl75dLbq4Me3BIJTKJvb8c0482NrPnlospJ1nZ2vWgP1qmX9q4lhK8kbDPgYPdJUW5QKejSkGmcGbkMAkpDaZTPFtlCmljbsnVQWENcMFvKPexDdrxUVcNggZ");
+                formData.append("client_id", CLIENT_ID_APP);
+                formData.append("client_secret", CLIENT_SECRET_APP);
                 formData.append("grant_type", "password");
 
                 let res = await Apis.post(endpoints.login, formData,{
@@ -90,7 +91,6 @@ const Login = ({ navigation, route }) => {
                     },
                 });
 
-                console.info("Login response:", res.data);
                 await AsyncStorage.setItem("access_token", res.data.access_token);
 
                 if (res.status === 200) {

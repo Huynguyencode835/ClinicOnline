@@ -73,7 +73,7 @@ class WorkDay(BaseModel):
         SATURDAY = "Saturday"
         SUNDAY = "Sunday"
 
-    staff_profile = models.ForeignKey("StaffProfile", on_delete=models.CASCADE,related_name="work_days")
+    staff_profile = models.ForeignKey("StaffProfile", on_delete=models.CASCADE, related_name="work_days")
     day_of_week = models.CharField(max_length=20,choices=DayOfWeek.choices)
     class Meta:
         unique_together = ("staff_profile", "day_of_week")
