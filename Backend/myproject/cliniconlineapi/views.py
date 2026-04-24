@@ -110,52 +110,6 @@ class DoctorProfileViewSet(viewsets.ViewSet, generics.ListAPIView):
         ).get(pk=pk)
         return Response(userserializer.UserDetailSerializer(user).data, status=status.HTTP_200_OK)
 
-class WorkDayViewSet(viewsets.ViewSet, generics.ListAPIView):
-    permission_classes = [permission.IsStaffRole]
-    serializer_class = WorkDaySerializer
-
-    def get_queryset(self):
-        return WorkDay.objects.filter(
-            staff_profile = self.request.user.staff_profile
-        ).prefetch_related('time_slots')
-
-    def create(self, request):
-        """Tạo ngày làm việc"""
-        s = WorkDaySerializer(data=request.data, context={"request": request})
-        s.is_valid(raise_exception=True)
-        workday = s.save(staff_profile=request.user.staff_profile)
-        return Response(WorkDaySerializer(workday).data, status=status.HTTP_201_CREATED)
-
-    @action(methods=["POST"], detail=True, url_path="add-timeslot",url_name="add-timeslot")
-    def add_timeslot(self, request, pk=None):
-        """Thêm khung giờ vào ngày làm việc"""
-        try:
-            workday = WorkDay.objects.get(pk=pk, staff_profile=request.user.staff_profile)
-        except WorkDay.DoesNotExist:
-            return Response({"detail": "Không tìm thấy."}, status=404)
-
-        s = TimeSlotSerializer(data=request.data)
-        s.is_valid(raise_exception=True)
-        timeslot = s.save(work_day=workday)
-        return Response(TimeSlotSerializer(timeslot).data, status=status.HTTP_201_CREATED)
-
-    @action(methods=["PATCH", "DELETE"], detail=True, url_path="detail")
-    def workday_detail(self, request, pk=None):
-        """Sửa hoặc xóa ngày làm việc"""
-        try:
-            workday = WorkDay.objects.get(pk=pk, staff_profile=request.user.staff_profile)
-        except WorkDay.DoesNotExist:
-            return Response({"detail": "Không tìm thấy."}, status=404)
-
-        if request.method == "DELETE":
-            workday.delete()
-            return Response({"message": "Đã xóa."}, status=status.HTTP_204_NO_CONTENT)
-
-        s = WorkDaySerializer(workday, data=request.data, partial=True)
-        s.is_valid(raise_exception=True)
-        s.save()
-        return Response(WorkDaySerializer(workday).data)
-
 
 class AppointmentViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]

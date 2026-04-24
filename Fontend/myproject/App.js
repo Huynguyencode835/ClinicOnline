@@ -20,6 +20,7 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const StackUserNavigator = () => {
+  // thông tin user toàn cục
   const { user } = useContext(MyUserContext);
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -69,8 +70,7 @@ const TabNavigatior = () => {
 
 const App = () => {
   const saved = SecureStore.getItem("user");
-  // saved ? JSON.parse(saved) : 
-  const [user, dispatch] = useReducer(MyUserReducer, null);
+  const [user, dispatch] = useReducer(MyUserReducer, saved ? JSON.parse(saved) : null);
   return (
     <MyUserContext.Provider value={{ user, dispatch }}>
       <NavigationContainer>

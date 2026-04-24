@@ -114,7 +114,7 @@ const Step1Schedule = ({ data, updateBooking }) => {
                         value={data.shift}
                         onValueChange={(value) => {
                             updateBooking("shift", value);
-                            updateBooking("slots", null);
+                            updateBooking("slots", []);
                         }}
                         style={styles.segmented}
                         theme={{

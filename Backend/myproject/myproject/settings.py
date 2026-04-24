@@ -66,7 +66,7 @@ MIDDLEWARE = [
 ]
 
 ALLOWED_HOSTS = [
-    '192.168.100.173',
+    '192.168.100.110',
     'localhost'
 ]
 

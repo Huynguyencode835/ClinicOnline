@@ -12,6 +12,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
         source='time_slot',
         write_only=True
     )
+
     class Meta:
         model = Appointment
         fields = ['id', 'customer_info', 'time_slot_info', 'time_slot_id',

@@ -61,7 +61,7 @@ const Step3Confirm = ({ data }) => {
                     <View style={styles.divider} />
                     <Row icon="weather-sunset" label="Ca làm việc" value={shiftMap[data.shift]} />
                     <View style={styles.divider} />
-                    <Row icon="clock-outline" label="Giờ khám" value={data.slots?.map(s => s.label).join(", ")} />
+                    <Row icon="clock-outline" label="Giờ khám" value={`${data.slots.start} - ${data.slots.end}`} />
                 </Card.Content>
             </Card>
 
