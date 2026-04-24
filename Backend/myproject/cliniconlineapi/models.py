@@ -27,12 +27,19 @@ class User(AbstractUser):
     gender = models.CharField(max_length=10, choices=Gender.choices,null=True,blank=True,default=Gender.OTHER)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.CUSTOMER)
 
+
 class Specialty(BaseModel):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
 
     def __str__(self):
         return self.name
+
+class ServiceSpecialty(BaseModel):
+    name = models.CharField(max_length=200, unique=True)
+    description = models.TextField(blank=True,max_length=200,null=True)
+    price = models.FloatField(default=0)
+    Specialty = models.ManyToManyField(Specialty, blank=True)
 
 class StaffProfile(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE,related_name="staff_profile")
@@ -104,6 +111,9 @@ class TimeSlot(BaseModel):
     def __str__(self):
         return f"{self.work_day.day_of_week} {self.specific_date} {self.start_time}-{self.end_time} ({self.status})"
 
+class ServiceNormal(BaseModel):
+    name = models.CharField(max_length=200, unique=True)
+    description = models.TextField(blank=True,max_length=200,null=True)
 
 # Lịch hẹn
 class Appointment(BaseModel):
@@ -116,7 +126,10 @@ class Appointment(BaseModel):
     reason = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     time_slot=models.OneToOneField(TimeSlot, on_delete=models.CASCADE,related_name="appointment")
-    customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE,related_name="appointments")
+
+    customer = models.ForeignKey(User, on_delete=models.CASCADE,related_name="appointments_customer")
+    doctor = models.ForeignKey(User, on_delete=models.CASCADE,related_name="appointments_doctor")
+    serviceNormal = models.ForeignKey(ServiceNormal, on_delete=models.SET_NULL,related_name="appointments_serviceNormal", null=True)
 
     class Meta:
         ordering = ["-created_date"]

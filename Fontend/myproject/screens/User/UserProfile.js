@@ -70,7 +70,7 @@ const UserProfile = ({ navigation, onLogin, onRegister, onMenuItem}) => {
                             variant="headlineSmall"
                             style={[styles.heroName, { color: theme.colors.onPrimary }]}
                         >
-                            Xin chào, Khách!
+                            {user?.last_name} {user?.first_name}
                         </Text>
 
                         {user ? (
