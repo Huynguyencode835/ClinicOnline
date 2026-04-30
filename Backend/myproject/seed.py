@@ -4,7 +4,7 @@ import django, os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
 django.setup()
 
-from cliniconlineapi.models import User, StaffProfile, Specialty
+from cliniconlineapi.models import User, StaffProfile, Specialty, ServiceNormal
 
 specialties_data = [
     {"name": "Nội tổng quát", "description": "Khám và điều trị các bệnh nội khoa tổng quát"},
@@ -32,6 +32,20 @@ specialties_data = [
     {"name": "Dinh dưỡng", "description": "Tư vấn chế độ ăn và dinh dưỡng"},
 ]
 
+services = [
+    {"name": "Khám thường", "description": "Khám lâm sàng và tư vấn điều trị"},
+    {"name": "Khám chuyên sâu", "description": "Khám kỹ lưỡng với các xét nghiệm cần thiết"},
+    {"name": "Khám định kỳ", "description": "Gói khám định kỳ cho người cao tuổi"},
+    {"name": "Khám sức khỏe tổng quát", "description": "Gói khám tổng quát cho mọi lứa tuổi"},
+]
+
+for s in services:
+    ServiceNormal.objects.get_or_create(
+        name=s["name"],
+        defaults={"description": s["description"]}
+    )
+    print(f"✅ ServiceNormal: {s['name']}")
+
 for s in specialties_data:
     Specialty.objects.get_or_create(name=s["name"], defaults={"description": s["description"]})
     print(f"✅ Specialty: {s['name']}")
@@ -40,6 +54,30 @@ specialties = list(Specialty.objects.all())
 alphabet = [chr(i) for i in range(ord('A'), ord('U'))]
 degrees = ["BS", "CKII", "CKI", "ThS", "PGS.TS"]
 genders = ["male", "female", "other"]
+avaterDoctor = [
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777429050/images_mhchu3.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777429050/small_20240102_081908_598785_bac_si_max_1800x1800_jpg_98dcc6cbf1_mrrocw.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777429050/images_1_srifmw.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777429049/cheerful-male-doctor-white-gown-portrait_zreqk5.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777429049/images_2_mcecpg.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777429001/mature-japanese-man-doctor-with-eyeglasses-against-chroma-key-with-green-wall_251136-75041_rwwvw9.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777428964/happy-beautiful-female-doctor-medical-coat-standing-with-crossed-arms-isolated-white_264197-17834_xyqsti.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777428936/pleased-looking-up-young-superhero-girl-wearing-stethoscope-with-medical-robe-cloak-isolated-green-wall_141793-87578_fz7udh.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777428913/asian-doctor-office_1098-19684_c4kivi.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777428887/portrait-confident-young-medical-doctor-white-wall_1150-26696_v79btx.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777428870/bearded-doctor-glasses_23-2147896187_orqsuh.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777428853/young-handsome-indian-man-doctor-against-gray-wall_251136-2285_a6bclk.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777428813/portrait-friendly-asian-doctor-man-his-office-smiling-camera_264197-35768_iz4js8.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777428792/female-doctor-hospital-with-stethoscope_23-2148827774_twv22c.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777428689/pleased-young-female-doctor-wearing-medical-robe-stethoscope-with-glasses-isolated_141793-68695_q1ffre.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777428663/studio-shot-japanese-man-isolated-against-white-background_251136-36520_e0n7df.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777428634/male-doctor-with-face-mask-portrait_53876-105124_x0kgiv.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777428624/smiling-young-pretty-caucasian-girl-doctor-uniform-with-stethoscope-looking-side_141793-124530_t2fztp.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777428597/smiling-young-female-doctor-wearing-medical-robe-stethoscope-with-glasses-isolated_141793-68741_xsg6ev.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777428575/male-doctor-with-face-mask-portrait_53876-105124_exqkyo.jpg",
+    "https://res.cloudinary.com/dkdvg8jix/image/upload/v1777428540/healthcare-medical-concept-korean-female-doctor-nurse-uniform-smiling-looking-helpful-blue-background_1258-83497_lepmi4.jpg",
+]
+
 
 # Mỗi bác sĩ gán 2-3 chuyên khoa theo pattern cố định (không random để chạy lại không đổi)
 def get_specialties_for_doctor(i, specialties):
@@ -58,6 +96,7 @@ for i, letter in enumerate(alphabet):
         user.email = f"bsnguyenvan{letter.lower()}@gmail.com"
         user.role = User.Role.DOCTOR
         user.gender = genders[i % len(genders)]
+        user.avatar = avaterDoctor[i % len(avaterDoctor)]
         user.save()
 
         doctor_specialties = get_specialties_for_doctor(i, specialties)

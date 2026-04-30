@@ -11,16 +11,6 @@ const Home = ({navigation}) => {
     const [doctors, setDoctors] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
-    const formatDoctors = (data) => {
-        return data.map(item => ({
-            id: item.id,
-            name: item.first_name + " " + item.last_name,
-            degree: item.profile?.degree,
-            specialty: item.profile?.specialties?.map(s => s.name).join(", "),
-            price: "200.000đ",
-            avatar: item.avatar || null
-        }));
-    };
 
     // chua try catch
     const loadDoctors = async () => {
@@ -32,7 +22,7 @@ const Home = ({navigation}) => {
                 setDetailDoctor([]);
                 setPage(1);
             } else {
-                setDoctors(prev => [...prev, ...formatDoctors(results)]);
+                setDoctors(prev => [...prev, ...results]);
             }
         } catch (err) {
             console.error("Lỗi:", err);

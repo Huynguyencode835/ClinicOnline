@@ -4,7 +4,7 @@ export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f4f9ff',
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
     paddingTop: 60,
   },
 

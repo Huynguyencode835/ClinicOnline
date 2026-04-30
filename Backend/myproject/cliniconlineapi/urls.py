@@ -6,7 +6,7 @@ router = DefaultRouter()
 router.register('users', views.UserViewSet, basename='user')
 router.register('doctors', views.DoctorProfileViewSet, basename='doctors')
 router.register('appointments', views.AppointmentViewSet, basename='appointment')
-
+router.register('specialtys', views.SpecialtyViewSet, basename='specialty')
 
 urlpatterns = [
     path('', include(router.urls)),

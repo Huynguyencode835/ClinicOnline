@@ -3,27 +3,17 @@ import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { Card } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import COLORS from "../../styles/Colors";
-const Row = ({ icon, label, value }) => (
-    <View style={styles.row}>
-        <View style={styles.rowIconWrap}>
-            <MaterialCommunityIcons name={icon} size={16} color={COLORS.primary} />
-        </View>
-        <View style={{ flex: 1 }}>
-            <Text style={styles.rowLabel}>{label}</Text>
-            <Text style={styles.rowValue}>{value || "—"}</Text>
-        </View>
-    </View>
-);
+import Row from "../../components/Appointment/Row";
+import SectionTitle from "../../components/Appointment/SectionTilte";
+import InfoCard from "../../components/Appointment/InfoCard";
 
-const SectionTitle = ({ icon, text }) => (
-    <View style={styles.sectionRow}>
-        <MaterialCommunityIcons name={icon} size={15} color={COLORS.primary} />
-        <Text style={styles.sectionText}>{text}</Text>
-    </View>
-);
 
 const shiftMap = { morning: "🌤 Buổi sáng", afternoon: "☀️ Buổi chiều", evening: "🌙 Buổi tối" };
+
 const genderMap = { male: "Nam", female: "Nữ", other: "Khác" };
+
+
+
 
 const Step3Confirm = ({ data }) => {
     const p = data.patient;
@@ -47,53 +37,40 @@ const Step3Confirm = ({ data }) => {
 
             {/* ── LỊCH KHÁM ── */}
             <SectionTitle icon="calendar-clock" text="Thông tin lịch khám" />
-            <Card style={styles.card}>
-                <Card.Content style={styles.cardContent}>
-                    <Row icon="stethoscope" label="Chuyên khoa" value={data.specialty?.name} />
-                    <View style={styles.divider} />
-                    <Row icon="account-tie" label="Bác sĩ" value={data.doctor?.name} />
-                    <View style={styles.divider} />
-                    <Row icon="medical-bag" label="Dịch vụ" value={data.service?.name} />
-                    <View style={styles.divider} />
-                    <Row icon="currency-usd" label="Chi phí" value={data.doctor?.price} />
-                    <View style={styles.divider} />
-                    <Row icon="calendar" label="Ngày khám" value={data.day} />
-                    <View style={styles.divider} />
-                    <Row icon="weather-sunset" label="Ca làm việc" value={shiftMap[data.shift]} />
-                    <View style={styles.divider} />
-                    <Row icon="clock-outline" label="Giờ khám" value={`${data.slots.start} - ${data.slots.end}`} />
-                </Card.Content>
-            </Card>
+            <InfoCard
+                rows={[
+                    { icon: "stethoscope", label: "Chuyên khoa", value: data.specialty?.name },
+                    { icon: "account-tie", label: "Bác sĩ", value: data.doctor?.name },
+                    { icon: "medical-bag", label: "Dịch vụ", value: data.serviceNormal?.name },
+                    { icon: "calendar", label: "Ngày khám", value: data.date },
+                    { icon: "weather-sunset", label: "Ca làm việc", value: shiftMap[data.shift] },
+                    { icon: "clock-outline", label: "Giờ khám", value: `${data.slots?.start} - ${data.slots?.end}` },
+                ]}
+            />
 
             {/* ── BỆNH NHÂN ── */}
             <SectionTitle icon="account" text="Thông tin bệnh nhân" />
-            <Card style={styles.card}>
-                <Card.Content style={styles.cardContent}>
-                    <Row icon="account-outline" label="Họ và tên" value={fullName} />
-                    <View style={styles.divider} />
-                    <Row icon="phone-outline" label="Điện thoại" value={p.phone} />
-                    <View style={styles.divider} />
-                    <Row icon="email-outline" label="Email" value={p.email} />
-                    <View style={styles.divider} />
-                    <Row icon="cake-variant-outline" label="Ngày sinh" value={p.dob} />
-                    <View style={styles.divider} />
-                    <Row icon="gender-male-female" label="Giới tính" value={genderMap[p.gender]} />
-                </Card.Content>
-            </Card>
+            <InfoCard
+                rows={[
+                    { icon: "account-outline", label: "Họ và tên", value: fullName },
+                    { icon: "phone-outline", label: "Điện thoại", value: p.phone },
+                    { icon: "email-outline", label: "Email", value: p.email },
+                    { icon: "cake-variant-outline", label: "Ngày sinh", value: p.dob },
+                    { icon: "gender-male-female", label: "Giới tính", value: genderMap[p.gender] },
+                ]}
+            />
 
             {/* ── Y TẾ ── */}
             <SectionTitle icon="heart-pulse" text="Thông tin y tế" />
-            <Card style={[styles.card, { marginBottom: 8 }]}>
-                <Card.Content style={styles.cardContent}>
-                    <Row icon="card-account-details-outline" label="Số thẻ BHYT" value={p.insurance_id} />
-                    <View style={styles.divider} />
-                    <Row icon="calendar-end" label="Hết hạn BHYT" value={p.insurance_exp} />
-                    <View style={styles.divider} />
-                    <Row icon="water" label="Nhóm máu" value={p.blood_type} />
-
-                    {p.allergies?.length > 0 && (
-                        <>
-                            <View style={styles.divider} />
+            <InfoCard
+                style={{ marginBottom: 8 }}
+                rows={[
+                    { icon: "card-account-details-outline", label: "Số thẻ BHYT", value: p.profile?.insurance_number },
+                    { icon: "calendar-end", label: "Hết hạn BHYT", value: p.profile?.insurance_expiry_date },
+                    { icon: "water", label: "Nhóm máu", value: p.profile?.blood_group },
+                    { icon: "needle", label: "Tiền sử bệnh án", value: p.profile?.allergy_history },
+                    ...(p.allergies?.length > 0 ? [{
+                        custom: (
                             <View style={styles.row}>
                                 <View style={styles.rowIconWrap}>
                                     <MaterialCommunityIcons name="alert-circle-outline" size={16} color={COLORS.primary} />
@@ -109,10 +86,20 @@ const Step3Confirm = ({ data }) => {
                                     </View>
                                 </View>
                             </View>
-                        </>
-                    )}
-                </Card.Content>
-            </Card>
+                        )
+                    }] : []),
+                ]}
+            />
+
+            {/* ── LÝ DO KHÁM ── */}
+            <SectionTitle icon="clipboard-text-outline" text="Lý do khám" />
+            <InfoCard
+                style={{ marginBottom: 16 }}
+                rows={[
+                    { icon: "text-box-outline", label: "Lý do khám", value: data.patient?.reason },
+                    { icon: "alert-circle-outline", label: "Triệu chứng", value: data.patient?.symptoms },
+                ]}
+            />
 
             {/* ── WARNING ── */}
             <View style={styles.warningBadge}>

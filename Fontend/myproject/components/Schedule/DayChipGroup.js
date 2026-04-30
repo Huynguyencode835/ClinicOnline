@@ -1,11 +1,22 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Chip } from 'react-native-paper';
+import { formatDate } from '../../utils/format';
 
-const DAYS = ['T.2', 'T.3', 'T.4', 'T.5', 'T.6', 'T.7', 'CN'];
 
-const DaychipGroup = ({ selected, onToggle}) => {
-    return (
+const DAY_VI = {
+  "Monday": "T2",
+  "Tuesday": "T3",
+  "Wednesday": "T4",
+  "Thursday": "T5",
+  "Friday": "T6",
+  "Saturday": "T7",
+  "Sunday": "CN",
+};
+
+const DaychipGroup = ({ selected, onToggle, DAYS, WORKDAYS }) => {
+  
+  return (
     <View style={styles.row}>
       {DAYS.map((label, i) => (
         <Chip
@@ -14,7 +25,7 @@ const DaychipGroup = ({ selected, onToggle}) => {
           onPress={() => onToggle(i)}
           style={[
             styles.chip,
-            selected === i  && styles.chipSelected,
+            selected === i && styles.chipSelected,
           ]}
           textStyle={[
             styles.text,
@@ -23,7 +34,7 @@ const DaychipGroup = ({ selected, onToggle}) => {
           showSelectedCheck={false}
           compact
         >
-          {label}
+          {DAY_VI[label]} {formatDate(WORKDAYS[i])}
         </Chip>
       ))}
     </View>

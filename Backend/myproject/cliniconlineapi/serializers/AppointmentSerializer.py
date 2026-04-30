@@ -1,24 +1,46 @@
 from rest_framework import serializers
+from rest_framework.permissions import IsAuthenticated
 
 from cliniconlineapi.models import Appointment, TimeSlot
-from cliniconlineapi.serializers.userserializer import UserSerializer, CustomerProfileSerializer, TimeSlotSerializer
+from cliniconlineapi.serializers.ServiceNormalSerializer import ServiceNormalSerializer
+from cliniconlineapi.serializers.userserializer import TimeSlotDetailSerializer, UserSerializer, UserDetailSerializer
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
-    customer_info = CustomerProfileSerializer(source='customer', read_only=True)
-    time_slot_info = TimeSlotSerializer(source='timeslot', read_only=True)
-    time_slot_id = serializers.PrimaryKeyRelatedField(
-        queryset=TimeSlot.objects.filter(status=TimeSlot.Status.AVAILABLE),
-        source='time_slot',
-        write_only=True
-    )
-
     class Meta:
         model = Appointment
-        fields = ['id', 'customer_info', 'time_slot_info', 'time_slot_id',
-                  'reason', 'status', 'created_date']
+        fields = ['id', 'customer', 'doctor', 'time_slot',
+                  'reason','symptoms', 'serviceNormal','status']
+        extra_kwargs = {
+            'status': {
+                'read_only':True
+            }
+        }
 
-class AppointmentStatusSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        request = self.context.get("request")
+        user = request.user if request else None
+
+        if user and user.role == "doctor":
+            data["customer"] = UserSerializer(instance.customer).data
+        else:
+            data["doctor"] = UserSerializer(instance.doctor).data
+
+        data["time_slot"] = TimeSlotDetailSerializer(instance.time_slot).data
+        data["serviceNormal"] = ServiceNormalSerializer(instance.serviceNormal).data
+
+        return data
+
+class AppointmentDetailSerializer(AppointmentSerializer):
     class Meta:
         model = Appointment
-        fields = ['status']
+        fields = AppointmentSerializer.Meta.fields
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["customer"] = UserDetailSerializer(instance.customer).data
+        data["doctor"] = UserSerializer(instance.doctor).data
+        return data
+

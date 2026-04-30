@@ -5,6 +5,8 @@ import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
 import { Button, HelperText, Icon } from "react-native-paper";
 import * as ImagePicker from 'expo-image-picker';
 import Apis, { endpoints } from "../../configs/Apis";
+import { createPublic } from "../../utils/apiHelper";
+import AppSnackbar from "../../components/AppSnackbar";
 
 
 const Register = ({ navigation }) => {
@@ -16,6 +18,7 @@ const Register = ({ navigation }) => {
         phone: '',
         email: '',
     });
+    const [snackbar, setSnackbar] = useState({});
 
     const [loading, setLoading] = useState(false);
 
@@ -123,69 +126,54 @@ const Register = ({ navigation }) => {
         setErrors(err);
 
         if (Object.keys(err).length === 0) {
-            try {
-                setLoading(true);
-                console.log("Submit OK", user);
+            setLoading(true);
 
-                let formData = new FormData();
+            let formData = new FormData();
 
-                for (let key in user) {
-                    if (key !== "confirmPassword") {
-                        if (key === "fullName") {
-                            const parts = user[key].trim().split(/\s+/);
-
-                            const first_name = parts.pop();
-                            const last_name = parts.join(" ");
-
-                            formData.append("first_name", first_name);
-                            formData.append("last_name", last_name);
-                        }
-                        else if (key === "avatar" && user[key]) {
-                            formData.append("avatar", {
-                                uri: user[key].uri,
-                                name: user[key].fileName || `avatar.${user[key].uri.split('.').pop()}`,
-                                type: user[key].type || 'image/jpeg',
-                            });
-                        }else {
-                            formData.append(key, user[key]);
-                        }
+            for (let key in user) {
+                if (key !== "confirmPassword") {
+                    if (key === "fullName") {
+                        const parts = user[key].trim().split(/\s+/);
+                        const first_name = parts.pop();
+                        const last_name = parts.join(" ");
+                        formData.append("first_name", first_name);
+                        formData.append("last_name", last_name);
+                    } else if (key === "avatar" && user[key]) {
+                        formData.append("avatar", {
+                            uri: user[key].uri,
+                            name: user[key].fileName || `avatar.${user[key].uri.split('.').pop()}`,
+                            type: user[key].type || 'image/jpeg',
+                        });
+                    } else {
+                        formData.append(key, user[key]);
                     }
                 }
-
-                console.log("FormData:", formData);
-
-                let res = await Apis.post(endpoints.register, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                });
-
-                if (res.status === 201) {
-                    navigation.navigate("Login",{ 
-                    successMessage: "Đăng ký thành công! Vui lòng đăng nhập." 
-                });
-                }
-                if (res.status === 400) {
-                    console.log("Lỗi đăng ký:", res.data);
-                    setErrors(res.data);
-                }
-                if (res.status === 500) {
-                    console.log("Lỗi server:", res.data);
-                }
-
-            } catch (err) {
-                console.error("message :", err.message);
-                console.error("code    :", err.code);
-                console.error("response:", err.response?.data);   // lỗi từ server (4xx 5xx)
-                console.error("request :", err.request?._url);    // URL đang gọi
-                console.error("config  :", err.config?.baseURL);  // baseURL đang dùng
-            } finally {
-                setLoading(false);
             }
-        }
-    };
 
+            await createPublic(
+                endpoints.register,
+                formData,
+                (data) => {
+                    navigation.navigate("Login", {
+                        successMessage: "Đăng ký thành công! Vui lòng đăng nhập."
+                    });
+                },
+                (type, msg, errData) => {
+                    if (type === "client") {
+                        setErrors(errData || {});
+                        setSnackbar({ visible: true, message: "Đăng ký thất bại!", sub: msg, type: 'error' });
+                    } else if (type === "server") {
+                        setSnackbar({ visible: true, message: "Lỗi máy chủ!", sub: msg, type: 'error' });
+                    } else {
+                        setSnackbar({ visible: true, message: "Mất kết nối!", sub: msg, type: 'error' });
+                    }
+                }
+            );
+        };
+    }
+    
     return (
+        <View>
         <ScrollView style={{ marginTop: 100, paddingHorizontal: 28 }}>
             <Text style={{ fontSize: 24, fontWeight: '600', marginBottom: 30 }}>Đăng ký tài khoản</Text>
 
@@ -295,7 +283,15 @@ const Register = ({ navigation }) => {
                 </TouchableOpacity>
             </View>
         </ScrollView>
+        <AppSnackbar
+                visible={snackbar.visible}
+                message={snackbar.message}
+                sub={snackbar.sub}
+                type={snackbar.type}
+                onDismiss={() => setSnackbar(s => ({ ...s, visible: false }))}
+            />
+        </View>
     );
-}
 
+}
 export default Register;

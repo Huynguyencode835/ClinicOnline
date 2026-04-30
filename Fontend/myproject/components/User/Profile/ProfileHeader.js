@@ -76,15 +76,6 @@ const ProfileHeader = ({ user }) => {
                         {displayTitle}
                     </Text>
 
-                    <Text
-                        style={{
-                            fontSize: 13,
-                            color: COLORS.textMuted,
-                        }}
-                    >
-                        @{user?.username}
-                    </Text>
-
                     <View
                         style={{
                             flexDirection: 'row',

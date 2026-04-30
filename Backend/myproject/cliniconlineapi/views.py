@@ -3,12 +3,12 @@ from oauth2_provider.contrib.rest_framework import permissions
 from rest_framework import viewsets, generics, parsers, status, pagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.utils import timezone
 from cliniconlineapi import paginators, permission
-from cliniconlineapi.models import User, CustomerProfile, StaffProfile, WorkDay,Appointment,TimeSlot
+from cliniconlineapi.models import User, Specialty, StaffProfile, WorkDay,Appointment,TimeSlot
 from cliniconlineapi.serializers import userserializer
-from cliniconlineapi.serializers.AppointmentSerializer import AppointmentSerializer
-from cliniconlineapi.serializers.userserializer import WorkDaySerializer, TimeSlotSerializer
+from cliniconlineapi.serializers.AppointmentSerializer import AppointmentSerializer, AppointmentDetailSerializer
+from cliniconlineapi.serializers.userserializer import WorkDaySerializer, TimeSlotSerializer, SpecialtySerializer, \
+    UserSerializer
 
 
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
@@ -37,7 +37,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
             return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
         if request.method == "GET":
-            s = userserializer.UserSerializer(user, context={"request": request})
+            s = userserializer.UserDetailSerializer(user, context={"request": request})
             return Response(s.data, status=status.HTTP_200_OK)
 
         if request.method == "PATCH":
@@ -61,7 +61,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
                     instance.specialties.set(specialty_ids)
 
             return Response(
-                userserializer.UserSerializer(user, context={"request": request}).data,
+                userserializer.UserDetailSerializer(user, context={"request": request}).data,
                 status=status.HTTP_200_OK
             )
 
@@ -110,126 +110,54 @@ class DoctorProfileViewSet(viewsets.ViewSet, generics.ListAPIView):
         ).get(pk=pk)
         return Response(userserializer.UserDetailSerializer(user).data, status=status.HTTP_200_OK)
 
+    @action(
+        methods=["GET"],
+        url_path="doctor_workday",
+        url_name="doctor_workday",
+        detail=True,
+    )
+    def doctor_workday(self, request, pk):
+        W = WorkDay.objects.filter(staff_profile__user=pk).prefetch_related("time_slots")
+        return Response(WorkDaySerializer(W, many=True).data, status=status.HTTP_200_OK)
 
-class AppointmentViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+class AppointmentViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView):
+    queryset = Appointment.objects.filter(active=True)
+    serializer_class = AppointmentSerializer
+    permission_classes = [permission.IsAppointmentOwner]
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == User.Role.DOCTOR:
-            # Bác sĩ xem lịch hẹn của mình
-            return Appointment.objects.filter(
-                time_slot__work_day__staff_profile__user=user
-            ).select_related(
-                'customer__user',
-                'time_slot__work_day__staff_profile__user'
-            )
-        # Bệnh nhân xem lịch của mình
-        customer = CustomerProfile.objects.get(user=user)
-        return Appointment.objects.filter(
-            customer=customer
-        ).select_related(
-            'time_slot__work_day__staff_profile__user'
-        )
 
-    # GET /appointments/
-    def list(self, request):
-        appointments = self.get_queryset()
-        return Response(
-            AppointmentSerializer(appointments, many=True).data
-        )
+        if user.role == "customer":
+            return self.queryset.filter(customer=user)
+        elif user.role == "doctor":
+            return self.queryset.filter(doctor=user)
 
-    # GET /appointments/{id}/
-    def retrieve(self, request, pk=None):
-        try:
-            appointment = self.get_queryset().get(pk=pk)
-        except Appointment.DoesNotExist:
-            return Response({"detail": "Không tìm thấy lịch hẹn."}, status=404)
-        return Response(AppointmentSerializer(appointment).data)
+        return self.queryset.none()
 
-    # POST /appointments/
-    def create(self, request):
-        """Bệnh nhân đặt lịch"""
-        if request.user.role != User.Role.CUSTOMER:
-            return Response(
-                {"detail": "Chỉ bệnh nhân mới được đặt lịch!"},
-                status=status.HTTP_403_FORBIDDEN
-            )
+    @action(methods=["GET"],
+            url_path="detail",
+            url_name="detail",
+            detail= True,
+            permission_classes=[permission.IsAppointmentOwner])
+    def detail_appointment(self, request, pk):
+        if(request.method == "GET"):
+            s =  Appointment.objects.select_related("customer","doctor").get(pk=pk)
+            return Response(AppointmentDetailSerializer(s).data, status=status.HTTP_200_OK)
 
-        s = AppointmentSerializer(data=request.data, context={"request": request})
-        s.is_valid(raise_exception=True)
+class SpecialtyViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = Specialty.objects.filter(active=True)
+    serializer_class = SpecialtySerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = paginators.SpecialtyPaninator
 
-        time_slot = s.validated_data['time_slot']
+    @action(methods=["GET"],
+            url_path="doctors",
+            url_name="doctors",
+            detail=True,
+            permission_classes=[permissions.IsAuthenticated],
+            pagination_class = paginators.SpecialtyPaninator)
+    def specialty_doctors(self, request,pk=None):
+        q = User.objects.filter(role=User.Role.DOCTOR,staff_profile__specialties__id=pk)
+        return Response(UserSerializer(q, many=True).data, status=status.HTTP_200_OK)
 
-        # Kiểm tra slot còn trống
-        if time_slot.status != TimeSlot.Status.AVAILABLE:
-            return Response(
-                {"detail": "Khung giờ này đã được đặt!"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        customer = CustomerProfile.objects.get(user=request.user)
-        appointment = s.save(customer=customer)
-
-        # Cập nhật slot → Booked
-        time_slot.status = TimeSlot.Status.BOOKED
-        time_slot.save()
-
-        return Response(
-            AppointmentSerializer(appointment).data,
-            status=status.HTTP_201_CREATED
-        )
-
-    @action(methods=["PATCH"], detail=True, url_path="confirm",
-            permission_classes=[permission.IsStaffRole])
-    def confirm(self, request, pk=None):
-        """Bác sĩ xác nhận lịch hẹn"""
-        try:
-            appointment = Appointment.objects.get(pk=pk)
-        except Appointment.DoesNotExist:
-            return Response({"detail": "Không tìm thấy."}, status=404)
-
-        if appointment.status != Appointment.Status.PENDING:
-            return Response(
-                {"detail": "Chỉ xác nhận được lịch đang chờ!"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        appointment.status = Appointment.Status.CONFIRMED
-        appointment.save()
-
-
-        return Response(AppointmentSerializer(appointment).data)
-
-    @action(methods=["PATCH"], detail=True, url_path="cancel")
-    def cancel(self, request, pk=None):
-        """Hủy lịch hẹn"""
-        try:
-            appointment = self.get_queryset().get(pk=pk)
-        except Appointment.DoesNotExist:
-            return Response({"detail": "Không tìm thấy."}, status=404)
-
-        if appointment.status == Appointment.Status.COMPLETED:
-            return Response(
-                {"detail": "Không thể hủy lịch đã khám xong!"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Trả lại slot → Available
-        appointment.time_slot.status = TimeSlot.Status.AVAILABLE
-        appointment.time_slot.save()
-
-        appointment.status = Appointment.Status.CANCELED
-        appointment.save()
-
-        return Response({"message": "Hủy lịch hẹn thành công!"})
-
-    @action(methods=["GET"], detail=False, url_path="today",
-            permission_classes=[permission.IsStaffRole])
-    def today(self, request):
-        """Bác sĩ xem lịch hẹn hôm nay"""
-        today = timezone.now().date()
-        appointments = self.get_queryset().filter(
-            time_slot__specific_date=today
-        )
-        return Response(AppointmentSerializer(appointments, many=True).data)
