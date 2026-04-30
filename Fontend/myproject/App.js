@@ -15,6 +15,8 @@ import { useContext, useEffect, useReducer, useState } from 'react';
 import MyUserReducer from './utils/reducers/MyUserReducer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
+import ListAppointments from './screens/Appointment/ListAppointments';
+import AppointmentDetail from './screens/Appointment/AppointmentDetail';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -22,17 +24,18 @@ const Tab = createBottomTabNavigator();
 const StackUserNavigator = () => {
   // thông tin user toàn cục
   const { user } = useContext(MyUserContext);
+
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="UserProfile" component={UserProfile} />
       {user ? (
         <>
-          <Stack.Screen name="Schedule"    component={Scheduler} />
+          <Stack.Screen name="Schedule" component={Scheduler} />
         </>
       ) : (
         <>
-          <Stack.Screen name="Login"        component={Login} />
-          <Stack.Screen name="Register"     component={Register} />
+          <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="Register" component={Register} />
         </>
       )}
     </Stack.Navigator>
@@ -48,19 +51,41 @@ const StackHomeNavigator = () => {
   );
 }
 
-const BookingNavigator = () => {
+const AppointmentNavigator = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Booking" component={Booking} />
+      <Stack.Screen name="ListAppointments" component={ListAppointments} />
+      <Stack.Screen name="AppointmentDetail" component={AppointmentDetail} />
     </Stack.Navigator>
   );
 }
 
+const ListAppointmentNavigator = () => (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="ListAppointments" component={ListAppointments} />
+        <Stack.Screen name="AppointmentDetail" component={AppointmentDetail} />
+    </Stack.Navigator>
+);
+
+
 const TabNavigatior = () => {
+  const { user } = useContext(MyUserContext);
+
+  const requireAuth = (navigation, targetScreen) => ({
+    tabPress: (e) => {
+      if (!user) {
+        e.preventDefault();
+        navigation.navigate("User");
+      }
+    },
+  });
+
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }}>
       <Tab.Screen name="Home" component={StackHomeNavigator} options={{tabBarIcon: () => <Icon size={20} source="home" /> } } />
-      <Tab.Screen name="Booking" component={BookingNavigator} options={{tabBarIcon: () => <Icon size={20} source="calendar" /> }} />
+      <Tab.Screen name="Booking" component={AppointmentNavigator}  listeners={({ navigation }) => requireAuth(navigation, "Booking")} options={{tabBarIcon: () => <Icon size={20} source="calendar" /> }} />
+      <Tab.Screen name="TabAppointments" component={ListAppointmentNavigator}  listeners={({ navigation }) => requireAuth(navigation, "ListAppointments")}  options={{tabBarIcon: () => <Icon size={20} source="calendar" /> }} />
       <Tab.Screen name="User" component={StackUserNavigator} options={{tabBarIcon: () => <Icon size={20} source="account" /> }} />
     </Tab.Navigator>
   );
@@ -69,7 +94,7 @@ const TabNavigatior = () => {
 
 
 const App = () => {
-  const saved = SecureStore.getItem("user");
+  const saved = SecureStore.getItem("user");// 
   const [user, dispatch] = useReducer(MyUserReducer, saved ? JSON.parse(saved) : null);
   return (
     <MyUserContext.Provider value={{ user, dispatch }}>

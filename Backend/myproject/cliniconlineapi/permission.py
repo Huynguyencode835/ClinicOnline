@@ -29,3 +29,10 @@ class IsHealthcareRole(IsAuthenticated):
                 super().has_permission(request, view) and
                 request.user.role == User.Role.HEALTHCARE
         )
+
+class IsAppointmentOwner(IsAuthenticated):
+    def has_object_permission(self, request, view, Appointment):
+        return (
+                super().has_permission(request, view) and
+                request.user == Appointment.user
+        )

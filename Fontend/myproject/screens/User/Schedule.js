@@ -43,6 +43,8 @@ const Schedule = () => {
         return slots;
     };
 
+    const DAYS = ['T.2', 'T.3', 'T.4', 'T.5', 'T.6', 'T.7', 'CN'];
+
     const SLOTS = {
         morning: generateSlots(6, 12),
         afternoon: generateSlots(12, 18),
@@ -151,6 +153,7 @@ const Schedule = () => {
                             setShift('morning');
                             setSelectedSlots([]);
                         }}
+                        DAYS={DAYS}
                     />
 
                 </Card.Content>

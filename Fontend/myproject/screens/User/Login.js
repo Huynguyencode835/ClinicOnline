@@ -9,7 +9,7 @@ import Apis, { authApis, endpoints } from "../../configs/Apis";
 import { MyUserContext } from "../../utils/contexts/MyUserContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from 'expo-secure-store';
-import {CLIENT_ID_APP, CLIENT_SECRET_APP} from "@env"
+import { CLIENT_ID_APP, CLIENT_SECRET_APP } from "@env"
 
 const Login = ({ navigation, route }) => {
     const [user, setUser] = useState({
@@ -54,7 +54,7 @@ const Login = ({ navigation, route }) => {
 
         if (!user.password) {
             err.password = "Vui lòng nhập mật khẩu";
-        } else if (user.password.length < 6) {
+        } else if (user.password.length < 2) {
             err.password = "Mật khẩu phải >= 6 ký tự";
         }
         return err;
@@ -73,22 +73,16 @@ const Login = ({ navigation, route }) => {
     const handleLogin = async () => {
         const err = validate(user);
         setErrors(err);
-        // bỏ id secret vào .env sau
         if (Object.keys(err).length === 0) {
-            try { 
+            try {
                 setLoading(true);
                 console.info(user);
-                let formData = new FormData();
-                formData.append("username", user.username);
-                formData.append("password", user.password);
-                formData.append("client_id", CLIENT_ID_APP);
-                formData.append("client_secret", CLIENT_SECRET_APP);
-                formData.append("grant_type", "password");
-
-                let res = await Apis.post(endpoints.login, formData,{
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
+                const res = await Apis.post(endpoints.login, {
+                    username: user.username,
+                    password: user.password,
+                    client_id: CLIENT_ID_APP,
+                    client_secret: CLIENT_SECRET_APP,
+                    grant_type: "password",
                 });
 
                 await AsyncStorage.setItem("access_token", res.data.access_token);
@@ -102,29 +96,36 @@ const Login = ({ navigation, route }) => {
                         await SecureStore.setItemAsync("user", JSON.stringify(userInfo.data));
                     }, 500);
 
-                    navigation.navigate("Home",{
+                    navigation.navigate("Home", {
                         successMessage: "Chào mừng bạn đã trở lại! Hãy khám phá các dịch vụ của chúng tôi.",
                     });
                 }
-                if (res.status === 400) {
+
+            } catch (err) {
+                const status = err.response?.status;
+                if (status >= 400 && status < 500) {
                     setSnackbar({
                         visible: true,
                         message: "Đăng nhập thất bại!",
-                        sub: res.data?.detail || "Vui lòng kiểm tra lại thông tin.",
+                        sub: err.response?.data?.detail || "Vui lòng kiểm tra lại thông tin.",
                         type: 'error',
                     });
-                    console.log("Chi tiết lỗi 400:", JSON.stringify(res.data));
-                }
-                if (res.status === 500) {
+                    console.log("Chi tiết lỗi 400:", JSON.stringify(err.response?.data));
+                } else if (status >= 500) {
                     setSnackbar({
                         visible: true,
                         message: "Lỗi máy chủ!",
                         sub: "Vui lòng thử lại sau.",
                         type: 'error',
-                    })
-                };    
-            } catch (err) {
-                console.error("Lỗi đăng nhập:", err.message || err);
+                    });
+                } else {
+                    setSnackbar({
+                        visible: true,
+                        message: "Không thể kết nối!",
+                        sub: "Vui lòng kiểm tra kết nối mạng.",
+                        type: 'error',
+                    });
+                }
             }
             finally {
                 setLoading(false);
@@ -142,7 +143,7 @@ const Login = ({ navigation, route }) => {
                 type: 'success',
             });
         }
-    }, [route?.params?.successMessage]);
+    }, []);
 
     return (
         <View style={{ flex: 1 }}>

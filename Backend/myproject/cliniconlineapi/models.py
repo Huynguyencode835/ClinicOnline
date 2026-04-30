@@ -56,7 +56,21 @@ class CustomerProfile(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE,related_name="customer_profile")
     height = models.IntegerField(null=True, blank=True)
     weight = models.IntegerField(null=True, blank=True)
-
+    insurance_number = models.CharField(max_length=50, null=True, blank=True)
+    insurance_expiry_date = models.DateField(null=True, blank=True)
+    BLOOD_GROUP_CHOICES = [
+        ('A+', 'A+'), ('A-', 'A-'),
+        ('B+', 'B+'), ('B-', 'B-'),
+        ('AB+', 'AB+'), ('AB-', 'AB-'),
+        ('O+', 'O+'), ('O-', 'O-'),
+    ]
+    blood_group = models.CharField(
+        max_length=3,
+        choices=BLOOD_GROUP_CHOICES,
+        null=True,
+        blank=True
+    )
+    allergy_history = models.TextField(null=True, blank=True)
     def __str__(self):
         return f"BN. {self.user.get_full_name()}"
 
@@ -71,23 +85,12 @@ class StaffSpecialty(BaseModel):
         return f"{self.staff} - {self.specialty}"
 
 class WorkDay(BaseModel):
-    class DayOfWeek(models.TextChoices):
-        MONDAY = "Monday"
-        TUESDAY = "Tuesday"
-        WEDNESDAY = "Wednesday"
-        THURSDAY = "Thursday"
-        FRIDAY = "Friday"
-        SATURDAY = "Saturday"
-        SUNDAY = "Sunday"
-
     staff_profile = models.ForeignKey("StaffProfile", on_delete=models.CASCADE, related_name="work_days")
-    day_of_week = models.CharField(max_length=20,choices=DayOfWeek.choices)
+    date = models.DateField(null=False,blank=False,unique=True)
     class Meta:
-        unique_together = ("staff_profile", "day_of_week")
-        ordering = ["day_of_week"]
+        unique_together = ("staff_profile", "date")
+        ordering = ["date"]
 
-    def __str__(self):
-        return f"{self.staff_profile} - {self.day_of_week}"
 
 class TimeSlot(BaseModel):
     class Status(models.TextChoices):
@@ -95,7 +98,6 @@ class TimeSlot(BaseModel):
         BOOKED = "Booked"
 
     work_day = models.ForeignKey(WorkDay, on_delete=models.CASCADE,related_name="time_slots")
-    specific_date = models.DateField(default="2026-04-21")
     start_time = models.TimeField()
     end_time   = models.TimeField()
     status     = models.CharField(
@@ -105,11 +107,9 @@ class TimeSlot(BaseModel):
     )
 
     class Meta:
-        unique_together = ("work_day", "specific_date", "start_time")
-        ordering = ["specific_date", "start_time"]
+        unique_together = ("work_day", "start_time")
+        ordering = ["start_time"]
 
-    def __str__(self):
-        return f"{self.work_day.day_of_week} {self.specific_date} {self.start_time}-{self.end_time} ({self.status})"
 
 class ServiceNormal(BaseModel):
     name = models.CharField(max_length=200, unique=True)
@@ -123,9 +123,10 @@ class Appointment(BaseModel):
         COMPLETED = "Completed"
         CANCELED = "Canceled"
 
-    reason = models.TextField(blank=True)
+    reason = models.TextField(blank=False, null= False)
+    symptoms = models.TextField(blank=True, null= True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
-    time_slot=models.OneToOneField(TimeSlot, on_delete=models.CASCADE,related_name="appointment")
+    time_slot=models.OneToOneField(TimeSlot, on_delete=models.CASCADE,related_name="appointment_time_slot")
 
     customer = models.ForeignKey(User, on_delete=models.CASCADE,related_name="appointments_customer")
     doctor = models.ForeignKey(User, on_delete=models.CASCADE,related_name="appointments_doctor")

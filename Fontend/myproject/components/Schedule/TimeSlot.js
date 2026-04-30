@@ -4,46 +4,44 @@ import { Chip, Text } from 'react-native-paper';
 
 
 const TimeSlot = ({ shift, selectedSlots, onSlotsChange, SLOTS, multiple = true }) => {
-  const slots = SLOTS[shift];
+  const slots = SLOTS?.[shift] ?? [];
 
   const isSelected = (slot) => {
-  if (multiple) {
-    return selectedSlots?.some(
-      s => s.start === slot.start && s.end === slot.end
-    );
-  } else {
-    return selectedSlots &&
-      selectedSlots.start === slot.start &&
-      selectedSlots.end === slot.end;
-  }
-};
-
-  const handlePress = (slot) => {
-  const exists = isSelected(slot);
-
-  if (multiple) {
-    if (exists) {
-      onSlotsChange(
-        selectedSlots.filter(
-          s => !(s.start === slot.start && s.end === slot.end)
-        )
+    if (multiple) {
+      return selectedSlots?.some(
+        s => s.start === slot.start && s.end === slot.end
       );
     } else {
-      onSlotsChange([
-        ...selectedSlots,
-        { start: slot.start, end: slot.end }
-      ]);
+      return selectedSlots &&
+        selectedSlots.start === slot.start &&
+        selectedSlots.end === slot.end;
     }
-  } else {
-    if (exists) {
-      onSlotsChange(null); // bỏ chọn
+  };
+
+  const handlePress = (slot) => {
+    const exists = isSelected(slot);
+
+    if (multiple) {
+      if (exists) {
+        onSlotsChange(
+          selectedSlots.filter(s => !(s.start === slot.start && s.end === slot.end))
+        );
+      } else
+        onSlotsChange([...selectedSlots, {id: slot.id, start: slot.start, end: slot.end }]);
     } else {
-      onSlotsChange({ start: slot.start, end: slot.end }); // chỉ 1 slot
+      if (exists) {
+        onSlotsChange(null); // bỏ chọn
+      } else
+        onSlotsChange({id: slot.id, start: slot.start, end: slot.end });
     }
-  }
-};
+  };
 
 
+  if (!slots.length) return (
+    <View>
+      <Text variant="labelSmall" style={styles.label}>Không có khung giờ</Text>
+    </View>
+  );
 
   return (
     <View>

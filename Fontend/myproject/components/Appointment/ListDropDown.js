@@ -2,8 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { List } from 'react-native-paper';
+import specialtyIcons from '../../styles/LogoSpecialty';
 
-const ListDropDown = ({ title, value, icon, data, onSelect}) => {
+const ListDropDown = ({ title, value, icon, data, onSelect, setPage, Icon }) => {
     return (
         <View style={styles.wrapper}>
             <Dropdown
@@ -19,18 +20,80 @@ const ListDropDown = ({ title, value, icon, data, onSelect}) => {
                 placeholder={title}
                 value={value}
                 onChange={(item) => onSelect(item)}
+                flatListProps={{
+                    onEndReached: () => setPage && setPage(prev => prev + 1),
+                    onEndReachedThreshold: 0.3,
+                }}
                 renderLeftIcon={() => (
-                    <List.Icon icon={icon} color="#64748b" style={{ margin: 0 , paddingRight: 20}} />
+                    <List.Icon icon={icon} color="#64748b" style={{ margin: 0, paddingRight: 20 }} />
                 )}
                 renderRightIcon={() => (
                     <List.Icon icon="chevron-down" color="#94a3b8" style={{ margin: 0 }} />
                 )}
                 renderItem={(item) => (
                     <View style={styles.item}>
-                        <Text style={styles.itemTitle}>{item.name}</Text>
-                        {item.description && <Text style={styles.itemDesc}>{item.description}</Text>}
-                        {item.specialty && <Text style={styles.itemDesc}>{item.specialty}</Text>}
-                        {item.price && <Text style={styles.itemPrice}>{item.price}</Text>}
+
+
+                        {item.type === "doctor" ? (
+                            <>
+                                <View style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 14,
+                                    gap: 10,
+                                }}>
+                                    {/* Tên + gender */}
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 14, fontWeight: '700', color: '#1e293b' }}>
+                                            BS. {item.name}
+                                        </Text>
+                                        <View style={{
+                                            alignSelf: 'flex-start',
+                                            marginTop: 3,
+                                            paddingHorizontal: 8, paddingVertical: 2,
+                                            borderRadius: 20,
+                                            backgroundColor:
+                                                item.gender === "male" ? '#dbeafe' :
+                                                    item.gender === "female" ? '#fce7f3' : '#f1f5f9',
+                                        }}>
+                                            <Text style={{ fontSize: 11, fontWeight: '600', color: '#475569' }}>
+                                                {item.gender === "male" ? "👨 Nam" :
+                                                    item.gender === "female" ? "👩 Nữ" : "🧑 Khác"}
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    {/* Email + Phone */}
+                                    <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                            <Text style={{ fontSize: 11, color: '#94a3b8' }}>✉️</Text>
+                                            <Text style={{ fontSize: 11, color: '#64748b' }}>{item.description}</Text>
+                                        </View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                            <Text style={{ fontSize: 11, color: '#94a3b8' }}>📞</Text>
+                                            <Text style={{ fontSize: 11, color: '#64748b' }}>{item.specialty}</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            </>
+                        ) : (
+                            <>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                    <List.Icon
+                                        icon={specialtyIcons[item.id] || "hospital-box-outline"}
+                                        color="#1976D2"
+                                        style={{ margin: 0 }}
+                                    />
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={styles.itemTitle}>{item.name}</Text>
+                                        {item.description &&
+                                            <Text style={styles.itemDesc}>{item.description}</Text>
+                                        }
+                                    </View>
+                                </View>
+                            </>
+                        )}
                     </View>
                 )}
             />

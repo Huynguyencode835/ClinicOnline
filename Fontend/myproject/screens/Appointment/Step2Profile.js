@@ -7,7 +7,7 @@ import { Card, SegmentedButtons, Chip } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import COLORS from "../../styles/Colors";
 
-const BLOOD_TYPES = ["A", "B", "AB", "O", "A-", "B-", "AB-", "O-"];
+const BLOOD_TYPES = ["A+", "B+", "AB+", "O+", "A-", "B-", "AB-", "O-"];
 
 const SectionLabel = ({ icon, text }) => (
     <View style={styles.sectionRow}>
@@ -34,19 +34,8 @@ const StyledInput = ({ style, ...props }) => (
     />
 );
 
-const Step2Profile = ({ data, updatePatient }) => {
+const Step2Profile = ({ data, updatePatient, updateProfile }) => {
     const p = data.patient;
-
-    const addAllergy = () => {
-        const val = (p.allergy_input ?? "").trim();
-        if (!val) return;
-        updatePatient("allergies", [...(p.allergies ?? []), val]);
-        updatePatient("allergy_input", "");
-    };
-
-    const removeAllergy = (index) => {
-        updatePatient("allergies", p.allergies.filter((_, i) => i !== index));
-    };
 
     return (
         <ScrollView
@@ -64,14 +53,14 @@ const Step2Profile = ({ data, updatePatient }) => {
                             <StyledInput
                                 placeholder="Nguyễn"
                                 value={p.last_name}
-                                onChangeText={v => updatePatient("last_name", v)}
+                                onChangeText={(v) => updatePatient("last_name", v)}
                             />
                         </Field>
                         <Field label="Tên" required>
                             <StyledInput
                                 placeholder="Văn A"
                                 value={p.first_name}
-                                onChangeText={v => updatePatient("first_name", v)}
+                                onChangeText={(v) => updatePatient("first_name", v)}
                             />
                         </Field>
                     </View>
@@ -81,7 +70,7 @@ const Step2Profile = ({ data, updatePatient }) => {
                             placeholder="0xxxxxxxxx"
                             keyboardType="phone-pad"
                             value={p.phone}
-                            onChangeText={v => updatePatient("phone", v)}
+                            onChangeText={(v) => updatePatient("phone", v)}
                         />
                     </Field>
 
@@ -91,7 +80,7 @@ const Step2Profile = ({ data, updatePatient }) => {
                             keyboardType="email-address"
                             autoCapitalize="none"
                             value={p.email}
-                            onChangeText={v => updatePatient("email", v)}
+                            onChangeText={(v) => updatePatient("email", v)}
                         />
                     </Field>
 
@@ -99,14 +88,14 @@ const Step2Profile = ({ data, updatePatient }) => {
                         <StyledInput
                             placeholder="DD/MM/YYYY"
                             value={p.dob}
-                            onChangeText={v => updatePatient("dob", v)}
+                            onChangeText={(v) => updatePatient("dob", v)}
                         />
                     </Field>
 
                     <Field label="Giới tính">
                         <SegmentedButtons
                             value={p.gender}
-                            onValueChange={v => updatePatient("gender", v)}
+                            onValueChange={(v) => updatePatient("gender", v)}
                             style={styles.segmented}
                             theme={{
                                 colors: {
@@ -134,8 +123,8 @@ const Step2Profile = ({ data, updatePatient }) => {
                     <Field label="Số thẻ BHYT">
                         <StyledInput
                             placeholder="VD: HS4012345678901"
-                            value={p.insurance_id}
-                            onChangeText={v => updatePatient("insurance_id", v)}
+                            value={p.profile.insurance_number}
+                            onChangeText={(v) => updateProfile("insurance_number", v)}
                             autoCapitalize="characters"
                         />
                     </Field>
@@ -143,8 +132,8 @@ const Step2Profile = ({ data, updatePatient }) => {
                     <Field label="Ngày hết hạn thẻ">
                         <StyledInput
                             placeholder="DD/MM/YYYY"
-                            value={p.insurance_exp}
-                            onChangeText={v => updatePatient("insurance_exp", v)}
+                            value={p.profile.insurance_expiry_date}
+                            onChangeText={(v) => updateProfile("insurance_expiry_date", v)}
                         />
                     </Field>
 
@@ -168,15 +157,15 @@ const Step2Profile = ({ data, updatePatient }) => {
                             {BLOOD_TYPES.map(bt => (
                                 <Pressable
                                     key={bt}
-                                    onPress={() => updatePatient("blood_type", bt)}
+                                    onPress={() => updateProfile("blood_group", bt)}
                                     style={[
                                         styles.bloodChip,
-                                        p.blood_type === bt && styles.bloodChipActive,
+                                        p.profile.blood_group === bt && styles.bloodChipActive,
                                     ]}
                                 >
                                     <Text style={[
                                         styles.bloodChipText,
-                                        p.blood_type === bt && styles.bloodChipTextActive,
+                                        p.profile.blood_group === bt && styles.bloodChipTextActive,
                                     ]}>
                                         {bt}
                                     </Text>
@@ -189,40 +178,52 @@ const Step2Profile = ({ data, updatePatient }) => {
                         <View style={styles.chipInputRow}>
                             <StyledInput
                                 placeholder="VD: Penicillin, hải sản..."
-                                value={p.allergy_input ?? ""}
-                                onChangeText={v => updatePatient("allergy_input", v)}
-                                onSubmitEditing={addAllergy}
+                                value={p.profile.allergy_history ?? ""}
+                                onChangeText={(v) => updateProfile("allergy_history", v)}
                                 returnKeyType="done"
                                 style={{ flex: 1 }}
                             />
-                            <Pressable style={styles.addBtn} onPress={addAllergy}>
-                                <MaterialCommunityIcons name="plus" size={20} color={COLORS.white} />
-                            </Pressable>
                         </View>
 
-                        {p.allergies?.length > 0 ? (
-                            <View style={styles.chipList}>
-                                {p.allergies.map((item, i) => (
-                                    <Chip
-                                        key={i}
-                                        onClose={() => removeAllergy(i)}
-                                        style={styles.chip}
-                                        textStyle={styles.chipText}
-                                    >
-                                        {item}
-                                    </Chip>
-                                ))}
-                            </View>
-                        ) : (
-                            <Text style={styles.emptyHint}>
-                                Chưa có dị ứng nào được ghi nhận
-                            </Text>
-                        )}
+
                     </Field>
 
                 </Card.Content>
             </Card>
 
+            {/* ── LÝ DO KHÁM ── */}
+            <SectionLabel icon="clipboard-text-outline" text="Lý do khám" />
+            <Card style={[styles.card, { marginBottom: 8 }]}>
+                <Card.Content style={styles.cardContent}>
+
+                    <Field label="Lý do khám" required>
+                        <StyledInput
+                            placeholder="VD: Đau đầu, mệt mỏi, khám định kỳ..."
+                            value={p.reason}
+                            onChangeText={(v) => updatePatient("reason", v)}
+                        />
+                    </Field>
+
+                    <Field label="Triệu chứng đang gặp phải">
+                        <StyledInput
+                            placeholder="VD: Sốt 3 ngày, ho khan, khó thở nhẹ..."
+                            value={p.symptoms}
+                            onChangeText={(v) => updatePatient("symptoms", v)}
+                            multiline
+                            numberOfLines={4}
+                            style={{ textAlignVertical: 'top', minHeight: 100 }}
+                        />
+                    </Field>
+
+                    <View style={styles.infoBadge}>
+                        <MaterialCommunityIcons name="information-outline" size={14} color={COLORS.primary} />
+                        <Text style={styles.infoBadgeText}>
+                            Mô tả chi tiết giúp bác sĩ chuẩn bị tốt hơn trước buổi khám
+                        </Text>
+                    </View>
+
+                </Card.Content>
+            </Card>
         </ScrollView>
     );
 };

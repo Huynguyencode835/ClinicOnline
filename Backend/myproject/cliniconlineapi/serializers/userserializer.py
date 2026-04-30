@@ -1,24 +1,22 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from cliniconlineapi.models import User, StaffProfile, CustomerProfile, Specialty, StaffSpecialty, WorkDay, TimeSlot
-from cliniconlineapi.validators import NameValidator, PhoneNumberValidator, MaxLengthValidator
+from cliniconlineapi.validators import NameValidator, PhoneNumberValidator, MaxLengthValidator, MinLengthValidator
+from datetime import date, datetime
 
 
 class UserSerializer(serializers.ModelSerializer):
-    profile = serializers.DictField(write_only=True, required=False)
+    # profile = serializers.DictField(write_only=True, required=False)
     class Meta:
         model = User
         fields = ['id', 'first_name', 'last_name', 'avatar', 'phone', 'email',
                   'username', 'password','gender',
-                  'role','profile']
+                  'role'] #,'profile'
         extra_kwargs = {
             'password': {
                 'write_only': True,
             },
             'username': {
-                'write_only': True,
-            },
-            'role': {
                 'write_only': True,
             }
         }
@@ -28,17 +26,17 @@ class UserSerializer(serializers.ModelSerializer):
         if instance.avatar:
             data['avatar'] = instance.avatar.url
 
-        try:
-            if instance.role == User.Role.CUSTOMER:
-                data["profile"] = CustomerProfileSerializer(instance.customer_profile).data
-            elif instance.role in [User.Role.DOCTOR, User.Role.HEALTHCARE]:
-                data["profile"] = StaffProfileSerializer(instance.staff_profile).data
-            else:
-                # Admin hoặc superuser không có profile
-                data["profile"] = None
-        except Exception as e:
-            print(f"Profile error: {e}")
-            data["profile"] = None
+        # try:
+            #     if instance.role == User.Role.CUSTOMER:
+            #         data["profile"] = CustomerProfileSerializer(instance.customer_profile).data
+            #     elif instance.role in [User.Role.DOCTOR, User.Role.HEALTHCARE]:
+            #         data["profile"] = StaffProfileSerializer(instance.staff_profile).data
+        #     else:
+        #         # Admin hoặc superuser không có profile
+        #         data["profile"] = None
+        # except Exception as e:
+        #     print(f"Profile error: {e}")
+        #     data["profile"] = None
 
         return data
 
@@ -54,6 +52,10 @@ class UserSerializer(serializers.ModelSerializer):
         if value:
             NameValidator(2,10)(value)
         return value
+
+    # def validate_password(self, value):
+    #     MinLengthValidator(6, message="Mật khẩu phải có ít nhất 6 ký tự.")(value)
+    #     return value
 
     def validate_role(self, value):
         request = self.context.get("request")
@@ -74,7 +76,10 @@ class UserSerializer(serializers.ModelSerializer):
             CustomerProfile.objects.create(
                 user=user,
                 height=profile_data.get('height'),
-                weight=profile_data.get('weight')
+                weight=profile_data.get('weight'),
+                insurance_number=profile_data.get('insurance_number'),
+                insurance_expiry_date = profile_data.get('insurance_expiry_date'),
+                allergy_history = profile_data.get('allergy_history'),
             )
         return user
 
@@ -82,6 +87,8 @@ class UserDetailSerializer(UserSerializer):
     class Meta:
         model = UserSerializer.Meta.model
         fields = UserSerializer.Meta.fields
+
+        extra_kwargs = UserSerializer.Meta.extra_kwargs
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -105,16 +112,65 @@ class TimeSlotSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if attrs["start_time"] >= attrs["end_time"]:
             raise serializers.ValidationError("start_time phải nhỏ hơn end_time.")
-
         return attrs
+
+    def validate_time_slots(self, value):
+        if not value:
+            raise serializers.ValidationError("Phải có ít nhất 1 time slot.")
+
+        # sort theo start_time
+        sorted_slots = sorted(value, key=lambda x: x["start_time"])
+
+        for i in range(len(sorted_slots) - 1):
+            current = sorted_slots[i]
+            next_slot = sorted_slots[i + 1]
+
+            if current["end_time"] > next_slot["start_time"]:
+                raise serializers.ValidationError(
+                    "Các time slot bị trùng hoặc chồng lấn thời gian."
+                )
+
+        return value
+
+class TimeSlotDetailSerializer(TimeSlotSerializer):
+    class Meta:
+        model = TimeSlotSerializer.Meta.model
+        fields = TimeSlotSerializer.Meta.fields
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['work_day'] = WorkDayLiteSerializer(instance.work_day).data
+        return data
+
 
 class WorkDayLiteSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkDay
-        fields = ["id", "day_of_week"]
+        fields = ["id", "date"]
+
+    def validate_date(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                "Không được bỏ trống Ngày"
+            )
+        else:
+            if value < date.today():
+                raise serializers.ValidationError(
+                    "Không được tạo ngày trong quá khứ"
+                )
+            if (value - date.today()).days > 7:
+                raise serializers.ValidationError(
+                    "Không được chọn ngày quá 7 ngày so với hiện tại"
+                )
+        return value
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["day_of_week"] = instance.date.strftime("%A")
+        return data
 
 # chưa validate
-class WorkDaySerializer(serializers.ModelSerializer):
+class WorkDaySerializer(WorkDayLiteSerializer):
     time_slots = TimeSlotSerializer(many=True)
 
     class Meta:
@@ -161,7 +217,27 @@ class StaffProfileDetailSerializer(StaffProfileSerializer):
 class CustomerProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerProfile
-        fields = ["height", "weight"]
+        fields = ["height", "weight","insurance_number","insurance_expiry_date","allergy_history","blood_group"]
+
+    def validate_height(self, value):
+        if value is not None and (value < 50 or value > 300):
+            raise serializers.ValidationError("Chiều cao không hợp lệ.")
+        return value
+
+    def validate_weight(self, value):
+        if value is not None and (value < 2 or value > 500):
+            raise serializers.ValidationError("Cân nặng không hợp lệ.")
+        return value
+
+    def validate_insurance_number(self, value):
+        if value and len(value) < 5:
+            raise serializers.ValidationError("Số BHYT không hợp lệ.")
+        return value
+
+    def validate_insurance_expiry_date(self, value):
+        if value and value < date.today():
+            raise serializers.ValidationError("BHYT đã hết hạn.")
+        return value
 
 
 

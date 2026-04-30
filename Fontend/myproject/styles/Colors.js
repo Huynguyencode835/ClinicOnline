@@ -7,7 +7,7 @@ const COLORS = {
     // textMuted: "#64748B",
     // textLight: "#94A3B8",
     // success: "#10B981",
-    // successLight: "#D1FAE5",
+    successLight: "#D1FAE5",
     // error: "#EF4444",
     // warning: "#F59E0B",
     // bg: "#F1F5F9",

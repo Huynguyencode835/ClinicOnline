@@ -8,9 +8,14 @@ console.log(API_URL);
 export const endpoints = {
     'doctors': '/doctors/',
     'doctorDetail': (id) => `/doctors/${id}/doctor_detail/`,
+    'doctorWorkDay': (id) => `/doctors/${id}/doctor_workday/`,
     'login': '/o/token/',
     'profile': '/users/profile_user/',
     'register': '/users/',
+    'specialty': '/specialtys/',
+    'doctorspecialty': (id) => `/specialtys/${id}/doctors/`,
+    'appointments': '/appointments/',
+    'appointmentDetail': (id) => `/appointments/${id}/detail/`,
 }
 
 export const authApis = (token) => {
