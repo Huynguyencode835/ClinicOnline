@@ -65,7 +65,7 @@ const MedicalRecordList = ({ navigation }) => {
                 return;
             }
             loadRecords();
-        }, [])
+        }, [user])
     );
 
     const filteredData = records.filter((item) => {

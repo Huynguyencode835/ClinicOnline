@@ -27,7 +27,7 @@ const BookingProvider = ({ user, children }) => {
             updateBulk,
             updatePatient,
             updateProfile,
-            resetAll: () => dispatch({ type: "RESET_ALL" })
+            resetAll: (user) => dispatch({ type: "RESET_ALL", value: user })
         }}>
             {children}
         </BookingContext.Provider>

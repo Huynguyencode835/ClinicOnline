@@ -12,6 +12,7 @@ import MedicalInfoCard from "../../components/User/Profile/MedicalInfoCard";
 import { useBooking } from "../../utils/contexts/BookingContext";
 import AppButton from "../../components/AppButton";
 import { useNavigation } from "@react-navigation/native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 const BLOOD_TYPES = ["A+", "B+", "AB+", "O+", "A-", "B-", "AB-", "O-"];
 
 const SectionLabel = ({ icon, text }) => (
@@ -31,10 +32,19 @@ const Field = ({ label, required, children }) => (
     </View>
 );
 
-const StyledInput = ({ style, ...props }) => (
+const StyledInput = ({ style, showBorder = false, value, ...props }) => (
     <TextInput
-        style={[styles.input, style]}
+        style={[
+            styles.input,
+            showBorder && {
+                borderWidth: 1,
+                borderColor: value ? COLORS.blue : '#EF4444',
+                borderRadius: 8,
+            },
+            style
+        ]}
         placeholderTextColor={COLORS.textLight}
+        value={value}
         {...props}
     />
 );
@@ -47,11 +57,13 @@ const Step2Profile = () => {//{ data, updatePatient, updateProfile }
     const p = bookingData.patient;
 
     return (
-        <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-        >
+        <KeyboardAwareScrollView
+    contentContainerStyle={styles.scrollContent}
+    showsVerticalScrollIndicator={false}
+    keyboardShouldPersistTaps="handled"
+    enableOnAndroid={true}
+    extraScrollHeight={20}
+>
             <View>
                 <AppButton
                     type="edit"
@@ -74,6 +86,7 @@ const Step2Profile = () => {//{ data, updatePatient, updateProfile }
                         <StyledInput
                             placeholder="VD: Đau đầu, mệt mỏi, khám định kỳ..."
                             value={p?.reason}
+                            showBorder={true}
                             onChangeText={(v) => updatePatient("reason", v)}
                         />
                     </Field>
@@ -81,6 +94,7 @@ const Step2Profile = () => {//{ data, updatePatient, updateProfile }
                     <Field label="Triệu chứng đang gặp phải">
                         <StyledInput
                             placeholder="VD: Sốt 3 ngày, ho khan, khó thở nhẹ..."
+                            showBorder={true}
                             value={p?.symptoms}
                             onChangeText={(v) => updatePatient("symptoms", v)}
                             multiline
@@ -98,7 +112,7 @@ const Step2Profile = () => {//{ data, updatePatient, updateProfile }
 
                 </Card.Content>
             </Card>
-        </ScrollView>
+        </KeyboardAwareScrollView>
     );
 };
 

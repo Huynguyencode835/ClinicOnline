@@ -23,12 +23,12 @@ const MedicalInfoCard = ({ data, updateProfile}) => {
                                     onPress={() => updateProfile("blood_group", bt)}
                                     style={[
                                         styles.bloodChip,
-                                        p.profile.blood_group === bt && styles.bloodChipActive,
+                                        p.profile?.blood_group === bt && styles.bloodChipActive,
                                     ]}
                                 >
                                     <Text style={[
                                         styles.bloodChipText,
-                                        p.profile.blood_group === bt && styles.bloodChipTextActive,
+                                        p.profile?.blood_group === bt && styles.bloodChipTextActive,
                                     ]}>
                                         {bt}
                                     </Text>
@@ -41,7 +41,7 @@ const MedicalInfoCard = ({ data, updateProfile}) => {
                         <View>
                             <StyledInput
                                 placeholder="VD: Penicillin, hải sản..."
-                                value={p.profile.allergy_history ?? ""}
+                                value={p.profile?.allergy_history ?? ""}
                                 onChangeText={(v) => updateProfile("allergy_history", v)}
                                 returnKeyType="done"
                                 style={{ flex: 1 }}

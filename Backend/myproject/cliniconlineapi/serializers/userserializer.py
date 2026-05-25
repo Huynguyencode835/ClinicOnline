@@ -34,6 +34,8 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
     def validate_avatar(self, value):
+        if value is None:
+            return value
 
         if isinstance(value, CloudinaryResource):
             return value
@@ -210,7 +212,6 @@ class WorkDayLiteSerializer(serializers.ModelSerializer):
         data["day_of_week"] = instance.date.strftime("%A")
         return data
 
-# chưa validate
 class WorkDaySerializer(WorkDayLiteSerializer):
     time_slots = TimeSlotSerializer(many=True)
 

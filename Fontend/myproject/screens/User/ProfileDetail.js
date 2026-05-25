@@ -1,7 +1,9 @@
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { useContext, useEffect, useState } from "react"
-import { fetchPublic, updatePatchWithAuth } from "../../utils/apiHelper"
+import { createWithAuth, fetchPublic, updatePatchWithAuth } from "../../utils/apiHelper"
 import { endpoints } from "../../configs/Apis"
-import { ScrollView, View, Text } from "react-native"
+import { ScrollView, View, Text, TouchableOpacity } from "react-native"
 import { MyUserContext } from "../../utils/contexts/MyUserContext"
 import PersonalInfoCard from "../../components/User/Profile/PersonalInfoCard"
 import InsuranceCard from "../../components/User/Profile/InsuranceCard"
@@ -16,6 +18,8 @@ import AppHeader from "../../components/AppHeader"
 import { useNavigation } from "@react-navigation/native";
 import * as SecureStore from 'expo-secure-store';
 import DoctorProfileCard from "../../components/User/Profile/DoctorProfileCard"
+
+
 const ProfileDetail = () => {
     const { user, dispatch } = useContext(MyUserContext);
     const initProfile = (u) => {
@@ -48,7 +52,7 @@ const ProfileDetail = () => {
             profile: profileFields,
         };
     };
-
+    const [scanning, setScanning] = useState(false);
     const [profileDetail, setProfileDetail] = useState(initProfile(user));
     const [change, setChange] = useState(true)
     const [loading, setLoading] = useState(false);
@@ -69,7 +73,6 @@ const ProfileDetail = () => {
     };
 
     useEffect(() => {
-        console.log("User in ProfileDetail:", user);
         if (user !== null) setProfileDetail(initProfile(user))
     }, [user])
 
@@ -134,19 +137,16 @@ const ProfileDetail = () => {
 
     const updateProfileUser = async () => {
         const errors = validate(profileDetail);
-        console.log("Validation errors:", errors);
         if (Object.keys(errors).length > 0) {
             showSnackbar("Vui lòng kiểm tra lại thông tin đã nhập.", "warning");
             setErro(errors);
             return;
         }
-        console.log(profileDetail)
 
         updatePatchWithAuth(
             endpoints.profile,
             profileDetail,
             async (data) => {
-                console.log("✅ Thành công:", data);
                 setChange(true);
                 showSnackbar("Cập nhật hồ sơ thành công!", "success");
                 const savedStr = await SecureStore.getItemAsync("user");
@@ -159,11 +159,79 @@ const ProfileDetail = () => {
             },
             (type, message, fieldErrors) => {
                 if (type === "client") {
-                        setErro(fieldErrors || {});
-                        showSnackbar("Cập nhật hồ sơ thất bại!", "error", message);
-                    }
+                    setErro(fieldErrors || {});
+                    showSnackbar("Cập nhật hồ sơ thất bại!", "error", message);
+                }
             },
             setLoading
+        );
+    };
+
+    const pickImage = async () => {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+            alert('Cần cấp quyền camera để chụp thẻ bảo hiểm');
+            return;
+        }
+
+        const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            quality: 1,
+        });
+
+        if (result.canceled) return;
+
+        const asset = result.assets[0];
+
+        const compressed = await ImageManipulator.manipulateAsync(
+            asset.uri,
+            [{ resize: { width: 1200 } }],
+            { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+        );
+
+        const formData = new FormData();
+
+        formData.append('image', {
+            uri: compressed.uri,
+            type: 'image/jpeg',
+            name: 'insurance_card.jpg',
+        });
+
+        console.log(formData)
+
+        await createWithAuth(
+            endpoints.insuranceScan,
+            formData,
+            (data) => {
+                if (!data.raw_text?.includes('BẢO HIỂM XÃ HỘI VIỆT NAM') ||
+                    !data.raw_text?.includes('THẺ BẢO HIỂM Y TẾ')) {
+                    showSnackbar('Ảnh không phải thẻ BHYT hợp lệ!', 'warning');
+                    return;
+                }
+
+                if (data.data.ma_the)
+                    updateProfile('insurance_number', data.data.ma_the);
+
+                if (data.data.han_the) {
+                    const [day, month, year] = data.data.han_the.split('/');
+                    updateProfile('insurance_expiry_date', `${year}-${month}-${day}`);
+                }
+
+                if (data.data.ngay_sinh && profileDetail.dob === null) {
+                    const [day, month, year] = data.data.ngay_sinh.split('/');
+                    updatePatient('dob', `${year}-${month}-${day}`);
+                }
+
+                if (data.data.gioi_tinh) {
+                    const gender = data.data.gioi_tinh === 'Nam' ? 'male' : 'female'
+                    updatePatient('gender', gender)
+                }
+
+                showSnackbar('Đọc thẻ BHYT thành công!', 'success');
+            },
+            (type, msg) => showSnackbar(msg || 'Không đọc được thẻ BHYT', 'error'),
+            setScanning
         );
     };
 
@@ -189,6 +257,30 @@ const ProfileDetail = () => {
                     {user?.role === "customer" ? (
                         <>
                             <InsuranceCard err={erro} data={profileDetail} updateProfile={updateProfile} />
+                            {change === false && (
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <TouchableOpacity onPress={pickImage} style={{
+                                        alignSelf: 'flex-start',
+                                        fontSize: 14,
+                                        width: '60%',
+                                        paddingHorizontal: 12,
+                                        paddingVertical: 8,
+                                        borderRadius: 14,
+                                        backgroundColor: '#e0e0e8',
+                                        marginVertical: 12,
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        gap: 6,
+                                    }}
+                                    >
+                                        <Text style={{ color: '#000000' }}>
+                                            {scanning ? 'Đang xử lý...' : 'Chụp thẻ BHYT'}
+                                        </Text>
+                                        <Icon source={scanning ? 'loading' : 'camera'} size={20} />
+                                    </TouchableOpacity>
+                                </View>
+                            )}
                             <MedicalInfoCard data={profileDetail} updateProfile={updateProfile} />
                         </>
                     ) : (

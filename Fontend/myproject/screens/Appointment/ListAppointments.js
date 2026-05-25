@@ -14,6 +14,7 @@ import LoadingScreen from "../../components/LoadingScreen";
 import AppHeader from "../../components/AppHeader";
 import { useSnackbar } from "../../utils/contexts/SnackBarContext";
 import { useAlert } from "../../utils/contexts/AlertContext";
+import AnimatedPressable from "../../components/Animation/AnimatedPressable";
 
 const FILTERS = [
     { key: "all", label: "Tất cả" },
@@ -59,7 +60,7 @@ const ListAppointments = ({ navigation }) => {
                 setLoading(false)
                 return
             } loadAppointments();
-        }, [])
+        }, [user])
     );
 
     const changeStatusAppointment = async (id, stutus) => {
@@ -143,16 +144,16 @@ const ListAppointments = ({ navigation }) => {
                         {FILTERS.map((f) => {
                             const isActive = activeFilter === f.key;
                             return (
-                                <TouchableOpacity
-                                    key={f.key}
-                                    style={[styles.filterChip, isActive && styles.filterChipActive]}
-                                    onPress={() => setActiveFilter(f.key)}
-                                    activeOpacity={0.5}
-                                >
-                                    <Text style={[styles.filterText, isActive && styles.filterTextActive]}>
-                                        {f.label}
-                                    </Text>
-                                </TouchableOpacity>
+                                    <TouchableOpacity
+                                        key={f.key}
+                                        style={[styles.filterChip, isActive && styles.filterChipActive]}
+                                        onPress={() => setActiveFilter(f.key)}
+                                        activeOpacity={0.5}
+                                    >
+                                        <Text style={[styles.filterText, isActive && styles.filterTextActive]}>
+                                            {f.label}
+                                        </Text>
+                                    </TouchableOpacity>
                             );
                         })}
                     </ScrollView>

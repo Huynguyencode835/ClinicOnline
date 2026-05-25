@@ -19,7 +19,7 @@ const BUTTON_CONFIGS = {
 
     // ─── Điều hướng ───────────────────────────────────────
     detail:   { icon: 'eye',                label: 'Xem chi tiết', color: COLORS.btnPrimary },
-    back:     { icon: 'arrow-left',         label: 'Quay lại',     color: COLORS.btnDisabled },
+    back:     { icon: 'arrow-left',         label: 'Quay lại',     color: COLORS.secondary },
     next:     { icon: 'arrow-right',        label: 'Tiếp theo',    color: COLORS.btnPrimary },
 
     // ─── Y tế ─────────────────────────────────────────────

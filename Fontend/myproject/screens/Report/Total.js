@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import AppHeader from "../../components/AppHeader";
-import { Card } from "react-native-paper";
+import { Card, Icon } from "react-native-paper";
 import { LineChart, BarChart, PieChart } from "react-native-chart-kit";
 import { useEffect, useState } from "react";
 import ListDropDown from "../../components/Appointment/ListDropDown";
@@ -21,10 +21,15 @@ const chartConfig = {
     backgroundGradientFrom: "#fff",
     backgroundGradientTo: "#fff",
     decimalPlaces: 0,
+    formatXLabel: (label) => {
+        if (label.length > 6) return label.slice(0, 6) + '..';
+        return label;
+    },
     color: (opacity = 1) => `rgba(25, 118, 210, ${opacity})`,
     labelColor: () => "#94a3b8",
     style: { borderRadius: 12 },
     propsForDots: { r: "4", strokeWidth: "2", stroke: "#1976D2" },
+    propsForLabels: { fontSize: 12 },
 };
 
 const REPORT_TYPES = [
@@ -155,7 +160,7 @@ const Total = ({ navigation }) => {
         };
     };
 
-    const loadStats = async (type, isMonthRange = false)  => {
+    const loadStats = async (type, isMonthRange = false) => {
         await fetchWithAuth(
             endpoints.stats,
             (data) => {
@@ -175,30 +180,38 @@ const Total = ({ navigation }) => {
             </View>
         );
 
+        // Tính width động theo số lượng label
+        const labelCount = dataChart.bar.labels.length;
+        const dynamicWidth = Math.max(screenWidth, labelCount * 60);
+
         switch (chartType) {
             case "line":
                 return (
-                    <View style={{ overflow: 'hidden', borderRadius: 8 }}>
-                        <LineChart
-                            data={dataChart.line}
-                            width={screenWidth}
-                            height={200}
-                            chartConfig={chartConfig}
-                            bezier
-                        />
-                    </View>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        <View style={{ overflow: 'hidden', borderRadius: 8 }}>
+                            <LineChart
+                                data={dataChart.line}
+                                width={dynamicWidth}
+                                height={200}
+                                chartConfig={chartConfig}
+                                bezier
+                            />
+                        </View>
+                    </ScrollView>
                 );
             case "bar":
                 return (
-                    <View style={{ overflow: 'hidden', borderRadius: 8 }}>
-                        <BarChart
-                            data={dataChart.bar}
-                            width={screenWidth}
-                            height={200}
-                            chartConfig={chartConfig}
-                            showValuesOnTopOfBars
-                        />
-                    </View>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        <View style={{ overflow: 'hidden', borderRadius: 8 }}>
+                            <BarChart
+                                data={dataChart.bar}
+                                width={dynamicWidth}
+                                height={200}
+                                chartConfig={chartConfig}
+                                showValuesOnTopOfBars
+                            />
+                        </View>
+                    </ScrollView>
                 );
             case "pie":
                 return (
@@ -280,8 +293,6 @@ const Total = ({ navigation }) => {
         }
     }, [reportType, patientFilter]);
 
-
-
     if (loading) return <LoadingScreen text="Đang tải thông tin..." />;
 
     return (
@@ -289,7 +300,6 @@ const Total = ({ navigation }) => {
             <AppHeader titles="Báo cáo thống kê" onBack={() => navigation.goBack()} />
             <ScrollView contentContainerStyle={styles.scroll}>
 
-                {/* Dropdown chọn loại báo cáo */}
                 <SectionTitle text="Loại báo cáo" />
                 <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 16 }}>
                     <View style={{ flex: 1 }}>
@@ -316,40 +326,42 @@ const Total = ({ navigation }) => {
                             />
                         </View>
                     )}
+                </View>
+                {reportType?.id === "totalSales" && (
+                    <>
+                        <View style={{ flex: 1, flexDirection: 'row', gap: 8 }}>
 
-                    {reportType?.id === "totalSales" && (
-                        <>
-                            <View style={{ flex: 1, flexDirection: 'row', gap: 8 }}>
+                            <TouchableOpacity
+                                style={{ flex: 1, borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 8, padding: 10 }}
+                                onPress={() => { setShowEnd(false); setShowStart(true); }}
+                            >
+                                <Text style={{ color: '#94a3b8', fontSize: 11 }}>Tháng bắt đầu</Text>
+                                <Text style={{ fontSize: 13, fontWeight: '500', color: '#1e293b' }}>
+                                    {`T${monthRange?.start.getMonth() + 1}/${monthRange?.start.getFullYear()}`}
+                                </Text>
+                            </TouchableOpacity>
 
-                                <TouchableOpacity
-                                    style={{ flex: 1, borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 8, padding: 10 }}
-                                    onPress={() => { setShowEnd(false); setShowStart(true); }}
-                                >
-                                    <Text style={{ color: '#94a3b8', fontSize: 11 }}>Tháng bắt đầu</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '500', color: '#1e293b' }}>
-                                        {`T${monthRange?.start.getMonth() + 1}/${monthRange?.start.getFullYear()}`}
-                                    </Text>
-                                </TouchableOpacity>
+                            <TouchableOpacity
+                                style={{ flex: 1, borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 8, padding: 10 }}
+                                onPress={() => { setShowStart(false); setShowEnd(true); }}
+                            >
+                                <Text style={{ color: '#94a3b8', fontSize: 11 }}>Tháng kết thúc</Text>
+                                <Text style={{ fontSize: 13, fontWeight: '500', color: '#1e293b' }}>
+                                    {`T${monthRange?.end.getMonth() + 1}/${monthRange?.end.getFullYear()}`}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
 
-                                <TouchableOpacity
-                                    style={{ flex: 1, borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 8, padding: 10 }}
-                                    onPress={() => { setShowStart(false); setShowEnd(true); }}
-                                >
-                                    <Text style={{ color: '#94a3b8', fontSize: 11 }}>Tháng kết thúc</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '500', color: '#1e293b' }}>
-                                        {`T${monthRange?.end.getMonth() + 1}/${monthRange?.end.getFullYear()}`}
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-
+                        <View style={{ marginTop: 10 }}>
                             <AppButton
-                                type="confirm"
+                                type="login"
+                                icon={'check-all'}
                                 label="Xác nhận"
                                 onPress={() => loadStats('totalSales', true)}
                             />
-                        </>
-                    )}
-                </View>
+                        </View>
+                    </>
+                )}
 
                 {/* Biểu đồ */}
                 {reportType && (
@@ -377,27 +389,68 @@ const Total = ({ navigation }) => {
                     </>
                 )}
 
-                {/* Tổng quan */}
                 {dataChart && (
                     <>
                         <SectionTitle text="Tổng quan" />
 
                         <Card style={[styles.statCard, { width: '100%', marginBottom: 10 }]}>
                             <Card.Content style={{ alignItems: 'center' }}>
-                                <Text style={styles.statLabel}>Tổng số</Text>
-                                <Text style={[styles.statValue, { color: '#1976D2', fontSize: 28 }]}>
-                                    {dataChart.bar.datasets[0].data.reduce((a, b) => a + b, 0)}
-                                </Text>
+                                {reportType?.id === 'patient' && (
+                                    <>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                            <Icon source="account-group" size={28} color="#1976D2" />
+                                            <Text style={styles.statLabel}>Tổng số bệnh nhân</Text>
+                                        </View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                            <Text style={[styles.statValue, { color: '#1976D2', fontSize: 28 }]}>
+                                                {dataChart.bar.datasets[0].data.reduce((a, b) => a + b, 0)}
+                                            </Text>
+                                            <Text style={{ fontSize: 16, color: '#1976D2', fontWeight: '600' }}> bệnh nhân</Text>
+                                        </View>
+                                    </>
+                                )}
+
+                                {reportType?.id === 'serviceNormal' && (
+                                    <>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                            <Icon source="medical-bag" size={28} color="#1976D2" />
+                                            <Text style={styles.statLabel}>Tổng số dịch vụ</Text>
+                                        </View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                            <Text style={[styles.statValue, { color: '#1976D2', fontSize: 28 }]}>
+                                                {dataChart.bar.datasets[0].data.reduce((a, b) => a + b, 0)}
+                                            </Text>
+                                            <Text style={{ fontSize: 16, color: '#1976D2', fontWeight: '600' }}> dịch vụ</Text>
+                                        </View>
+                                    </>
+                                )}
+
+                                {reportType?.id === 'totalSales' && (
+                                    <>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                            <Icon source="cash-multiple" size={28} color="#1976D2" />
+                                            <Text style={styles.statLabel}>Tổng doanh thu</Text>
+                                        </View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                            <Text style={[styles.statValue, { color: '#1976D2', fontSize: 28 }]}>
+                                                {dataChart.bar.datasets[0].data.reduce((a, b) => a + b, 0).toLocaleString('vi-VN')}
+                                            </Text>
+                                            <Text style={{ fontSize: 16, color: '#1976D2', fontWeight: '600' }}>₫</Text>
+                                        </View>
+                                    </>
+                                )}
                             </Card.Content>
                         </Card>
 
-                        {/* Max Min - 1 hàng */}
+                        {/* Cao nhất / Thấp nhất */}
                         <View style={{ flexDirection: 'row', gap: 10 }}>
                             <Card style={[styles.statCard, { flex: 1 }]}>
                                 <Card.Content style={{ alignItems: 'center' }}>
                                     <Text style={styles.statLabel}>Cao nhất</Text>
                                     <Text style={[styles.statValue, { color: '#2E7D32' }]}>
-                                        {Math.max(...dataChart.bar.datasets[0].data)}
+                                        {reportType?.id === 'totalSales'
+                                            ? Math.max(...dataChart.bar.datasets[0].data).toLocaleString('vi-VN') + ' ₫'
+                                            : Math.max(...dataChart.bar.datasets[0].data)}
                                     </Text>
                                     <Text style={styles.statSub}>
                                         {dataChart.bar.labels[
@@ -413,7 +466,9 @@ const Total = ({ navigation }) => {
                                 <Card.Content style={{ alignItems: 'center' }}>
                                     <Text style={styles.statLabel}>Thấp nhất</Text>
                                     <Text style={[styles.statValue, { color: '#C62828' }]}>
-                                        {Math.min(...dataChart.bar.datasets[0].data)}
+                                        {reportType?.id === 'totalSales'
+                                            ? Math.min(...dataChart.bar.datasets[0].data).toLocaleString('vi-VN') + ' ₫'
+                                            : Math.min(...dataChart.bar.datasets[0].data)}
                                     </Text>
                                     <Text style={styles.statSub}>
                                         {dataChart.bar.labels[

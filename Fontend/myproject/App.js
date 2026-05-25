@@ -37,6 +37,12 @@ import COLORS from "./styles/Colors";
 import Chat from "./screens/BoxChat/Chat";
 import Search from "./screens/Home/Search";
 import Total from "./screens/Report/Total";
+import { Platform, UIManager } from 'react-native';
+import { useNotification } from "./utils/notification";
+
+if (Platform.OS === 'android') {
+    UIManager.setLayoutAnimationEnabledExperimental?.(true);
+}
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -233,6 +239,7 @@ const TabNavigatior = () => {
 
 const App = () => {
   const [user, dispatch] = useReducer(MyUserReducer, null);
+  const { requestPermission } = useNotification();
   const loadUser = async () => {
     try {
       const savedStr = await SecureStore.getItemAsync("user");
@@ -297,6 +304,7 @@ const App = () => {
 
   useEffect(() => {
     loadUser();
+    requestPermission();
   }, []);
 
   return (

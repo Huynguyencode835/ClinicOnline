@@ -29,7 +29,7 @@ const AlertProvider = ({ children }) => {
             actions: [
                 {
                     text: 'Quay lại trang chủ',
-                    onPress: ()=>{navigation.navigate("HomeTab")}
+                    onPress: ()=>{navigation.navigate("HomeTab", {screen : "Home"})}
                 },
                 {
                     text: 'Đến trang đăng nhập',

@@ -54,12 +54,10 @@ const AppSnackbar = ({
             }}
         >
             <View style={styles.content}>
-                {/* Icon circle */}
                 <View style={[styles.iconCircle, { backgroundColor: cfg.iconBg }]}>
                     <MaterialCommunityIcons name={cfg.icon} size={18} color="#fff" />
                 </View>
 
-                {/* Text */}
                 <View style={styles.textBlock}>
                     <Text style={styles.title}>{message}</Text>
                     {sub ? <Text style={styles.sub}>{sub}</Text> : null}

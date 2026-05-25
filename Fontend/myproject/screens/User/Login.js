@@ -145,18 +145,6 @@ const { showSnackbar } = useSnackbar();
                     <AppButton loading={loading} type="login" icon="account-plus" onPress={handleLogin} />
                 </View>
 
-                <Text style={{ marginVertical: 20, textAlign: 'center', color: '#a4a4ad' }}>------ Hoặc đăng nhập bằng ------</Text>
-
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Button style={Mystyles.btnSocial} icon="google" mode="contained" onPress={() => console.log('Pressed')}>
-                        Google
-                    </Button>
-
-                    <Button style={Mystyles.btnSocial} icon="facebook" mode="contained" onPress={() => console.log('Pressed')}>
-                        Facebook
-                    </Button>
-                </View>
-
                 <View style={{ marginTop: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                     <Text style={{ color: '#8a8a9a' }}>Bạn chưa có tài khoản?</Text>
                     <TouchableOpacity onPress={() => navigation.navigate("Register")}>

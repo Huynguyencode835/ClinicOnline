@@ -1,11 +1,11 @@
 import { Text, View, ScrollView, StyleSheet, Pressable } from "react-native";
 import AppHeader from "../../components/AppHeader";
 import { Searchbar, ActivityIndicator } from "react-native-paper";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import COLORS from "../../styles/Colors";
 import { SectionLabel } from "../Appointment/Step1Schedule";
 import CategoryCard from "../../components/Home/CategoryCard";
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Apis, { endpoints } from "../../configs/Apis";
 import { useSnackbar } from "../../utils/contexts/SnackBarContext";
 import DoctorCard from "../../components/User/Doctors/DoctorCard";
@@ -147,7 +147,7 @@ const Search = () => {
 
                         <SectionLabel text="Tìm kiếm phổ biến" />
                         <View style={styles.tagRow}>
-                            {["Tim mạch", "Nhi khoa", "Da liễu", "Nội tổng quát", "Mắt", "Tai mũi họng","Ngoại tổng quát","Chấn thương chỉnh hình","Sản phụ khoa"].map(tag => (
+                            {["Tim mạch", "Nhi khoa", "Da liễu", "Nội tổng quát", "Mắt", "Tai mũi họng", "Ngoại tổng quát", "Chấn thương chỉnh hình", "Sản phụ khoa"].map(tag => (
                                 <Pressable
                                     key={tag}
                                     style={({ pressed }) => [styles.tag, pressed && { opacity: 0.7 }]}

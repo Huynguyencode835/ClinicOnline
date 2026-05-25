@@ -7,10 +7,11 @@ console.log(API_URL);
 
 export const endpoints = {
     'doctors': '/doctors/',
-    'workdayDetail': (id) => `/users/workday/${id}/`,
     'doctorDetail': (id) => `/doctors/${id}/`,
     'doctorWorkDay': (id) => `/doctors/${id}/doctor_workday/`,
     'doctorspecialty': (id) => `/specialtys/${id}/doctors/`,
+    'workdayDetail': (id) => `/users/workday/${id}/`,
+    'workday': '/users/workday_staff/',
     'specialty': '/specialtys/',
     'servicesNormal': '/services_normal/',
     'login': '/o/token/',
@@ -19,7 +20,6 @@ export const endpoints = {
     'register': '/users/',
     'appointments': '/appointments/',
     'appointmentDetail': (id) => `/appointments/${id}/`,
-    'workday': '/users/workday_staff/',
     'updateworkday': (id) => `/users/workday/${id}/timeslots/`,
     'chatgemini': '/chatbox/',
     'medicines': '/medicines/',
@@ -30,7 +30,8 @@ export const endpoints = {
     'tests': '/tests/',
     'testResults': '/test-results/',
     'testResultDetail': (id) => `/test-results/${id}/`,
-    'stats': 'stats'
+    'stats': 'stats',
+    'insuranceScan': '/insurance-card/scan/',
 }
 
 export const authApis = (token) => {

@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, StyleSheet, RefreshControl } from "react-native";
 import { ActivityIndicator, Card, SegmentedButtons } from "react-native-paper";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import ListDropDown from "../../components/Appointment/ListDropDown";
 import TimeSlot from "../../components/Schedule/TimeSlot";
 import DaychipGroup from "../../components/Schedule/DayChipGroup";
@@ -16,7 +16,7 @@ import TimeShift from "../../components/Schedule/TimeShift";
 import { Calendar } from "react-native-calendars";
 import MyCalender from "../../components/Schedule/MyCalendar";
 import { MyUserContext } from "../../utils/contexts/MyUserContext";
-
+import { useFocusEffect} from "@react-navigation/native";
 
 export const SectionLabel = ({ text }) => (
     <View style={styles.sectionLabelRow}>
@@ -26,7 +26,8 @@ export const SectionLabel = ({ text }) => (
 );
 
 const Step1Schedule = ({ doctor, specialty }) => {
-    const [isRefreshed, setIsRefreshed] = useState(false);
+    const isRefreshedRef = useRef(false);
+    const hasInitialized = useRef(false);
     const [specialies, setSpecialies] = useState([]);
     const [services, setServices] = useState([]);
     const [doctors, setDoctors] = useState([]);
@@ -53,7 +54,10 @@ const Step1Schedule = ({ doctor, specialty }) => {
             (type, msg) => setSnackbar({ visible: true, message: msg, type: 'error' }),
             { page },
         );
-        if (isRefresh) setRefreshing(false);
+        if (isRefresh) {
+            setRefreshing(false);
+            isRefreshedRef.current = false;
+        }
         setLoading(false);
     };
 
@@ -77,11 +81,10 @@ const Step1Schedule = ({ doctor, specialty }) => {
         )
     };
 
-    const loadServicesNormal = async () =>{
+    const loadServicesNormal = async () => {
         await fetchWithAuth(
             endpoints.servicesNormal,
-            (data)=>{
-                console.log(data)
+            (data) => {
                 setServices(data)
             },
             (type, msg) => setSnackbar({ visible: true, message: msg, type: 'error' }),
@@ -89,33 +92,43 @@ const Step1Schedule = ({ doctor, specialty }) => {
     }
 
     useEffect(() => {
-        if (user) {            
-            if (doctor && specialty && !isRefreshed) {
-                updateBulk({
-                    doctor: formatDoctors([doctor])[0],
-                    specialty: specialty
-                });
-                LoadWorkDayDoctor(doctor?.id);
-            } else {
-                loadServicesNormal()
-                if (page == null) return;
-                loadSpecialty();
-            }
-        }
-    }, [page, doctor, specialty]);
+        if (!user) return;
+        if (!doctor || !specialty) return;
+        if (isRefreshedRef.current) return;
 
-    useEffect(() => {
-        if (doctor && specialty) {
-            setIsRefreshed(false);
-        }
-    }, [doctor, specialty]);
+        hasInitialized.current = true;
+        updateBulk({
+            doctor: formatDoctors([doctor])[0],
+            specialty: specialty
+        });
+        LoadWorkDayDoctor(doctor?.id);
+    }, [doctor, specialty, user]);
+
 
     useEffect(() => {
         if (!user) return;
-        if (bookingData.doctor?.id && workDay.length === 0) {
-            LoadWorkDayDoctor(bookingData.doctor.id);
-        }
-    }, [bookingData.doctor]);
+        if (hasInitialized.current) return;
+
+        loadServicesNormal();
+        if (page === null) return;
+        loadSpecialty();
+    }, [page, user]);
+
+    
+    useFocusEffect(
+        useCallback(() => {
+            if (!user) return;
+
+            if (services.length === 0) loadServicesNormal();
+            if (specialies.length === 0 && page !== null) loadSpecialty();
+            if (bookingData.specialty?.id && doctors.length === 0) {
+                loadDoctorsBySpecialty(bookingData.specialty.id);
+            }
+            if (bookingData.doctor?.id && workDay.length === 0) {
+                LoadWorkDayDoctor(bookingData.doctor.id);
+            }
+        }, [user, services.length, specialies.length, doctors.length, bookingData.doctor?.id])
+    );
 
 
     if (loading) return <LoadingScreen text="Đang tải thông tin bác sĩ và lịch làm việc..." />;
@@ -128,6 +141,9 @@ const Step1Schedule = ({ doctor, specialty }) => {
         ? [bookingData.doctor, ...doctors.filter(d => d.id !== bookingData.doctor.id)]
         : doctors;
 
+    const servicesWithSelected = bookingData.serviceNormal
+        ? [bookingData.serviceNormal, ...services.filter(s => s.id !== bookingData.serviceNormal.id)]
+        : services;
 
     return (
         <View>
@@ -138,12 +154,12 @@ const Step1Schedule = ({ doctor, specialty }) => {
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={() => {
+                            hasInitialized.current = false;
                             resetAll(user);
                             setSpecialies([]);
                             setDoctors([]);
                             setWorkDay([]);
                             setPage(1);
-                            setIsRefreshed(true);
                             loadSpecialty(true);
                             setHasMore(true);
                         }}
@@ -182,7 +198,7 @@ const Step1Schedule = ({ doctor, specialty }) => {
                     title="Chọn dịch vụ"
                     value={bookingData.serviceNormal}
                     icon="medical-bag"
-                    data={services}
+                    data={servicesWithSelected}
                     onSelect={(item) => updateBooking("serviceNormal", item)}
                 />
 
