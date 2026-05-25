@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, StyleSheet } from "react-native";
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
     Button, Card, Chip, Icon, List,
 } from 'react-native-paper';
@@ -7,7 +7,7 @@ import Apis, { endpoints } from "../../configs/Apis";
 import ProfileHeader from "../../components/User/Profile/ProfileHeader";
 import SectionCard from "../../components/User/Profile/SectionCard";
 import ProfileInfoRow from "../../components/User/Profile/ProfileInforow";
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import specialtyIcons from "../../styles/LogoSpecialty";
 import COLORS from "../../styles/Colors";
 import AppHeader from "../../components/AppHeader";
@@ -15,6 +15,8 @@ import { fetchWithAuth } from "../../utils/apiHelper";
 import { useSnackbar } from "../../utils/contexts/SnackBarContext";
 import LoadingScreen from "../../components/LoadingScreen";
 import AppButton from "../../components/AppButton";
+import { useAlert } from "../../utils/contexts/AlertContext";
+import { MyUserContext } from "../../utils/contexts/MyUserContext";
 
 const degreeConfig = {
     "BS": { label: "Bác sĩ", icon: "stethoscope" },
@@ -30,13 +32,14 @@ const DoctorDetail = ({ route }) => {
     const [detailDoctor, setDetailDoctor] = useState({});
     const [loading, setLoading] = useState(false);
     const { showSnackbar } = useSnackbar();
+    const { showAlertAuth } = useAlert();
+    const { user } = useContext(MyUserContext);
 
     const loadDetailDoctor = async (id) => {
         await fetchWithAuth(
             endpoints.doctorDetail(id),
             (data) => {
                 setDetailDoctor(data);
-                console.log(data)
             },
             (errType, errMsg) => {
                 showSnackbar("Lỗi khi tải thông tin bác sĩ", "error");
@@ -44,7 +47,18 @@ const DoctorDetail = ({ route }) => {
         );
     };
 
+    useFocusEffect(
+        useCallback(() => {
+            if (!user) {
+                showAlertAuth({ lable: "Chi tiết bác sĩ" })
+                setLoading(false)
+                return
+            }
+        }, [user])
+    );
+
     useEffect(() => {
+        if (!user) return
         loadDetailDoctor(doctorId);
     }, [doctorId]);
 
@@ -171,29 +185,29 @@ const DoctorDetail = ({ route }) => {
                     ]}
                 />
             </ScrollView>
-
-            <AppButton
-                label="Đặt lịch khám"
-                icon="calendar-plus"
-                onPress={() => {
-                    navigation.navigate("BookingTab", {
-                        screen: "Booking",
-                        params: {
-                            doctor: {
-                                id: detailDoctor.id,
-                                
-                                first_name: detailDoctor.first_name,
-                                last_name: detailDoctor.last_name,
-                                email: detailDoctor.email,
-                                phone: detailDoctor.phone,
-                            },
-                            specialty: profile.specialties[0]
-                        }
-                    });
-                }}
-                style={styles.bookingBtn}
-                labelStyle={styles.bookingBtnLabel}
-            />
+            {user?.role === 'customer' && (
+                <AppButton
+                    label="Đặt lịch khám"
+                    icon="calendar-plus"
+                    onPress={() => {
+                        navigation.navigate("BookingTab", {
+                            screen: "Booking",
+                            params: {
+                                doctor: {
+                                    id: detailDoctor.id,
+                                    first_name: detailDoctor.first_name,
+                                    last_name: detailDoctor.last_name,
+                                    email: detailDoctor.email,
+                                    phone: detailDoctor.phone,
+                                },
+                                specialty: profile.specialties[0]
+                            }
+                        });
+                    }}
+                    style={styles.bookingBtn}
+                    labelStyle={styles.bookingBtnLabel}
+                />
+            )}
         </View>
     );
 };

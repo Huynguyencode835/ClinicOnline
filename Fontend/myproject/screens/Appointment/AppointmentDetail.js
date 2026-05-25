@@ -13,6 +13,7 @@ import { Button } from "react-native-paper";
 import AppButton from "../../components/AppButton";
 import AppHeader from "../../components/AppHeader";
 import { useNavigation , useFocusEffect} from '@react-navigation/native';
+import { useAlert } from "../../utils/contexts/AlertContext";
 
 const AppointmentDetail = ({ route }) => {
     const navigation = useNavigation();
@@ -21,6 +22,7 @@ const AppointmentDetail = ({ route }) => {
     const [snackbar, setSnackbar] = useState({});
     const { user } = useContext(MyUserContext);
     const [loading, setLoading] = useState(false);
+    const { showAlertAuth} = useAlert();
 
 
     const loadAppointmentDetail = async () => {
@@ -33,11 +35,14 @@ const AppointmentDetail = ({ route }) => {
 
     useFocusEffect(
         useCallback(() => {
+            if (!user) {
+                showAlertAuth({ lable: "Chi tiết bác sĩ" })
+                setLoading(false)
+                return
+            }
             loadAppointmentDetail();
-        }, [id])
+        }, [id, user])
     );
-
-
 
     if (!appointmentDetail) return (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>

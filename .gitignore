@@ -5,7 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
-
+myapp-490307-7f8c5fec59d0.json
 # Distribution / packaging
 .Python
 build/

@@ -35,7 +35,12 @@ export const createWithAuth = async (endpoint, body, onSuccess, onError, setLoad
     setLoading?.(true);
     try {
         const token = await AsyncStorage.getItem("access_token");
-        let res = await authApis(token).post(endpoint, body);
+        const isFormData = body instanceof FormData;
+        let res = await authApis(token).post(endpoint, body, {
+            headers: isFormData ? {
+                'Content-Type': 'multipart/form-data',
+            } : {}
+        });
         if (res.status === 200 || res.status === 201) onSuccess(res.data);
     } catch (err) { handleError(err, onError); }
     finally { setLoading?.(false); }
@@ -86,7 +91,6 @@ export const fetchPublic = async (endpoint, onSuccess, onError, params = {}, set
 export const createPublic = async (endpoint, body, onSuccess, onError, headers = {}, onFinally, setLoading) => {
     setLoading?.(true);
     try {
-        // Tự detect Content-Type dựa vào kiểu của body
         const isFormData = body instanceof FormData;
         const isUrlEncoded = typeof body === 'string';
 
@@ -96,7 +100,6 @@ export const createPublic = async (endpoint, body, onSuccess, onError, headers =
                 ? { 'Content-Type': 'application/x-www-form-urlencoded' }
                 : { 'Content-Type': 'application/json' };
 
-        // headers truyền vào sẽ override nếu muốn custom
         const mergedHeaders = { ...defaultHeaders, ...headers };
         let res = await Apis.post(endpoint, body, { headers: mergedHeaders });
         if (res.status === 200 || res.status === 201) onSuccess(res.data);

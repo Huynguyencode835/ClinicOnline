@@ -32,15 +32,24 @@ export const formatDoctors = (doctors) => {
         id: doctor.id,
         type: "doctor",
         name: `${doctor.last_name} ${doctor.first_name}`,
-        description: doctor.profile?.price,
+        description: doctor.price,
         specialty: doctor.phone,
     }));
 };
 
 export const formatDate = (date) => {
-    const [year, month, day] = date.split("-");
-    return `${day}/${month}/${year}`;
-  };
+    if (!date) return "—";
+    const parts = date.split("-");
+    if (parts.length === 3) {
+        const [year, month, day] = parts;
+        return `${day}/${month}/${year}`;
+    }
+    if (parts.length === 2) {
+        const [year, month] = parts;
+        return `${month}/${year}`;
+    }
+    return date;
+};
 
 export const formatDate2 = (date) => {
     const d = new Date(date);

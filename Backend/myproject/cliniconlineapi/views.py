@@ -32,14 +32,15 @@ from cliniconlineapi.serializers.userserializer import WorkDaySerializer, TimeSl
     WorkDayLiteSerializer
 from cliniconlineapi.serializers.StaffSerializer import DoctorSerializer
 import google.generativeai as genai
+
+from cliniconlineapi.services.ocrService import extract_text_from_image, parse_insurance_card
 from cliniconlineapi.validators import MedicalRecordDataValidator, PrescriptionDataValidator, TestResultDataValidator
 
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = userserializer.UserSerializer
     parser_classes = [parsers.JSONParser,
-                    parsers.MultiPartParser,
-                    parsers.FormParser]
+                    parsers.MultiPartParser]
 
     @action(methods=["GET", "PATCH"],
             url_path="profile_user",
@@ -88,7 +89,12 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
             c = s.save(staff_profile=request.user.staff_profile)
             return Response(WorkDaySerializer(c).data, status=status.HTTP_201_CREATED)
         else:
+            month = request.query_params.get("month")
             querry = WorkDay.objects.filter(staff_profile = request.user.staff_profile)
+            if month:
+                year, mon = month.split("-")
+                querry = querry.filter(date__year=year, date__month=mon)
+
             return Response(WorkDayLiteSerializer(querry, many=True).data, status=status.HTTP_200_OK)
 
 
@@ -354,10 +360,46 @@ class GeminiChatViewSet(viewsets.ViewSet, generics.CreateAPIView):
         except Exception as e:
             return Response({"error": str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class InsuranceCardOCRView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        image_file = request.FILES.get("image")
+        if not image_file:
+            return Response(
+                {"error": "Vui lòng upload ảnh thẻ bảo hiểm"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Kiểm tra định dạng
+        allowed_types = ["image/jpeg", "image/png", "image/jpg"]
+        if image_file.content_type not in allowed_types:
+            return Response(
+                {"error": "Chỉ hỗ trợ JPG, PNG"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            image_bytes = image_file.read()
+            raw_text = extract_text_from_image(image_bytes)
+            parsed = parse_insurance_card(raw_text)
+
+            return Response({
+                "success": True,
+                "raw_text": raw_text,      # debug
+                "data": parsed
+            })
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 class MedicineViewSet(viewsets.ViewSet,generics.ListCreateAPIView):
     serializer_class = MedicineSerializer
     queryset = Medicine.objects.filter(active=True)
-    pagination_class = [paginators.SpecialtyPaninator]
+    pagination_class = paginators.SpecialtyPaninator
 
 
     def get_permissions(self):

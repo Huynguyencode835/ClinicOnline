@@ -6,6 +6,8 @@ import { DAY_VI } from "../../utils/mapping";
 import { formatDate } from "../../utils/format";
 import { MyUserContext } from "../../utils/contexts/MyUserContext";
 import AppButton from "../AppButton";
+import AnimatedPressable from "../Animation/AnimatedPressable";
+import { useAlert } from "../../utils/contexts/AlertContext";
 
 const statusMap = {
     Pending: { label: "Chờ duyệt", bg: "#FFF3E0", text: "#E65100" },
@@ -43,6 +45,7 @@ const AppointmentCard = ({ item, onPress, onConfirm, onReject }) => {
     const isDoctor = user?.role === "doctor";
     const target = isDoctor ? customer : doctor;
     const targetRole = isDoctor ? "Bệnh nhân" : "Bác sĩ";
+    const { showAlert } = useAlert();
 
     const [selected, setSelected] = useState(false);
     const actionHeight = useRef(new Animated.Value(0)).current;
@@ -54,6 +57,7 @@ const AppointmentCard = ({ item, onPress, onConfirm, onReject }) => {
     const time = `${time_slot.start_time?.slice(0, 5)} - ${time_slot.end_time?.slice(0, 5)}`;
     const date = `${DAY_VI[time_slot.work_day?.day_of_week]} - ${formatDate(time_slot.work_day?.date)}`;
     const badge = statusMap[status] || { label: status, bg: "#F5F5F5", text: "#757575" };
+
 
     const showActions = () => {
         setSelected(true);
@@ -95,156 +99,184 @@ const AppointmentCard = ({ item, onPress, onConfirm, onReject }) => {
         }
     };
 
-    console.log(user?.role);
-console.log(status);
-console.log(selected);
+    const handleConfirm = (id) => {
+        showAlert({
+            type: 'info',
+            title: 'Xác nhận lịch hẹn',
+            message: 'Bạn có chắc muốn xác nhận lịch hẹn này không?',
+            actions: [
+                { text: 'Hủy', style: 'cancel' },
+                {
+                    text: 'Xác nhận',
+                    onPress: () => onConfirm?.(id),
+                },
+            ],
+        });
+    };
+
+    const handleReject = (id) => {
+        showAlert({
+            type: 'danger',
+            title: 'Từ chối / Hủy lịch hẹn',
+            message: 'Bạn có chắc muốn hủy lịch hẹn này không?',
+            actions: [
+                { text: 'Không', style: 'cancel' },
+                {
+                    text: 'Hủy lịch',
+                    onPress: () => onReject?.(id),
+                },
+            ],
+        });
+    };
 
     return (
-        <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={handleOutsidePress}
-            onLongPress={
-                (user?.role === "doctor" && status === "Pending") ||
-                (user?.role === "customer" && (status === "Pending" || status === "Canceled")) || 
-                (user?.role === "customer" && status === "Pending_payment")
-                ? showActions
-                : undefined
-            }
-            delayLongPress={350}
-        >
-            <View style={[styles.card, selected && styles.cardSelected]}>
+        <AnimatedPressable scaleTo={0.97} bounciness={8}>
+            <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={handleOutsidePress}
+                onLongPress={
+                    (user?.role === "doctor" && status === "Pending") ||
+                        (user?.role === "customer" && (status === "Pending" || status === "Canceled")) ||
+                        (user?.role === "customer" && status === "Pending_payment")
+                        ? showActions
+                        : undefined
+                }
+                delayLongPress={350}
+            >
+                <View style={[styles.card, selected && styles.cardSelected]}>
 
-                {/* ── Header ── */}
-                <View style={styles.header}>
-                    {target?.avatar ? (
-                        <Image source={{ uri: target.avatar }} style={styles.avatar} />
-                    ) : (
-                        <View style={[styles.avatar, styles.initialsWrap, { backgroundColor: avatarColor.bg }]}>
-                            <Text style={[styles.initials, { color: avatarColor.text }]}>{initials}</Text>
+                    {/* ── Header ── */}
+                    <View style={styles.header}>
+                        {target?.avatar ? (
+                            <Image source={{ uri: target.avatar }} style={styles.avatar} />
+                        ) : (
+                            <View style={[styles.avatar, styles.initialsWrap, { backgroundColor: avatarColor.bg }]}>
+                                <Text style={[styles.initials, { color: avatarColor.text }]}>{initials}</Text>
+                            </View>
+                        )}
+
+                        <View style={styles.headerInfo}>
+                            <Text style={styles.doctorName} numberOfLines={1}>{fullName}</Text>
+                            <Text style={styles.doctorSub}>{targetRole}</Text>
+                        </View>
+
+                        <View style={[styles.badge, { backgroundColor: badge.bg }]}>
+                            <Text style={[styles.badgeText, { color: badge.text }]}>{badge.label}</Text>
+                        </View>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* ── Info ── */}
+                    <View style={styles.infoBlock}>
+                        <InfoRow label="Lý do" value={reason} />
+                        <InfoRow label="Triệu chứng" value={symptoms} />
+                        <InfoRow label="Ngày" value={date} />
+                        <InfoRow label="Khung giờ" value={time} />
+                    </View>
+
+                    {user?.role === "doctor" && status === "Pending" && (
+                        <View>
+                            <View style={styles.divider} />
+
+                            {/* ── Footer ── */}
+                            <View style={styles.footer}>
+                                <Text style={styles.appointmentId}>Mã lịch hẹn #{id}</Text>
+                                {selected
+                                    ? <Text style={styles.tapHint}>Nhấn ra ngoài để đóng</Text>
+                                    : <Text style={styles.detailLink}>Xem chi tiết ›</Text>
+                                }
+                            </View>
+
+                            <Animated.View style={[styles.actionWrap, { height: actionHeight, opacity: actionOpacity }]}>
+                                <View style={{ flex: 1 }}>
+                                    <AppButton
+                                        type="create"
+                                        label={"xác nhận"}
+                                        style={styles.actionBtn}
+                                        onPress={() => {
+                                            hideActions();
+                                            handleConfirm(id);
+                                        }}
+                                    />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <AppButton
+                                        type="delete"
+                                        label={"từ chối"}
+                                        style={styles.actionBtn}
+                                        onPress={() => {
+                                            hideActions();
+                                            handleReject(id);
+                                        }}
+                                    />
+                                </View>
+
+
+                            </Animated.View>
+                        </View>
+                    )}
+                    {user?.role === "customer" && (status === "Pending" || status === "Canceled") && (
+                        <View>
+                            <View style={styles.divider} />
+
+                            {/* ── Footer ── */}
+                            <View style={styles.footer}>
+                                <Text style={styles.appointmentId}>Mã lịch hẹn #{id}</Text>
+                                {selected
+                                    ? <Text style={styles.tapHint}>Nhấn ra ngoài để đóng</Text>
+                                    : <Text style={styles.detailLink}>Xem chi tiết ›</Text>
+                                }
+                            </View>
+
+                            <Animated.View style={[styles.actionWrap, { height: actionHeight, opacity: actionOpacity }]}>
+                                <View style={{ flex: 1 }}>
+                                    <AppButton
+                                        type="delete"
+                                        label={"Hủy phiếu"}
+                                        style={styles.actionBtn}
+                                        onPress={() => {
+                                            hideActions();
+                                            handleReject(id);
+                                        }}
+                                    />
+                                </View>
+                            </Animated.View>
                         </View>
                     )}
 
-                    <View style={styles.headerInfo}>
-                        <Text style={styles.doctorName} numberOfLines={1}>{fullName}</Text>
-                        <Text style={styles.doctorSub}>{targetRole}</Text>
-                    </View>
 
-                    <View style={[styles.badge, { backgroundColor: badge.bg }]}>
-                        <Text style={[styles.badgeText, { color: badge.text }]}>{badge.label}</Text>
-                    </View>
+                    {(user?.role === "customer" && status === "Pending_payment") && (
+                        <View>
+                            <View style={styles.divider} />
+
+                            {/* ── Footer ── */}
+                            <View style={styles.footer}>
+                                <Text style={styles.appointmentId}>Mã lịch hẹn #{id}</Text>
+                                {selected
+                                    ? <Text style={styles.tapHint}>Nhấn ra ngoài để đóng</Text>
+                                    : <Text style={styles.detailLink}>Xem chi tiết ›</Text>
+                                }
+                            </View>
+
+                            <Animated.View style={[styles.actionWrap, { height: actionHeight, opacity: actionOpacity }]}>
+                                <View style={{ flex: 1 }}>
+                                    <AppButton
+                                        type="confirm"
+                                        label={"Xác nhận"}
+                                        style={styles.actionBtn}
+                                        onPress={() => {
+                                            hideActions();
+                                            navigation.navigate("Payment", { appointmentId: id });
+                                        }}
+                                    />
+                                </View>
+                            </Animated.View>
+                        </View>
+                    )}
                 </View>
-
-                <View style={styles.divider} />
-
-                {/* ── Info ── */}
-                <View style={styles.infoBlock}>
-                    <InfoRow label="Lý do" value={reason} />
-                    <InfoRow label="Triệu chứng" value={symptoms} />
-                    <InfoRow label="Ngày" value={date} />
-                    <InfoRow label="Khung giờ" value={time} />
-                </View>
-
-                {user?.role === "doctor" && status === "Pending" &&(
-                    <View>
-                        <View style={styles.divider} />
-
-                        {/* ── Footer ── */}
-                        <View style={styles.footer}>
-                            <Text style={styles.appointmentId}>Mã lịch hẹn #{id}</Text>
-                            {selected
-                                ? <Text style={styles.tapHint}>Nhấn ra ngoài để đóng</Text>
-                                : <Text style={styles.detailLink}>Xem chi tiết ›</Text>
-                            }
-                        </View>
-
-                        <Animated.View style={[styles.actionWrap, { height: actionHeight, opacity: actionOpacity }]}>
-                            <View style={{ flex: 1 }}>
-                                <AppButton
-                                    type="create"
-                                    label={"xác nhận"}
-                                    style={styles.actionBtn}
-                                    onPress={() => {
-                                        hideActions();
-                                        onConfirm?.(id);
-                                    }}
-                                />
-                            </View>
-                            <View style={{ flex: 1 }}>
-                                <AppButton
-                                    type="delete"
-                                    label={"từ chối"}
-                                    style={styles.actionBtn}
-                                    onPress={() => {
-                                        hideActions();
-                                        onReject?.(id);
-                                    }}
-                                />
-                            </View>
-
-
-                        </Animated.View>
-                    </View>
-                )}
-                {user?.role === "customer" && (status === "Pending" || status === "Canceled") && (
-                    <View>
-                        <View style={styles.divider} />
-
-                        {/* ── Footer ── */}
-                        <View style={styles.footer}>
-                            <Text style={styles.appointmentId}>Mã lịch hẹn #{id}</Text>
-                            {selected
-                                ? <Text style={styles.tapHint}>Nhấn ra ngoài để đóng</Text>
-                                : <Text style={styles.detailLink}>Xem chi tiết ›</Text>
-                            }
-                        </View>
-
-                        <Animated.View style={[styles.actionWrap, { height: actionHeight, opacity: actionOpacity }]}>
-                            <View style={{ flex: 1 }}>
-                                <AppButton
-                                    type="delete"
-                                    label={"Hủy phiếu"}
-                                    style={styles.actionBtn}
-                                    onPress={() => {
-                                        hideActions();
-                                        onReject?.(id);
-                                    }}
-                                />
-                            </View>
-                        </Animated.View>
-                    </View>
-                )}
-
-                    
-                {(user?.role === "customer" && status === "Pending_payment") && (
-                    <View>
-                        <View style={styles.divider} />
-
-                        {/* ── Footer ── */}
-                        <View style={styles.footer}>
-                            <Text style={styles.appointmentId}>Mã lịch hẹn #{id}</Text>
-                            {selected
-                                ? <Text style={styles.tapHint}>Nhấn ra ngoài để đóng</Text>
-                                : <Text style={styles.detailLink}>Xem chi tiết ›</Text>
-                            }
-                        </View>
-
-                        <Animated.View style={[styles.actionWrap, { height: actionHeight, opacity: actionOpacity }]}>
-                            <View style={{ flex: 1 }}>
-                                <AppButton
-                                    type="confirm"
-                                    label={"Xác nhận"}
-                                    style={styles.actionBtn}
-                                    onPress={() => {
-                                        hideActions();
-                                        navigation.navigate("Payment", { appointmentId: id });
-                                    }}
-                                />
-                            </View>
-                        </Animated.View>
-                    </View>
-                )}
-            </View>
-        </TouchableOpacity>
+            </TouchableOpacity>
+        </AnimatedPressable>
     );
 };
 

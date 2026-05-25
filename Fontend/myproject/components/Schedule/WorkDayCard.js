@@ -8,14 +8,12 @@ import { DAY_VI_FULL } from "../../utils/mapping";
 const WorkdayCard = ({ item, onPress, onDelete, onLongPress, selected }) => {
     const { date, day_of_week } = item;
 
-    // ── Animation values ──
     const shake = useRef(new Animated.Value(0)).current;
     const scale = useRef(new Animated.Value(1)).current;
     const deleteWidth = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         if (selected) {
-            // Rung nhẹ khi được chọn
             Animated.sequence([
                 Animated.timing(scale, { toValue: 0.97, duration: 100, useNativeDriver: true }),
                 Animated.timing(scale, { toValue: 1, duration: 100, useNativeDriver: true }),
@@ -24,14 +22,12 @@ const WorkdayCard = ({ item, onPress, onDelete, onLongPress, selected }) => {
                 Animated.timing(shake, { toValue: 0, duration: 60, useNativeDriver: true }),
             ]).start();
 
-            // Nút xóa slide in
             Animated.spring(deleteWidth, {
                 toValue: 80,
                 useNativeDriver: false,
                 bounciness: 10,
             }).start();
         } else {
-            // Nút xóa slide out
             Animated.timing(deleteWidth, {
                 toValue: 0,
                 duration: 150,

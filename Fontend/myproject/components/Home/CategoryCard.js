@@ -1,25 +1,32 @@
-import React from "react";
+import React, { useContext } from "react";
 import { View, FlatList, Pressable, StyleSheet, Text } from "react-native";
 import { Icon } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import COLORS from "../../styles/Colors";
 import AnimatedPressable from "../Animation/AnimatedPressable";
+import { useSnackbar } from "../../utils/contexts/SnackBarContext";
+import { MyUserContext } from "../../utils/contexts/MyUserContext";
 
 
 const categories = [
-    { id: "1", icon: "calendar-plus", label: "Đặt khám\ntại cơ sở", screen: "BookingTab" },
-    { id: "2", icon: "stethoscope", label: "Đặt khám\nchuyên khoa", screen: "BookingTab" },
-    { id: "3", icon: "test-tube", label: "Đặt lịch\nxét nghiệm", screen: "BookingTab" },
-    { id: "4", icon: "shield-plus", label: "Gói sức khỏe\ntoàn diện", screen: "BookingTab" },
-    { id: "5", icon: "account-heart", label: "Giúp việc\ncá nhân", screen: "BookingTab" },
-    { id: "6", icon: "video", label: "Gọi video\nvới bác sĩ", screen: "ChatTab" },
-    { id: "7", icon: "clock-outline", label: "Đặt khám\nngoài giờ", screen: "BookingTab" },
-    { id: "8", icon: "office-building-outline", label: "Khám doanh\nnghiệp", screen: "BookingTab" },
+    { id: "1", icon: "calendar-plus", label: "Đặt khám\nlịch khám", screen: "BookingTab" },
+    { id: "2", icon: "clipboard-list-outline", label: "Lịch hẹn\ncủa tôi", screen: "AppointmentsTab" },
+    { id: "3", icon: "file-document", label: "Bệnh án\ncủa tôi", screen: "MedicalRecordTab" },
+    { id: "4", icon: "message-text", label: "Chat\nhỗ trợ", screen: "ChatTab" },
+    { id: "5", icon: "magnify", label: "Tìm kiếm\nbác sĩ", screen: "HomeTab", nestedScreen: "Search" },
+    { id: "6", icon: "account-circle-outline", label: "Hồ sơ\ncá nhân", screen: "UserTab", nestedScreen: "ProfileDetail" },
+    { id: "7", icon: "doctor", label: "Danh sách\nbác sĩ", screen: "HomeTab", nestedScreen: "Home" },
+    { id: "8", icon: "calendar-check-outline", label: "Lịch làm\nviệc", screen: "WorkdayTab" },
+    { id: "9", icon: "needle", label: "Kết quả\nxét nghiệm", screen: "MedicalRecordTab", nestedScreen: "UpdateTestResults" },
+    { id: "10", icon: "pill", label: "Đơn thuốc\ncủa tôi", screen: "MedicalRecordTab", nestedScreen: "UpdatePrescription" },
+    { id: "11", icon: "calendar-account", label: "Chi tiết\nlịch hẹn", screen: "AppointmentsTab" },
 ];
 
 const CategoryCard = () => {
 
     const navigation = useNavigation();
+    const {showSnackbar} = useSnackbar();
+    const {user} = useContext(MyUserContext);
 
     return (
         <View style={styles.card}>
@@ -36,7 +43,17 @@ const CategoryCard = () => {
                                 styles.chip,
                                 pressed && styles.chipPressed,
                             ]}
-                            onPress={() => navigation.navigate(item.screen, { category: item })}
+                            onPress={() => {
+                                if ((item.screen === "BookingTab" && user?.role !== "customer") || (item.screen === "WorkdayTab" && user?.role === "customer")) {
+                                    showSnackbar("Bạn không có quyền truy cập","warning")
+                                    return;
+                                }
+                                if (item.nestedScreen) {
+                                    navigation.navigate(item.screen, { screen: item.nestedScreen });
+                                } else {
+                                    navigation.navigate(item.screen);
+                                }
+                            }}
                         >
                             <View style={styles.iconWrap}>
                                 <Icon source={item.icon} size={28} color={COLORS.primary} />

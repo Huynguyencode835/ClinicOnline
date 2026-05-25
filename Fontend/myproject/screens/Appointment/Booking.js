@@ -30,11 +30,11 @@ const Booking = () => {
 const BookingContent = () => {
     const navigation = useNavigation();
     const [step, setStep] = useState(0);
-    const { user } = useContext(MyUserContext);
     const [loadingForm, setLoadingForm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [snackbar, setSnackbar] = useState({});
-    const { showAlert, showAlertAuth ,showAlertAuth403} = useAlert();
+    const {showAlertAuth, showAlertAuth403 } = useAlert();
+    const { user } = useContext(MyUserContext);
     const { bookingData, resetAll, updateBooking } = useBooking();
     const route = useRoute();
 
@@ -49,12 +49,18 @@ const BookingContent = () => {
                 setLoading(false)
                 return
             }
+            if (user.role !== 'customer') {
+                showAlertAuth403()
+                setLoading(false)
+                return
+            }
+
         }, [user])
     );
 
     const canGoNext = () => {
         if (step === 0) return bookingData.doctor && bookingData.serviceNormal && Object.keys(bookingData.slots).length > 0;
-        if (step === 1) return bookingData.patient?.last_name && bookingData.patient?.first_name;
+        if (step === 1) return bookingData.patient?.last_name && bookingData.patient?.first_name &&  bookingData.patient?.symptoms && bookingData.patient?.reason;
         if (step === 2) return true;
         return false;
     };
@@ -134,21 +140,22 @@ const BookingContent = () => {
                                 onPress={() => appointment()}
                             />
                         ) : (
-                        <AppButton
-                            type="next"
-                            disabled={!canGoNext()}
-                            onPress={() => {
-                                setStep(prev => prev + 1);
-                            }}
-                        />
-                    )}
+                            <AppButton
+                                type="next"
+                                disabled={!canGoNext()}
+                                onPress={() => {
+                                    setStep(prev => prev + 1);
+                                }}
+                            />
+                        )}
                     {step > 0 && (
                         <AppButton
                             type="back"
                             disabled={step === 0}
                             onPress={() => {
                                 console.log(bookingData)
-                                setStep(prev => prev - 1)}}
+                                setStep(prev => prev - 1)
+                            }}
                         />
                     )}
                 </View>

@@ -10,7 +10,7 @@ import {
 import Mystyles from "../../styles/Mystyles";
 import DaychipGroup from "../../components/Schedule/DayChipGroup";
 import TimeSlot from "../../components/Schedule/TimeSlot";
-import { createWithAuth, fetchWithAuth, updatePatchWithAuth, updateWithAuth } from "../../utils/apiHelper";
+import { createWithAuth, deleteWithAuth, fetchWithAuth, updatePatchWithAuth, updateWithAuth } from "../../utils/apiHelper";
 import { endpoints } from "../../configs/Apis";
 import { Calendar } from 'react-native-calendars';
 import AppButton from "../../components/AppButton";
@@ -21,12 +21,16 @@ import { useNavigation } from '@react-navigation/native';
 import { useSnackbar } from "../../utils/contexts/SnackBarContext";
 import TimeShift from "../../components/Schedule/TimeShift";
 import { SectionLabel } from "../Appointment/Step1Schedule";
+import { useAlert } from "../../utils/contexts/AlertContext";
 
 const Schedule = ({ route }) => {
     const navigation = useNavigation();
     const [shift, setShift] = useState('morning');
     const [selectedDay, setSelectedDay] = useState(0);
     const [refreshing, setRefreshing] = useState(false);
+    const { showAlert } = useAlert();
+    const [loading, setLoading] = useState(false);
+    const [loadingFetch, setLoadingFetch] = useState(false);
 
     const generateSlots = (fromHour, toHour, duration = 60, step = 15) => {
         const slots = [];
@@ -51,12 +55,7 @@ const Schedule = ({ route }) => {
         }
         return slots;
     };
-
     const DAY_KEYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-    const [loading, setLoading] = useState(false);
-    const [loadingFetch, setLoadingFetch] = useState(false);
-
     const DAYS = Array.from({ length: 7 }, (_, i) => {
         const date = new Date();
         date.setDate(date.getDate() + i + 1);
@@ -65,7 +64,6 @@ const Schedule = ({ route }) => {
             value: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
         };
     });
-
     const [schedule, setSchedule] = useState({
         "date": DAYS[0].value,
         "time_slots": []
@@ -80,6 +78,10 @@ const Schedule = ({ route }) => {
     const maxDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
     const [selectDay, setSelectDay] = useState([])
     const { showSnackbar } = useSnackbar();
+    const [currentMonth, setCurrentMonth] = useState(() => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    });
 
     const loadWorkDay = async (isRefreshing = false) => {
         if (isRefreshing) {
@@ -88,11 +90,12 @@ const Schedule = ({ route }) => {
         await fetchWithAuth(
             endpoints.workday,
             (data) => {
+                console.log(data)
                 setSelectDay(data)
             },
             (type, msg, errData) => {
                 showSnackbar(msg, 'error', errData ? JSON.stringify(errData) : '')
-            }, {},
+            }, { month: currentMonth },
             setLoadingFetch
         )
         setRefreshing(false);
@@ -111,6 +114,21 @@ const Schedule = ({ route }) => {
             setLoadingFetch
         )
     }
+
+    const deleteWorkday = async (id) => {
+        await deleteWithAuth(
+            endpoints.workdayDetail(id),
+            () => {
+                navigation.navigate("WorkdayTab", { deleted: true });
+            },
+            (errType, errMsg) => {
+                if (errType === "server") {
+                    showSnackbar("Không thể xóa ngày làm việc đã có lịch hẹn!", "warning");
+                } else
+                    showSnackbar("Xóa thất bại vui lòng thử lại", "error");
+            }, setLoadingFetch
+        );
+    };
 
     const markedDates = selectDay.map(d => d.date).reduce((acc, date) => {
         acc[date] = {
@@ -176,7 +194,7 @@ const Schedule = ({ route }) => {
         ...slot,
         label: `${slot.start_time} - ${slot.end_time}`,
     }));
-    
+
     return (
         <View style={{ flex: 1 }}>
             <AppHeader titles="Lịch làm việc" onBack={() => {
@@ -211,6 +229,10 @@ const Schedule = ({ route }) => {
                                         if (selectDay.map(d => d.date).includes(day.dateString)) return;
                                         setSchedule(prev => ({ ...prev, date: day.dateString }));
                                     }}
+                                    onMonthChange={(month) => {
+                                        const key = `${month.year}-${String(month.month).padStart(2, "0")}`;
+                                        setCurrentMonth(key);
+                                    }}
                                     markedDates={markedDates}
                                     minDate={minDate}
                                     maxDate={maxDate}
@@ -224,7 +246,6 @@ const Schedule = ({ route }) => {
                 <TimeShift shift={shift} setShift={setShift} />
 
                 <SectionLabel text="Chọn Khung giờ" />
-                {/* TIME SLOT */}
                 <Card style={{
                     marginBottom: 16,
                     borderRadius: 16,
@@ -247,7 +268,6 @@ const Schedule = ({ route }) => {
 
                 </Card>
 
-                {/* PREVIEW */}
                 {schedule.time_slots.length > 0 && (
                     <Card style={{
                         marginBottom: 16,
@@ -298,14 +318,37 @@ const Schedule = ({ route }) => {
                     onPress={() => createWorkday()}
                 />
             ) : (
-                <>
-                    <AppButton
-                        type="save"
-                        label="Cập nhật lịch trình"
-                        loading={loading}
-                        onPress={() => updateWorkday(route.params?.id)}
-                    />
-                </>
+                <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                    <View style={{ flex: 1 }}>
+                        <AppButton
+                            type="save"
+                            label="Cập nhật lịch trình"
+                            loading={loading}
+                            onPress={() => updateWorkday(route.params?.id)}
+                        />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                        <AppButton
+                            type="delete"
+                            label="Xóa lịch trình"
+                            onPress={() => showAlert({
+                                type: 'danger',
+                                title: 'Xác nhận xóa',
+                                message: 'Bạn có chắc muốn xóa ngày làm việc này? Hành động này không thể hoàn tác.',
+                                actions: [
+                                    {
+                                        text: 'Hủy',
+                                        style: 'cancel',
+                                    },
+                                    {
+                                        text: 'Xóa',
+                                        onPress: () => deleteWorkday(route.params?.id),
+                                    },
+                                ],
+                            })}
+                        />
+                    </View>
+                </View>
             )}
 
         </View>

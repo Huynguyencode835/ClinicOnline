@@ -1,12 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useContext, useCallback } from 'react';
 import { View, FlatList, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
-import { Card, Text, TextInput, IconButton, Avatar } from 'react-native-paper';
+import { Text, TextInput, IconButton, Avatar, Surface } from 'react-native-paper';
 import { createWithAuth } from '../../utils/apiHelper';
 import { endpoints } from '../../configs/Apis';
 import AppHeader from '../../components/AppHeader';
 import COLORS from '../../styles/Colors';
-import { useNavigation } from "@react-navigation/native";
-
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { MyUserContext } from '../../utils/contexts/MyUserContext';
+import { useAlert } from '../../utils/contexts/AlertContext';
 
 const Chat = () => {
     const [messages, setMessages] = useState([]);
@@ -14,6 +15,18 @@ const Chat = () => {
     const [loading, setLoading] = useState(false);
     const flatListRef = useRef(null);
     const navigation = useNavigation();
+    const { user } = useContext(MyUserContext);
+    const {showAlertAuth} = useAlert();
+
+    useFocusEffect(
+        useCallback(() => {
+            if (!user) {
+                showAlertAuth({ lable: "ChatBox" })
+                return
+            }
+        }, [user])
+    );
+
     const appendMessage = (text, sender) => {
         setMessages(prev => [...prev, { id: Date.now().toString(), text, sender }]);
         setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
@@ -28,7 +41,7 @@ const Chat = () => {
             endpoints.chatgemini,
             { message: text },
             (data) => appendMessage(data.reply, 'bot'),
-            () => appendMessage('Loi ket noi.', 'bot'),
+            () => appendMessage('Lỗi kết nối, vui lòng thử lại.', 'bot'),
             setLoading,
         );
     };
@@ -38,44 +51,42 @@ const Chat = () => {
         return (
             <View style={[styles.row, isUser ? styles.rowUser : styles.rowBot]}>
                 {!isUser && (
-                    <Avatar.Text size={32} label="AI" style={{ backgroundColor: COLORS.primary }} />
+                    <Avatar.Text
+                        size={34}
+                        label="AI"
+                        style={styles.avatar}
+                    />
                 )}
-                <Card
-                    style={[styles.bubble, { backgroundColor: isUser ? COLORS.primary : COLORS.white }]}
-                    elevation={1}
+                <Surface
+                    style={[
+                        styles.bubble,
+                        { backgroundColor: isUser ? COLORS.primary : COLORS.white }
+                    ]}
+                    elevation={2}
                 >
-                    <Card.Content style={styles.bubbleContent}>
-                        <Text style={{ color: isUser ? COLORS.white : COLORS.text }}>
-                            {item.text}
-                        </Text>
-
-                        <Text
-                            style={{
-                                fontSize: 11,
-                                marginTop: 4,
-                                alignSelf: 'flex-end',
-                                color: isUser
-                                    ? 'rgba(255,255,255,0.7)'
-                                    : COLORS.textMuted,
-                            }}
-                        >
-                            {new Date(Number(item.id)).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                            })}
-                        </Text>
-                    </Card.Content>
-                </Card>
+                    <Text style={[
+                        styles.bubbleText,
+                        { color: isUser ? COLORS.white : COLORS.text }
+                    ]}>
+                        {item.text}
+                    </Text>
+                    <Text style={[
+                        styles.timeText,
+                        { color: isUser ? 'rgba(255,255,255,0.65)' : COLORS.textMuted }
+                    ]}>
+                        {new Date(Number(item.id)).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                        })}
+                    </Text>
+                </Surface>
             </View>
         );
     };
 
     return (
         <View style={styles.container}>
-            <AppHeader titles="ChatBox Hỗ trợ sức khỏe" onBack={() => {
-                navigation.goBack();
-            }}>
-            </AppHeader>
+            <AppHeader titles="ChatBox Hỗ trợ sức khỏe" onBack={() => navigation.goBack()} />
 
             <KeyboardAvoidingView
                 style={styles.flex}
@@ -91,7 +102,15 @@ const Chat = () => {
                     showsVerticalScrollIndicator={false}
                     ListEmptyComponent={
                         <View style={styles.empty}>
-                            <Text variant="bodyMedium" style={{ color: COLORS.textMuted, textAlign: 'center' }}>
+                            <Avatar.Text
+                                size={64}
+                                label="AI"
+                                style={[styles.avatar, { marginBottom: 16 }]}
+                            />
+                            <Text variant="titleMedium" style={{ color: COLORS.text, fontWeight: '700', marginBottom: 8 }}>
+                                Xin chào! Tôi có thể giúp gì cho bạn?
+                            </Text>
+                            <Text variant="bodyMedium" style={styles.emptyText}>
                                 Để được chẩn đoán chính xác, bạn nên đến gặp bác sĩ tại cơ sở y tế gần nhất. Đừng tự ý dùng thuốc khi chưa có chỉ định nhé!
                             </Text>
                         </View>
@@ -99,43 +118,42 @@ const Chat = () => {
                 />
 
                 {loading && (
-                    <View style={[styles.rowBot, { paddingBottom: 4 }]}>
-                        <Avatar.Text size={32} label="AI" style={{ backgroundColor: COLORS.primary }} />
-                        <Card style={{ backgroundColor: COLORS.white }} elevation={1}>
-                            <Card.Content style={styles.bubbleContent}>
-                                <Text style={{ color: COLORS.textMuted, fontStyle: 'italic' }}>
-                                    Đang trả lời...
-                                </Text>
-                            </Card.Content>
-                        </Card>
+                    <View style={[styles.rowBot, { paddingBottom: 8, paddingHorizontal: 16 }]}>
+                        <Avatar.Text size={34} label="AI" style={styles.avatar} />
+                        <Surface style={[styles.bubble, { backgroundColor: COLORS.white }]} elevation={2}>
+                            <Text style={{ color: COLORS.textMuted, fontStyle: 'italic' }}>
+                                Đang trả lời...
+                            </Text>
+                        </Surface>
                     </View>
                 )}
 
-                <Card style={styles.inputBar} elevation={4}>
-                    <Card.Content style={styles.inputContent}>
-                        <TextInput
-                            style={styles.input}
-                            value={input}
-                            onChangeText={setInput}
-                            placeholder="Nhập câu hỏi..."
-                            mode="outlined"
-                            multiline
-                            maxLength={500}
-                            disabled={loading}
-                            outlineColor={COLORS.border}
-                            activeOutlineColor={COLORS.primary}
-                            dense
-                        />
-                        <IconButton
-                            icon="send"
-                            size={24}
-                            disabled={!input.trim() || loading}
-                            onPress={sendMessage}
-                            iconColor={COLORS.white}
-                            style={{ backgroundColor: !input.trim() || loading ? COLORS.btnDisabled : COLORS.primary }}
-                        />
-                    </Card.Content>
-                </Card>
+                <Surface style={styles.inputBar} elevation={6}>
+                    <TextInput
+                        style={styles.input}
+                        value={input}
+                        onChangeText={setInput}
+                        placeholder="Nhập câu hỏi..."
+                        mode="outlined"
+                        multiline
+                        maxLength={500}
+                        disabled={loading}
+                        outlineColor="transparent"
+                        activeOutlineColor={COLORS.primary}
+                        dense
+                    />
+                    <IconButton
+                        icon="send"
+                        size={22}
+                        disabled={!input.trim() || loading}
+                        onPress={sendMessage}
+                        iconColor={COLORS.white}
+                        style={[
+                            styles.sendBtn,
+                            { backgroundColor: !input.trim() || loading ? COLORS.btnDisabled : COLORS.primary }
+                        ]}
+                    />
+                </Surface>
             </KeyboardAvoidingView>
         </View>
     );
@@ -144,16 +162,80 @@ const Chat = () => {
 export default Chat;
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: COLORS.bg },
+    container: {
+        flex: 1,
+        backgroundColor: '#F0F4F8',
+    },
     flex: { flex: 1 },
-    list: { padding: 16, gap: 10, flexGrow: 1 },
-    empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 80 },
-    row: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
-    rowUser: { flexDirection: 'row-reverse' },
-    rowBot: { flexDirection: 'row', paddingHorizontal: 16, marginBottom: 8 },
-    bubble: { maxWidth: '75%', borderRadius: 16 },
-    bubbleContent: { paddingVertical: 6, paddingHorizontal: 4 },
-    inputBar: { margin: 12, borderRadius: 16, backgroundColor: COLORS.white },
-    inputContent: { flexDirection: 'row', alignItems: 'flex-end' },
-    input: { flex: 1, backgroundColor: COLORS.bgInput, maxHeight: 120, fontSize: 15 },
+    list: {
+        padding: 16,
+        gap: 12,
+        flexGrow: 1,
+    },
+    empty: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingTop: 80,
+        paddingHorizontal: 32,
+        gap: 4,
+    },
+    emptyText: {
+        color: COLORS.textMuted,
+        textAlign: 'center',
+        lineHeight: 22,
+    },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        gap: 8,
+    },
+    rowUser: {
+        flexDirection: 'row-reverse',
+    },
+    rowBot: {
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        gap: 8,
+    },
+    avatar: {
+        backgroundColor: COLORS.primary,
+        elevation: 2,
+    },
+    bubble: {
+        maxWidth: '75%',
+        borderRadius: 20,
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        gap: 4,
+    },
+    bubbleText: {
+        fontSize: 15,
+        lineHeight: 22,
+    },
+    timeText: {
+        fontSize: 11,
+        alignSelf: 'flex-end',
+    },
+    inputBar: {
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        marginHorizontal: 12,
+        marginBottom: 16,
+        marginTop: 4,
+        borderRadius: 28,
+        backgroundColor: COLORS.white,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+    },
+    input: {
+        flex: 1,
+        backgroundColor: 'transparent',
+        fontSize: 15,
+    },
+    sendBtn: {
+        borderRadius: 22,
+        margin: 0,
+        marginBottom: 2,
+    },
 });

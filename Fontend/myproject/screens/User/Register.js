@@ -1,7 +1,7 @@
 import InputField, { InputItem } from "../../components/User/LoginRegister/Input";
 import Mystyles from "../../styles/Mystyles";
 import { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Image, Platform } from "react-native";
 import { Button, Card, HelperText, Icon, SegmentedButtons } from "react-native-paper";
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -12,17 +12,21 @@ import { useSnackbar } from "../../utils/contexts/SnackBarContext";
 import AppHeader from "../../components/AppHeader";
 import COLORS from "../../styles/Colors";
 import styles from "../../components/Schedule/TimeShift"
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Field } from "../../components/User/Profile/FormComponents";
 
 const Register = ({ navigation, is_superuser }) => {
-    const [user, setUser] = useState({
+    const initUser = {
         username: '',
         password: '',
         confirmPassword: '',
         fullName: '',
         phone: '',
         email: '',
+        gender: 'other',
         ...(is_superuser && { role: 'doctor' })
-    });
+    }
+    const [user, setUser] = useState(initUser);
     const { showSnackbar } = useSnackbar();
     const [loading, setLoading] = useState(false);
 
@@ -167,15 +171,14 @@ const Register = ({ navigation, is_superuser }) => {
                         formData.append("last_name", last_name);
                     } else if (key === "avatar") {
                         formData.append("avatar", {
-                            uri:
-                                Platform.OS === 'android'
-                                    ? user[key].uri
-                                    : user[key].uri.replace('file://', ''),
+                            uri: user[key].uri,
                             name: user[key].fileName ?? 'avatar.jpg',
                             type: user[key].mimeType ?? 'image/jpeg',
                         });
                     } else {
-                        formData.append(key, user[key]);
+                        if (user[key] !== "" && user[key] !== null && user[key] !== undefined) {
+                            formData.append(key, user[key]);
+                        }
                     }
                 }
             }
@@ -190,9 +193,8 @@ const Register = ({ navigation, is_superuser }) => {
                     endpoints.register,
                     formData,
                     (data) => {
-                        navigation.navigate("Login", {
-                            successMessage: "Đăng ký thành công! Vui lòng đăng nhập."
-                        });
+                        setUser(initUser);
+                        showSnackbar("Tạo tài khoản nhân viên thành công", "success");
                     },
                     (type, msg, errData) => {
                         if (type === "client") {
@@ -200,7 +202,6 @@ const Register = ({ navigation, is_superuser }) => {
                             showSnackbar("Đăng ký thất bại!", "error", msg);
                         }
                     },
-                    { 'Content-Type': 'multipart/form-data' }, null,
                     setLoading
                 );
             } else {
@@ -218,44 +219,25 @@ const Register = ({ navigation, is_superuser }) => {
                             setErrors(errData || {});
                             showSnackbar("Đăng ký thất bại!", "error", msg);
                         }
-                    },
-                    { 'Content-Type': 'multipart/form-data' }, null,
+                    }, {}, null,
                     setLoading
                 );
             }
-
-
-
-            await createPublic(
-                endpoints.register,
-                formData,
-                (data) => {
-                    navigation.navigate("Login", {
-                        successMessage: "Đăng ký thành công! Vui lòng đăng nhập."
-                    });
-                },
-                (type, msg, errData) => {
-                    if (type === "client") {
-                        setErrors(errData || {});
-                        showSnackbar("Đăng ký thất bại!", "error", msg);
-                    }
-                },
-                { 'Content-Type': 'multipart/form-data' }, 
-                null,
-                setLoading
-            );
         };
-        setLoading(false);
     }
     const titles = is_superuser ? "Tạo tài khoản nhân viên" : "Đăng ký tài khoản";
+
     return (
-        <View>
-            <AppHeader titles={titles} onBack={() => {
-                navigation.goBack();
-            }}>
+        <View style={{ flex: 1 }}>
+            <AppHeader titles={titles}>
 
             </AppHeader>
-            <ScrollView style={{ paddingHorizontal: 28, paddingTop: 36, backgroundColor: COLORS.bg }}>
+            <ScrollView style={{ flex: 1, backgroundColor: COLORS.bg }}
+                contentContainerStyle={{
+                    paddingHorizontal: 28,
+                    paddingTop: 36,
+                    paddingBottom: 40,
+                }}>
 
                 <InputField list={infoWithError.slice(0, 2)} user={user} setUser={setUser} setErrors={setErrors} />
                 <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginTop: 12 }}>
@@ -314,8 +296,8 @@ const Register = ({ navigation, is_superuser }) => {
                 <InputField list={infoWithError.slice(2)} user={user} setUser={setUser} setErrors={setErrors} />
 
                 {is_superuser === true && (
-                    <Card style={styles.card}>
-                        <Card.Content>
+                    <View style={{ marginBottom: 10 }}>
+                        <Field label="Vai trò">
                             <SegmentedButtons
                                 value={user.role}
                                 onValueChange={(value) => {
@@ -334,48 +316,74 @@ const Register = ({ navigation, is_superuser }) => {
                                     { value: 'healthcare', label: 'Y tá', style: styles.segBtn },
                                 ]}
                             />
-                        </Card.Content>
-                    </Card>
+                        </Field>
+                    </View>
+
                 )}
-
-
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <TouchableOpacity onPress={pickImage} style={{
-                        alignSelf: 'flex-start',
-                        fontSize: 14,
-                        width: '60%',
-                        paddingHorizontal: 12,
-                        paddingVertical: 8,
-                        borderRadius: 14,
-                        backgroundColor: '#e0e0e8',
-                        marginTop: 12,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 6,
-                    }}
-                    >
-                        <Text style={{ color: '#000000' }}>Chọn ảnh đại diện</Text>
-                        <Icon
-                            source="camera"
-                            size={20}
+                <View style={{ marginBottom: 10 }}>
+                    <Field label="Giới tính">
+                        <SegmentedButtons
+                            value={user.gender}
+                            onValueChange={(v) => setUser({ ...user, ["gender"]: v })}
+                            style={styles.segmented}
+                            theme={{
+                                colors: {
+                                    secondaryContainer: COLORS.primary,
+                                    onSecondaryContainer: COLORS.white,
+                                    outline: COLORS.border,
+                                },
+                            }}
+                            buttons={[
+                                { value: 'male', label: '👨 Nam', style: styles.segBtn },
+                                { value: 'female', label: '👩 Nữ', style: styles.segBtn },
+                                { value: 'other', label: 'Khác', style: styles.segBtn },
+                            ]}
                         />
-                    </TouchableOpacity>
-
-                    {user.avatar && <Image source={{ uri: user.avatar.uri }} style={{ width: 100, height: 100, marginTop: 12, borderColor: '#2e2d2d', borderWidth: 1, borderRadius: 50 }} />}
+                    </Field>
                 </View>
 
-                <View style={{ marginTop: 40 }}>
-                    <AppButton loading={loading} type="register" icon="account-plus" onPress={register} />
-                </View>
 
-                <View style={{ marginTop: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                    <Text style={{ color: '#8a8a9a' }}>Bạn đã có tài khoản?</Text>
-                    <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-                        <Text style={{ color: '#000000' }}>Đăng nhập</Text>
-                    </TouchableOpacity>
-                </View>
+                <Field label="Ảnh đại diện">
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <TouchableOpacity onPress={pickImage} style={{
+                            alignSelf: 'flex-start',
+                            fontSize: 14,
+                            width: '60%',
+                            paddingHorizontal: 12,
+                            paddingVertical: 8,
+                            borderRadius: 14,
+                            backgroundColor: '#e0e0e8',
+                            marginTop: 12,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: 6,
+                        }}
+                        >
+                            <Text style={{ color: '#000000' }}>Chọn ảnh đại diện</Text>
+                            <Icon
+                                source="camera"
+                                size={20}
+                            />
+                        </TouchableOpacity>
+
+                        {user.avatar && <Image source={{ uri: user.avatar.uri }} style={{ width: 100, height: 100, marginTop: 12, borderColor: '#2e2d2d', borderWidth: 1, borderRadius: 50 }} />}
+                    </View>
+                </Field>
+
+
+                {is_superuser === false && (
+                    <View style={{ marginTop: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                        <Text style={{ color: '#8a8a9a' }}>Bạn đã có tài khoản?</Text>
+                        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                            <Text style={{ color: '#000000' }}>Đăng nhập</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
             </ScrollView>
+            <View style={{marginBottom: 16}}>
+                <AppButton loading={loading} type="register" icon="account-plus" onPress={register} />
+            </View>
         </View>
     );
 

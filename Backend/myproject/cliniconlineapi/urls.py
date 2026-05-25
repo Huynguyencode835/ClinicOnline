@@ -1,6 +1,7 @@
 from django.urls import path, re_path, include
 from rest_framework.routers import DefaultRouter
 from cliniconlineapi import views
+from cliniconlineapi.views import InsuranceCardOCRView
 
 router = DefaultRouter()
 router.register('users', views.UserViewSet, basename='user')
@@ -18,4 +19,5 @@ router.register('tests', views.TestViewSet, basename='test')
 urlpatterns = [
     path('', include(router.urls)),
     path('stats/', views.TotalStatView.as_view(), name='stats'),
+    path("insurance-card/scan/", InsuranceCardOCRView.as_view(), name='insurance-card'),
 ]

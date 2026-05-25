@@ -1,6 +1,6 @@
-import { ScrollView, View, FlatList, Pressable } from 'react-native';
+import { ScrollView, View, FlatList, Pressable, Animated } from 'react-native';
 import { Text } from 'react-native';
-import React, { use, useCallback, useContext, useEffect, useState } from 'react';
+import React, { use, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import DoctorCard from '../../components/User/Doctors/DoctorCard';
 import StylesDoctorCard from '../../components/User/Doctors/StylesDoctorCard';
 import { Avatar, Searchbar, Surface } from 'react-native-paper';
@@ -16,6 +16,10 @@ import COLORS from '../../styles/Colors';
 import CategoryCard from '../../components/Home/CategoryCard';
 import { MyUserContext } from '../../utils/contexts/MyUserContext';
 import { SectionLabel } from '../Appointment/Step1Schedule';
+import { animateLayout } from '../../utils/layoutAnimation';
+import BannerSlider from './BannerSlider';
+import Dot from '../../components/Home/Dot';
+
 
 const Home = ({ navigation, route }) => {
     const [doctors, setDoctors] = useState([]);
@@ -26,6 +30,8 @@ const Home = ({ navigation, route }) => {
     const { showSnackbar } = useSnackbar();
     const [loading, setLoading] = useState(true);
     const { user } = useContext(MyUserContext);
+    const doctorScrollX = useRef(new Animated.Value(0)).current;
+    const DOCTOR_CARD_WIDTH = 180;
 
     const loadDoctors = async (isRefresh = false, forcePage = null) => {
         if (isRefresh) setRefreshing(true);
@@ -33,6 +39,7 @@ const Home = ({ navigation, route }) => {
             endpoints.doctors,
             (data, next) => {
                 if (next == null) {
+                    animateLayout();
                     setPage(null);
                     setHasMore(false);
                 }
@@ -92,7 +99,7 @@ const Home = ({ navigation, route }) => {
                         }}>
                             Xin chào, {user.last_name} {user.first_name} 👋
                         </Text>
-                    ):(
+                    ) : (
                         <Text style={{
                             fontSize: 22,
                             fontWeight: '700',
@@ -138,6 +145,9 @@ const Home = ({ navigation, route }) => {
                 <SectionLabel text="Dịch vụ" />
                 <CategoryCard />
 
+                <SectionLabel text="Sự kiện Ưu đãi" />
+                <BannerSlider />
+
                 {/* Danh sách bác sĩ */}
                 <View style={{ marginTop: 12 }}>
                     <View style={{
@@ -147,7 +157,6 @@ const Home = ({ navigation, route }) => {
                         marginBottom: 12,
                     }}>
                         <SectionLabel text="Danh sách bác sĩ" />
-                        <Text style={{ fontSize: 13, color: COLORS.primary }}>Xem tất cả »</Text>
                     </View>
 
                     <AppList
@@ -168,9 +177,19 @@ const Home = ({ navigation, route }) => {
                             horizontal: true,
                             onEndReached: () => hasMore ? setPage(prev => prev + 1) : setPage(null),
                             onEndReachedThreshold: 0.3,
+                            onScroll: Animated.event(
+                                [{ nativeEvent: { contentOffset: { x: doctorScrollX } } }],
+                                { useNativeDriver: false }
+                            ),
                         }}
                     />
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                        {doctors.slice(0, 20).map((_, i) => (
+                            <Dot key={i} index={i} scrollX={doctorScrollX} bannerWidth={DOCTOR_CARD_WIDTH} />
+                        ))}
+                    </View>
                 </View>
+
             </ScrollView>
         </View>
     );
