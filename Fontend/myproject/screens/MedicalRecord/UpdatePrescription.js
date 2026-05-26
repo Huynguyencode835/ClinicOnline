@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState ,useRef} from "react";
 import {
     View, ScrollView, StyleSheet,
     TouchableOpacity, ActivityIndicator
@@ -20,8 +20,9 @@ const UpdatePrescription = ({ navigation , route}) => {
     const { medicalRecordId, prescription } = route.params;
     const {showSnackbar} = useSnackbar();
     const [loading, setLoading] = useState(false);
-    const [medicines, setMedicines] = useState([]);
-    const [medicinesLoaded, setMedicinesLoaded] = useState(false);
+    const [medicineResults, setMedicineResults] = useState([]);
+    const medicineDebounce = useRef(null);
+    const [searchingMedicine, setSearchingMedicine] = useState(false);
     const [medicineSearch, setMedicineSearch] = useState("");
     const [instructionNotes, setInstructionNotes] = useState(prescription?.instruction_notes ?? "");
     const [prescriptionDetails, setPrescriptionDetails] = useState(
@@ -33,19 +34,21 @@ const UpdatePrescription = ({ navigation , route}) => {
         })) ?? []
     );
 
-    const loadMedicines = async () => {
-        if (medicinesLoaded) return; // đã load rồi thì không load lại
+    const searchMedicines = async (keyword) => {
+        if (!keyword.trim()) { setMedicineResults([]); return; }
+        let url = `${endpoints.medicines}?search=${encodeURIComponent(keyword)}`;
+        setSearchingMedicine(true);
         await fetchWithAuth(
-            endpoints.medicines,
-            (data) => {
-                setMedicines(data.results ?? data ?? []);
-                setMedicinesLoaded(true);
-            },
-            () => showSnackbar("Không tải được danh sách thuốc", "error"),
-            {},
-            setLoading
+            url,
+            (data) => setMedicineResults(Array.isArray(data) ? data : (data.results ?? [])),
+            () => showSnackbar("Không tìm được thuốc", "error")
         );
+        setSearchingMedicine(false);
     };
+
+    const filteredMedicines = medicineResults.filter(
+        m => !prescriptionDetails.find(d => d.medicine_id === m.id)
+    );
 
     const addMedicine = (m) => {
         setPrescriptionDetails(prev => [...prev, { medicine_id: m.id, name: m.name, quantity: "", dosage: "" }]);
@@ -66,6 +69,30 @@ const UpdatePrescription = ({ navigation , route}) => {
         }
         });
     };
+
+    const handleApiError = (type, msg, errData) => {
+        console.log("handleApiError:", type, msg, JSON.stringify(errData));
+        if (errData && typeof errData === "object") {
+            // Lỗi dạng { details: [{non_field_errors: [...]}] }
+            if (Array.isArray(errData.details)) {
+                const messages = errData.details
+                    .flatMap(item => item?.non_field_errors ?? [])
+                    .filter(Boolean)
+                    .join("\n");
+                if (messages) { showSnackbar(messages, "error"); return; }
+            }
+            // Lỗi dạng { field: ["lỗi"] } hoặc { detail: "..." }
+            const messages = Object.entries(errData)
+                .flatMap(([_, errors]) =>
+                    Array.isArray(errors) ? errors : [String(errors)]
+                )
+                .filter(Boolean)
+                .join("\n");
+            if (messages) { showSnackbar(messages, "error"); return; }
+        }
+        showSnackbar(msg || "Có lỗi xảy ra", "error");
+    };
+
     const handleSubmit = async () => {
         setLoading(true);
         try {
@@ -92,15 +119,7 @@ const UpdatePrescription = ({ navigation , route}) => {
                         showSnackbar("Cập nhật đơn thuốc thành công", "success");
                         navigation.goBack();
                     },
-                    (type, msg, errData) => {
-                        console.log("err:", JSON.stringify(errData, null, 2));
-                        if (errData && typeof errData === "object") {
-                            const messages = Object.entries(errData).map(([field, errors]) =>Array.isArray(errors)? errors.join(", "): errors).join("\n");
-                            showSnackbar(messages, "error");
-                        } else {
-                            showSnackbar(msg || "Cập nhật thất bại", "error");
-                        }
-                    },
+                    handleApiError,
                     setLoading
                 );
             } else {
@@ -113,20 +132,11 @@ const UpdatePrescription = ({ navigation , route}) => {
                         showSnackbar("Tạo đơn thuốc thành công", "success");
                         navigation.goBack();
                     },
-                    (type, msg, errData) => {
-                        console.log("err:", JSON.stringify(errData, null, 2));
-                        if (errData && typeof errData === "object") {
-                            const messages = Object.entries(errData).map(([field, errors]) =>Array.isArray(errors)? errors.join(", "): errors).join("\n");
-                            showSnackbar(messages, "error");
-                        } else {
-                            showSnackbar(msg || "Tạo thất bại", "error");
-                        }
-                    },
+                    handleApiError,
                     setLoading
                 );
             }
-            showSnackbar("Lưu kết đơn thuốc thành công", "success");
-            navigation.goBack();
+            // navigation.goBack();
         } catch (err) {
             console.log("submit error:", err);
             showSnackbar("Đã có lỗi xảy ra. Vui lòng thử lại.", "error");
@@ -160,9 +170,10 @@ const UpdatePrescription = ({ navigation , route}) => {
                         value={medicineSearch}
                         onChangeText={(v)=>{
                             setMedicineSearch(v);
-                            if(v.trim().length > 0 && medicines.length === 0){
-                                loadMedicines();
-                            }
+                            if (medicineDebounce.current) clearTimeout(medicineDebounce.current);
+                            medicineDebounce.current = setTimeout(() => {
+                                searchMedicines(v);
+                            }, 500);
                         }}
                         left={<TextInput.Icon icon="magnify" />}
                         outlineColor={COLORS.border}
@@ -173,21 +184,17 @@ const UpdatePrescription = ({ navigation , route}) => {
                     {/* Kết quả tìm kiếm */}
                     {medicineSearch.trim().length > 0 && (
                         <View style={localStyles.searchResults}>
-                            {medicines
-                                .filter(m =>
-                                    m.name?.toLowerCase().includes(medicineSearch.toLowerCase()) &&
-                                    !prescriptionDetails.find(d => d.medicine_id === m.id) // ẩn thuốc đã thêm
-                                )
-                                .map(m => (
+                            <ScrollView
+                                nestedScrollEnabled={true}
+                                keyboardShouldPersistTaps="handled"
+                                style={{maxHeight:200}}
+                            >
+                            {filteredMedicines.map(m => (
                                     <TouchableOpacity
                                         key={m.id}
                                         style={localStyles.searchResultItem}
                                         onPress={() => {
-                                            setPrescriptionDetails(prev => [
-                                                ...prev,
-                                                { medicine_id: m.id, name: m.name, quantity: "", dosage: "" }
-                                            ]);
-                                            setMedicineSearch(""); // xóa search sau khi chọn
+                                            addMedicine(m)
                                         }}
                                     >
                                         <MaterialCommunityIcons name="pill" size={14} color={COLORS.primary} />
@@ -196,15 +203,12 @@ const UpdatePrescription = ({ navigation , route}) => {
                                     </TouchableOpacity>
                                 ))
                             }
-                            {medicines.filter(m =>
-                                m.name?.toLowerCase().includes(medicineSearch.toLowerCase()) &&
-                                !prescriptionDetails.find(d => d.medicine_id === m.id)
-                            ).length === 0 && (
+                            {filteredMedicines.length === 0  && (
                                 <Text style={localStyles.noResult}>Không tìm thấy thuốc</Text>
                             )}
+                            </ScrollView>
                         </View>
                     )}
-                    <Divider style={{ margin: 10 }} />
                     {/* Danh sách thuốc đã thêm */}
                     {prescriptionDetails.map((detail, index) => (
                         
@@ -214,9 +218,7 @@ const UpdatePrescription = ({ navigation , route}) => {
                                     <MaterialCommunityIcons name="pill" size={14} color={COLORS.primary} />
                                     <Text style={localStyles.selectedMedicineName}>{detail.name}</Text>
                                 </View>
-                                <TouchableOpacity
-                                     onPress={() => removeMedicine(index)}
-                                >
+                                <TouchableOpacity onPress={() => removeMedicine(index)}>
                                     <MaterialCommunityIcons name="close-circle" size={20} color="#EF4444"/>
                                 </TouchableOpacity>
                             </View>
@@ -259,8 +261,6 @@ const localStyles = StyleSheet.create({
         borderRadius: 10,
         borderWidth: 1,
         borderColor: "#E5E7EB",
-        maxHeight: 200,
-        overflow: "hidden",
         elevation: 2,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },

@@ -140,6 +140,7 @@ const AppointmentDetail = ({ route }) => {
                     <Text style={{ color: "#2E7D32", fontWeight: "600" }}>✓ Đã có hồ sơ bệnh án</Text>
                     </View>
                 ):(
+                    
                     <Button
                         mode="contained"
                         style={[Mystyles.primaryButton, { marginVertical: 16, marginHorizontal: 16 }]}

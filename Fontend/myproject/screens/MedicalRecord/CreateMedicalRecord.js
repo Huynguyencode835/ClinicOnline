@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState ,useRef} from "react";
 import {
     View, ScrollView, StyleSheet,
     TouchableOpacity, ActivityIndicator
@@ -27,8 +27,8 @@ const CreateMedicalRecord = ({ navigation, route }) => {
     const [followUpDate, setFollowUpDate] = useState("");
 
     // ─── DANH SÁCH THUỐC (để load từ API) ───
-    const [availableMedicines, setAvailableMedicines] = useState([]);
-    const [medicinesLoaded, setMedicinesLoaded] = useState(false);
+    const [medicineResults, setMedicineResults] = useState([]);
+    const medicineDebounce = useRef(null);
 
     // ─── ĐƠN THUỐC (các thuốc đã thêm vào) ───
     const [instructionNotes, setInstructionNotes] = useState("");
@@ -36,51 +36,54 @@ const CreateMedicalRecord = ({ navigation, route }) => {
     const [medicineSearch, setMedicineSearch] = useState("");
 
     // ─── DANH SÁCH XÉT NGHIỆM (để load từ API) ───
-    const [availableTests, setAvailableTests] = useState([]);
-    const [testsLoaded, setTestsLoaded] = useState(false);
+    const [tests, setTests] = useState([]);
+    const testDebounce = useRef(null);
 
     // ─── KẾT QUẢ XÉT NGHIỆM (các xét nghiệm đã thêm vào) ───
     const [testResults, setTestResults] = useState([]);
     const [testSearch, setTestSearch] = useState("");
 
+    const [searchingMedicine, setSearchingMedicine] = useState(false);
+    const [searchingTest, setSearchingTest] = useState(false);
+
     // ─── LOAD THUỐC ───
-    const loadMedicines = async () => {
-        if (medicinesLoaded) return;
+    const searchMedicines = async (keyword) => {
+        if (!keyword.trim()) { setMedicineResults([]); return; }
+        let url = `${endpoints.medicines}?search=${encodeURIComponent(keyword)}`;
+        setSearchingMedicine(true);
         await fetchWithAuth(
-            endpoints.medicines,
+            url,
             (data) => {
-                setAvailableMedicines(data.results ?? data ?? []);
-                setMedicinesLoaded(true);
+                setMedicineResults(Array.isArray(data) ? data : (data.results ?? []));
+                // console.log("RAW data:", JSON.stringify(data, null, 2));
+                // console.log("Tổng kết quả:", data.count ?? results.length); // count từ API hoặc length array
+                // console.log("Đang hiển thị:", results.length); 
             },
-            () => showSnackbar("Không tải được danh sách thuốc", "error"),
-            {},
-            setLoading
+            () => showSnackbar("Không tìm được thuốc", "error")
         );
+        setSearchingMedicine(false);
     };
 
     // ─── LOAD XÉT NGHIỆM ───
-    const loadTests = async () => {
-        if (testsLoaded) return;
+    const searchTests = async (keyword) => {
+        if (!keyword.trim()) { setTests([]); return; }
+        let url = `${endpoints.tests}?search=${encodeURIComponent(keyword)}`;
+        setSearchingTest(true);
         await fetchWithAuth(
-            endpoints.tests,
+            url,
             (data) => {
-                setAvailableTests(data.results ?? data ?? []);
-                console.log(
-                    "RAW tests response:",
-                    JSON.stringify(data, null, 2)
-                );
-                setTestsLoaded(true);
+                // setTests(data.results ?? []);
+                setTests(Array.isArray(data) ? data : (data.results ?? []));
+                console.log("RAW data:", JSON.stringify(data, null, 2));
             },
-            () => showSnackbar("Không tải được danh sách xét nghiệm", "error"),
-            {},
-            setLoading
+            (type,msg) => showSnackbar("Không tìm được xét nghiệm", "error")
         );
+        setSearchingTest(false);
     };
 
     // ─── QUẢN LÝ THUỐC ───
-    const filteredMedicines = availableMedicines.filter(m =>
-        m.name?.toLowerCase().includes(medicineSearch.toLowerCase()) &&
-        !prescriptionDetails.find(d => d.medicine_id === m.id)
+    const filteredMedicines = medicineResults.filter(
+        m => !prescriptionDetails.find(d => d.medicine_id === m.id)
     );
 
     const addMedicine = (medicine) => {
@@ -89,6 +92,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
             {
                 medicine_id: medicine.id,
                 name: medicine.name,
+                stock:medicine.stock,
                 quantity: "",
                 dosage: ""
             }
@@ -101,15 +105,24 @@ const CreateMedicalRecord = ({ navigation, route }) => {
     };
 
     const updateMedicine = (index, field, value) => {
+        if (field === "quantity"){
+            const stock = prescriptionDetails[index].stock;
+            const quantity = parseInt(value) || 0;
+            if (quantity > stock) {
+                showSnackbar(
+                    `Chỉ còn ${stock} thuốc trong kho`,
+                    "error"
+                );
+            }
+        }
         setPrescriptionDetails(prev =>
             prev.map((item, i) => i === index ? { ...item, [field]: value } : item)
         );
     };
 
     // ─── QUẢN LÝ XÉT NGHIỆM ───
-    const filteredTests = availableTests.filter(t =>
-        t.name?.toLowerCase().includes(testSearch.toLowerCase()) &&
-        !testResults.find(r => r.test_id === t.id)
+    const filteredTests = tests.filter(
+        t => !testResults.find(r => r.test_id === t.id)
     );
 
     const addTestResult = (test) => {
@@ -190,6 +203,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
             setLoading
         );
     };
+    
 
     return (
         <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
@@ -228,9 +242,10 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                         value={medicineSearch}
                         onChangeText={(v) => {
                             setMedicineSearch(v);
-                            if (v.trim().length > 0 && !medicinesLoaded) {
-                                loadMedicines();
-                            }
+                            if (medicineDebounce.current) clearTimeout(medicineDebounce.current);
+                            medicineDebounce.current = setTimeout(() => {
+                                searchMedicines(v);
+                            }, 500);
                         }}
                         left={<TextInput.Icon icon="magnify" />}
                         outlineColor={COLORS.border}
@@ -241,6 +256,11 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                     {/* Kết quả tìm kiếm thuốc */}
                     {medicineSearch.trim().length > 0 && (
                         <View style={localStyles.searchResults}>
+                            <ScrollView
+                                nestedScrollEnabled={true}
+                                keyboardShouldPersistTaps="handled"
+                                style={{maxHeight:200}}
+                            >
                             {filteredMedicines.map(m => (
                                 <TouchableOpacity
                                     key={m.id}
@@ -255,6 +275,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                             {filteredMedicines.length === 0 && (
                                 <Text style={localStyles.noResult}>Không tìm thấy thuốc</Text>
                             )}
+                            </ScrollView>
                         </View>
                     )}
 
@@ -296,9 +317,10 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                         value={testSearch}
                         onChangeText={(v) => {
                             setTestSearch(v);
-                            if (v.trim().length > 0 && !testsLoaded) {
-                                loadTests();
-                            }
+                            if (testDebounce.current) clearTimeout(testDebounce.current);
+                            testDebounce.current = setTimeout(() => {
+                                searchTests(v);
+                            }, 500);
                         }}
                         left={<TextInput.Icon icon="magnify" />}
                         outlineColor={COLORS.border}
@@ -309,20 +331,27 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                     {/* Kết quả tìm kiếm xét nghiệm */}
                     {testSearch.trim().length > 0 && (
                         <View style={localStyles.searchResults}>
-                            {filteredTests.map(t => (
-                                <TouchableOpacity  key={t.id} style={localStyles.searchResultItem}  onPress={() => addTestResult(t)} >
-                                    <MaterialCommunityIcons name="test-tube" size={14}  color={COLORS.primary}/>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={localStyles.searchResultText}>
-                                            {t.name}
-                                        </Text>
-                                    </View>
+                            <ScrollView
+                                nestedScrollEnabled={true}
+                                keyboardShouldPersistTaps="handled"
+                                style={{maxHeight:200}}
+                            >
+                                {filteredTests.map(t => (
+                                    <TouchableOpacity  key={t.id} style={localStyles.searchResultItem}  onPress={() => addTestResult(t)} >
+                                        <MaterialCommunityIcons name="test-tube" size={14}  color={COLORS.primary}/>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={localStyles.searchResultText}>
+                                                {t.name}
+                                            </Text>
+                                        </View>
 
-                                    <MaterialCommunityIcons name="plus-circle-outline" size={16}color={COLORS.primary}/>
-                                </TouchableOpacity>
-                            ))}
+                                        <MaterialCommunityIcons name="plus-circle-outline" size={16}color={COLORS.primary}/>
+                                    </TouchableOpacity>
+                                ))}
 
-                            {filteredTests.length === 0 && (<Text style={localStyles.noResult}>  Không tìm thấy xét nghiệm </Text>)}
+                                {filteredTests.length === 0 && 
+                                    (<Text style={localStyles.noResult}>  Không tìm thấy xét nghiệm </Text>)}
+                            </ScrollView>
                         </View>
                     )}
 
@@ -447,7 +476,6 @@ const styles = StyleSheet.create({
         color: COLORS.textMuted,
         marginBottom: 4,
     },
-    medicineScroll: { marginBottom: 4 },
     medicineChip: {
         paddingHorizontal: 12,
         paddingVertical: 6,
@@ -477,8 +505,6 @@ const localStyles = StyleSheet.create({
         borderRadius: 10,
         borderWidth: 1,
         borderColor: "#E5E7EB",
-        maxHeight: 200,
-        overflow: "hidden",
         elevation: 2,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },

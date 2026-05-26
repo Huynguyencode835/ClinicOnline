@@ -15,7 +15,7 @@ class MedicineSerializer(serializers.ModelSerializer):
         model = Medicine
         fields = ['id', 'name', 'unit', 'description',
                   'stock','production_date', 'expiry_date', 'price',
-                  'is_low_stock','is_expiring_soon','is_expired']
+                  'is_low_stock','is_expiring_soon','is_expired','active']
 
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
@@ -270,6 +270,38 @@ class PrescriptionUpdateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Thuốc bị trùng trong đơn")
         return value
 
+    # def validate(self, attrs):
+    #     details = attrs.get('details')
+    #     if not details:
+    #         return attrs
+    #
+    #     # Tính stock thực tế sau khi hoàn trả stock cũ
+    #     old_details = self.instance.details.all() if self.instance else []
+    #
+    #     # Map stock sẽ được hoàn trả: {medicine_id: quantity}
+    #     restored_stock = {}
+    #     for old in old_details:
+    #         restored_stock[old.medicine.id] = (
+    #                 restored_stock.get(old.medicine.id, 0) + old.quantity
+    #         )
+    #
+    #     for detail in details:
+    #         medicine = detail['medicine']
+    #         quantity = detail['quantity']
+    #
+    #         # Stock thực tế = stock hiện tại + phần sẽ hoàn trả
+    #         effective_stock = medicine.stock + restored_stock.get(medicine.id, 0)
+    #
+    #         if quantity > effective_stock:
+    #             raise serializers.ValidationError({
+    #                 'details': (
+    #                     f"Thuốc '{medicine.name}' không đủ! "
+    #                     f"Yêu cầu {quantity}, còn {effective_stock} {medicine.unit}."
+    #                 )
+    #             })
+    #
+    #     return attrs
+
     def update(self, instance, validated_data):
         details_data = validated_data.pop('details', None)
         instance.instruction_notes = validated_data.get(
@@ -291,7 +323,7 @@ class PrescriptionUpdateSerializer(serializers.ModelSerializer):
                 # Tạo details mới
                 for detail in details_data:
                     medicine = detail['medicine']
-                    self.validator.validate_medicine_stock(medicine, detail['quantity'])
+                    medicine.refresh_from_db()
                     PrescriptionDetail.objects.create(
                         prescription=instance,
                         medicine=medicine,

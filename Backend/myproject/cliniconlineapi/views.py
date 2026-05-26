@@ -7,7 +7,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from oauth2_provider.contrib.rest_framework import permissions
 from django.utils.timezone import now
-from rest_framework import viewsets, generics, parsers, status, permissions, pagination
+from rest_framework import viewsets, generics, parsers, status, permissions, pagination, filters
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
@@ -233,9 +233,14 @@ class AppointmentViewSet(viewsets.ViewSet,
 
     def perform_update(self, serializer):
         instance = self.get_object()
-
-        if instance.status != Appointment.Status.PENDING:
-            raise ValidationError("Chỉ có thể cập nhật lịch hẹn đang chờ xác nhận.")
+        allowed_statuses = [
+            Appointment.Status.PENDING,
+            Appointment.Status.CONFIRMED
+        ]
+        if instance.status not in allowed_statuses:
+            raise ValidationError(
+                "Chỉ có thể cập nhật lịch hẹn đang chờ xác nhận hoặc đã xác nhận."
+            )
 
         updated = serializer.save()
 
@@ -396,61 +401,58 @@ class InsuranceCardOCRView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-class MedicineViewSet(viewsets.ViewSet,generics.ListCreateAPIView):
+class MedicineViewSet(viewsets.ViewSet,generics.ListCreateAPIView,generics.RetrieveAPIView):
     serializer_class = MedicineSerializer
-    queryset = Medicine.objects.filter(active=True)
-    pagination_class = paginators.SpecialtyPaninator
-
+    pagination_class = paginators.MedicinePaninator
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter)
+    search_fields = ["name","description"]
+    ordering_fields = ["name"]
 
     def get_permissions(self):
-        if self.action in ['create', 'update_stock',
-                           'low_stock', 'expiring_soon']:
+        if self.action in ['create', 'partial_update',]:
             return [permission.IsHealthcareRole()]
-
 
         return [permission.IsStaffRole()]
 
+    def get_queryset(self):
+        queryset = Medicine.objects.all()
+        filter_key = self.request.query_params.get('filter')
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.queryset
-        serializer = MedicineSerializer(queryset, many=True)
-        return Response(serializer.data)
+        if filter_key== 'all':
+            queryset = Medicine.objects.filter(active=True)
+
+        if filter_key == 'low_stock':
+            queryset = queryset.filter(stock__lt=50)
+        elif filter_key == 'expiring_soon':
+            threshold = date.today() + timedelta(days=30)
+            queryset = queryset.filter(expiry_date__lte=threshold)
+        elif filter_key == 'expired':
+            queryset = queryset.filter(expiry_date__lt=date.today())
+        elif filter_key == 'inactive':
+            queryset = Medicine.objects.filter(active=False)
+
+        return queryset
+
+    def paginate_queryset(self,queryset):
+        if (self.request.query_params.get('search') or
+            self.request.query_params.get('filter')):
+            return None
+        return super().paginate_queryset(queryset)
 
 
+    # def create(self,request, *args, **kwargs):
+    #     s = MedicineSerializer(data=request.data)
+    #     s.is_valid(raise_exception=True)
+    #     s.save()
+    #     return Response(s.data,status=status.HTTP_201_CREATED)
 
-    def create(self,request, *args, **kwargs):
-        s = MedicineSerializer(data=request.data)
-        s.is_valid(raise_exception=True)
-        s.save()
-        return Response(s.data,status=status.HTTP_201_CREATED)
 
-
-    @action(methods=["PATCH"],detail=True, url_path="update_stock")
-    def update_stock(self,request,pk=None):
-        medicine = get_object_or_404(Medicine, pk=pk,active=True)
+    def partial_update(self,request,pk=None, *args, **kwargs):
+        medicine = get_object_or_404(Medicine, pk=pk)
         s = MedicineSerializer(medicine,data=request.data,partial=True)
         s.is_valid(raise_exception=True)
         s.save()
         return Response(s.data, status=status.HTTP_200_OK)
-
-
-    @action(methods=["GET"], detail=False, url_path="low_stock")
-    def low_stock(self,request):
-        medicines = Medicine.objects.filter(
-            stock__lt=10,
-            active=True
-        )
-        return Response(MedicineSerializer(medicines, many=True).data)
-
-
-    @action(methods=["GET"], detail=False, url_path="expiring_soon")
-    def expiring_soon(self,request):
-        threshold = date.today() + timedelta(days=30)
-        medicines = Medicine.objects.filter(
-            expiry_date__lte=threshold,
-            active=True
-        )
-        return Response(MedicineSerializer(medicines, many=True).data)
 
 class PrescriptionViewSet(viewsets.ViewSet, generics.ListCreateAPIView):
     queryset = Prescription.objects.filter(active=True)
@@ -458,9 +460,9 @@ class PrescriptionViewSet(viewsets.ViewSet, generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_serializer_class(self):
-        if self.action == 'create_prescription':
+        if self.action == 'create':
             return PrescriptionCreateSerializer
-        if self.action == 'update_prescription':
+        if self.action == 'update':
             return PrescriptionUpdateSerializer
         return PrescriptionDetailedSerializer
 
@@ -477,12 +479,6 @@ class PrescriptionViewSet(viewsets.ViewSet, generics.ListCreateAPIView):
         elif user.role == "customer":
             return qs.filter(medical_record__appointment__customer=user)
         return qs.none()
-
-    def list(self,request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = PrescriptionDetailedSerializer(queryset, many=True)
-        return Response(serializer.data)
-
 
     def create(self,request, *args, **kwargs):
         serializer = PrescriptionCreateSerializer(data=request.data,context={'request': request})
@@ -508,6 +504,7 @@ class PrescriptionViewSet(viewsets.ViewSet, generics.ListCreateAPIView):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        prescription.refresh_from_db()
         return Response(
             PrescriptionDetailedSerializer(prescription).data,
             status=status.HTTP_200_OK
@@ -515,9 +512,21 @@ class PrescriptionViewSet(viewsets.ViewSet, generics.ListCreateAPIView):
 
 #Kết quả xét nghiệm
 class TestViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Test.objects.all()
+    queryset = Test.objects.filter(active=True)
     serializer_class = TestSerializer
     permission_classes = [permission.IsAuthenticated]
+    filter_backends = (filters.SearchFilter,filters.OrderingFilter)
+    search_fields = ["name"]
+    ordering_fields = ["name"]
+
+    def get_queryset(self):
+        return self.queryset
+
+    def get_permissions(self):
+        return [permission.IsStaffRole()]
+
+
+
 
 
 class TestResultViewSet(viewsets.ModelViewSet):
@@ -681,36 +690,7 @@ class MedicalRecordViewSet(viewsets.ViewSet, generics.ListCreateAPIView, generic
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(
-        methods=['GET'],
-        detail=False,
-        url_path='search',
-        permission_classes=[permission.IsDoctorRole]
-    )
-    def search_by_phone(self, request):
-        phone = request.query_params.get('phone', '').strip()
 
-        if not phone:
-            return Response(
-                {'error': 'Vui lòng nhập số điện thoại'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        qs = MedicalRecord.objects.filter(active=True) \
-            .select_related('appointment__customer', 'appointment__doctor') \
-            .prefetch_related('prescription') \
-            .filter(appointment__customer__phone__icontains=phone)
-
-        if not qs.exists():
-            return Response(
-                {'error': 'Không tìm thấy bệnh án với số điện thoại này'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        return Response(
-            MedicalRecordListSerializer(qs, many=True).data,
-            status=status.HTTP_200_OK
-        )
 
 class TotalStatView(APIView):
     permission_classes = [permission.IsAdminRole]
