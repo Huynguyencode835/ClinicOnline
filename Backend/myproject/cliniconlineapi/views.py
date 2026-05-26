@@ -33,6 +33,7 @@ from cliniconlineapi.serializers.userserializer import WorkDaySerializer, TimeSl
 from cliniconlineapi.serializers.StaffSerializer import DoctorSerializer
 import google.generativeai as genai
 
+from cliniconlineapi.services.firebase import send_push_to_user
 from cliniconlineapi.services.ocrService import extract_text_from_image, parse_insurance_card
 from cliniconlineapi.validators import MedicalRecordDataValidator, PrescriptionDataValidator, TestResultDataValidator
 
@@ -238,6 +239,24 @@ class AppointmentViewSet(viewsets.ViewSet,
             raise ValidationError("Chỉ có thể cập nhật lịch hẹn đang chờ xác nhận.")
 
         updated = serializer.save()
+
+        if updated.status == Appointment.Status.CANCELED:
+            updated.time_slot.status = TimeSlot.Status.AVAILABLE
+            updated.time_slot.save()
+            send_push_to_user(
+                user_id=updated.customer.id,
+                title='Lịch hẹn bị từ chối',
+                body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã từ chối lịch hẹn của bạn.',
+                data={'type': 'appointment', 'id': str(updated.id)}
+            )
+
+        elif updated.status == Appointment.Status.CONFIRMED:
+            send_push_to_user(
+                user_id=updated.customer.id,
+                title='Lịch hẹn được xác nhận',
+                body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã xác nhận lịch hẹn của bạn.',
+                data={'type': 'appointment', 'id': str(updated.id)}
+            )
 
         if updated.status == Appointment.Status.CANCELED:
             updated.time_slot.status = TimeSlot.Status.AVAILABLE

@@ -221,8 +221,6 @@ const Step1Schedule = ({ doctor, specialty }) => {
                             <SectionLabel text="Chọn ca làm việc" />
                             <TimeShift shift={bookingData.shift} updateBulk={updateBulk} />
 
-
-
                             <SectionLabel text="Chọn giờ làm việc" />
                             <Card style={[styles.card, { marginBottom: 8 }]}>
                                 <Card.Content>

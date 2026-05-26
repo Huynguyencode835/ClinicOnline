@@ -35,7 +35,6 @@ const BookingReducer = (state, action) => {
                 ...initialState,
                 patient: action.value ? {
                     ...action.value,
-                    profile: null,
                 } : null
             };
         default:
