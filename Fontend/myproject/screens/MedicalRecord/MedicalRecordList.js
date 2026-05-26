@@ -14,18 +14,16 @@ import { MyUserContext } from "../../utils/contexts/MyUserContext";
 import { useSnackbar } from "../../utils/contexts/SnackBarContext";
 import { useAlert } from "../../utils/contexts/AlertContext";
 import MedicalRecordCard from "../../components/MedicalRecord/MedicalRecordCard";
+import styles from "../../styles/Mystyles"
 
 const FILTERS_DOCTOR = [
     { key: "all",              label: "Tất cả" },
-    { key: "mine",             label: "Của tôi" },
     { key: "no_prescription",  label: "Chưa có đơn" },
     { key: "has_prescription", label: "Có đơn thuốc" },
 ];
 
 const FILTERS_CUSTOMER = [
     { key: "all",              label: "Tất cả" },
-    // { key: "no_prescription",  label: "Chưa có đơn" },
-    // { key: "has_prescription", label: "Có đơn thuốc" },
 ];
 
 const MedicalRecordList = ({ navigation }) => {
@@ -152,46 +150,5 @@ const MedicalRecordList = ({ navigation }) => {
     );
 };
 
-const styles = StyleSheet.create({
-    // Header
-    header: {
-        paddingHorizontal: 16,
-        paddingVertical: 5,
-    },
-    headerSub: {
-        fontSize: 13,
-        color: COLORS.white,
-        marginTop: 2,
-    },
-
-    // Filter
-    filterRow: {
-        paddingHorizontal: 16,
-        gap: 8,
-        flexDirection: "row",
-    },
-    filterChip: {
-        paddingHorizontal: 16,
-        paddingVertical: 7,
-        borderRadius: 20,
-        backgroundColor: COLORS.blue,
-        borderWidth: 1.5,
-        borderColor: COLORS.border,
-    },
-    filterChipActive: {
-        backgroundColor: COLORS.border,
-        borderColor: COLORS.white,
-    },
-    filterText: {
-        fontSize: 13,
-        color: COLORS.white,
-        fontWeight: "500",
-    },
-    filterTextActive: {
-        color: COLORS.text,
-        fontWeight: "700",
-    },
-
-});
 
 export default MedicalRecordList;

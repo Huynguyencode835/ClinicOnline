@@ -2,6 +2,11 @@ import { StyleSheet } from 'react-native';
 import COLORS from './Colors';
 
 export default StyleSheet.create({
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   container: {
     flex: 1,
     backgroundColor: '#f4f9ff',
@@ -112,4 +117,43 @@ export default StyleSheet.create({
     fontWeight: "600",
     marginTop: 2,
   },
+   header: {
+        paddingHorizontal: 16,
+        paddingVertical: 5,
+    },
+    headerSub: {
+        fontSize: 13,
+        color: COLORS.white,
+        marginTop: 2,
+    },
+
+    // Filter
+    filterRow: {
+        paddingHorizontal: 16,
+        gap: 8,
+        flexDirection: "row",
+    },
+    filterChip: {
+        paddingHorizontal: 16,
+        paddingVertical: 7,
+        borderRadius: 20,
+        backgroundColor: COLORS.blue,
+        borderWidth: 1.5,
+        borderColor: COLORS.border,
+    },
+    filterChipActive: {
+        backgroundColor: COLORS.border,
+        borderColor: COLORS.white,
+    },
+    filterText: {
+        fontSize: 13,
+        color: COLORS.white,
+        fontWeight: "500",
+    },
+    filterTextActive: {
+        color: COLORS.text,
+        fontWeight: "700",
+    },
+    input: { marginHorizontal: 16, marginTop: 12, marginBottom: 12 },
+    scroll: { padding: 16, paddingBottom: 40 },
 });

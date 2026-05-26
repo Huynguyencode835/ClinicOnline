@@ -8,7 +8,7 @@ from cliniconlineapi.serializers.AppointmentSerializer import AppointmentSeriali
 from cliniconlineapi.serializers.MedicalSerializer import PrescriptionCreateSerializer, PrescriptionDetailedSerializer,PrescriptionNestedCreateSerializer
 from cliniconlineapi.serializers.TestResultSerializer import TestResultSerializer, TestResultCreateSerializer, \
     TestResultNestedCreateSerializer
-from cliniconlineapi.validators import MedicalRecordDataValidator
+from cliniconlineapi.validators import MedicalRecordDataValidator, PrescriptionDataValidator
 
 
 class MedicalRecordListSerializer(serializers.ModelSerializer):
@@ -54,7 +54,7 @@ class MedicalRecordListSerializer(serializers.ModelSerializer):
 
     def get_has_prescription(self, obj):
         try:
-            return obj.prescription is not None
+            return obj.prescription.details.exists()
         except Prescription.DoesNotExist:
             return False
 
@@ -69,6 +69,7 @@ class MedicalRecordDetailSerializer(serializers.ModelSerializer):
     customer = serializers.SerializerMethodField()
     doctor = serializers.SerializerMethodField()
     appointment_date = serializers.DateTimeField(source='appointment.appointment_date',read_only=True)
+    appointment = serializers.SerializerMethodField()
     prescription = PrescriptionDetailedSerializer(read_only=True)
     test_results = TestResultSerializer(many=True, read_only=True)
 
@@ -77,6 +78,7 @@ class MedicalRecordDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'appointment_id',
+            'appointment',
             'customer',
             'doctor',
             'appointment_date',
@@ -111,6 +113,9 @@ class MedicalRecordDetailSerializer(serializers.ModelSerializer):
                 "weight": profile.weight if profile else None,
             } if profile else None,
         }
+
+    def get_appointment(self, obj):
+        return obj.appointment.status
 
     #Lấy thong tin bác sĩ cho hồ sơ bênh án nếu cần
     def get_doctor(self, obj):
@@ -229,6 +234,13 @@ class MedicalRecordCreateSerializer(serializers.ModelSerializer):
 
             if prescription_data:
                 details_data = prescription_data.pop('details',[])
+                validator = PrescriptionDataValidator()
+
+                for detail in details_data:
+                    validator.validate_medicine_stock(
+                        detail['medicine'],
+                        detail['quantity']
+                    )
                 prescription = Prescription.objects.create(
                     medical_record=medical_record,
                     instruction_notes=prescription_data.get('instruction_notes')

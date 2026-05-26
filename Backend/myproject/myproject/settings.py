@@ -76,7 +76,8 @@ ALLOWED_HOSTS = [
     '192.168.100.110',#huy
     '192.168.100.173',
     'localhost',
-    '192.168.100.152' #hung
+    '192.168.100.152', #hung
+    '192.168.1.166'
 ]
 
 ROOT_URLCONF = 'myproject.urls'
