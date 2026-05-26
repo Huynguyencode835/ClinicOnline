@@ -11,3 +11,7 @@ class CommentPaginator(pagination.PageNumberPagination):
 class SpecialtyPaninator(pagination.PageNumberPagination):
     page_size = 7
 
+class MedicinePaninator(pagination.PageNumberPagination):
+    page_size = 20
+
+

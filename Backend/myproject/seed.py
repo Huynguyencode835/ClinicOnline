@@ -202,6 +202,31 @@ for i, (first_name, last_name, gender, username) in enumerate(doctors_data):
     else:
         print(f"⚠️  Đã tồn tại: {username}")
 
+#==============Heathcare==================================
+healthcare_user, created = User.objects.get_or_create(username="yte")
+
+if created:
+    healthcare_user.set_password("yte@123")
+    healthcare_user.first_name = "B"
+    healthcare_user.last_name = "Nguyễn Thị"
+    healthcare_user.email = "healthcare2@gmail.com"
+    healthcare_user.phone = "0901234888"
+    healthcare_user.role = User.Role.HEALTHCARE
+    healthcare_user.gender = "female"
+    healthcare_user.dob = date(1990, 6, 15)
+    healthcare_user.save()
+
+    StaffProfile.objects.create(
+        user=healthcare_user,
+        degree="YTE",
+        experience=5,
+        bio="Y tá Nguyễn Thị B với hơn 5 năm kinh nghiệm chăm sóc bệnh nhân.",
+        price=100000,
+    )
+    print(f"✅ Created healthcare: healthcare2 - Nguyễn Thị B")
+else:
+    print(f"⚠️  Healthcare exists: healthcare2")
+
 # =========================================================
 # CUSTOMERS
 # =========================================================

@@ -5,7 +5,13 @@ __pycache__/
 
 # C extensions
 *.so
+<<<<<<< HEAD
+Backend/myproject/serviceAccountKey.json
+Backend/myproject/myapp-490307-7f8c5fec59d0.json
+
+=======
 myapp-490307-7f8c5fec59d0.json
+>>>>>>> parent of f9f47d4 (notification)
 # Distribution / packaging
 .Python
 build/

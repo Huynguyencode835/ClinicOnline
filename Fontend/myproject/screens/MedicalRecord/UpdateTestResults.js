@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useRef } from "react";
 import { View, ScrollView, TouchableOpacity ,StyleSheet,ActivityIndicator} from "react-native";
 import { Text, Divider } from "react-native-paper";
 import AppHeader from "../../components/AppHeader";
@@ -19,8 +19,9 @@ const UpdateTestResults = ({ navigation, route }) => {
     const { medicalRecordId, testResults: initialResults } = route.params;
     const { showSnackbar } = useSnackbar();
     const [loading, setLoading] = useState(false);
-    const [availableTests, setAvailableTests] = useState([]);
-    const [testsLoaded, setTestsLoaded] = useState(false);
+    const [tests, setTests] = useState([]);
+    const testDebounce = useRef(null);
+    const [searchingTest, setSearchingTest] = useState(false);
     const [testSearch, setTestSearch] = useState("");
     const [snackbar, setSnackbar] = useState({});
     const [newItems, setNewItems] = useState([]);
@@ -34,27 +35,27 @@ const UpdateTestResults = ({ navigation, route }) => {
             file: t.file || null,
         })) ?? []
     );
-    const loadTests = async () => {
-            if (testsLoaded) return;
-            await fetchWithAuth(
-                endpoints.tests,
-                (data) => {
-                    setAvailableTests(data.results ?? data ?? []);
-                    console.log(
-                        "RAW tests response:",
-                        JSON.stringify(data, null, 2)
-                    );
-                    setTestsLoaded(true);
-                },
-                () => showSnackbar("Không tải được danh sách xét nghiệm", "error"),
-                {},
-                setLoading
-            );
-        };
-    const filteredTests = availableTests.filter(t =>
-        t.name?.toLowerCase().includes(testSearch.toLowerCase()) &&
-        !testResults.find(r => r.test_id === t.id)
+    const searchTests = async (keyword) => {
+        if (!keyword.trim()) { setTests([]); return; }
+        let url = `${endpoints.tests}?search=${encodeURIComponent(keyword)}`;
+        setSearchingTest(true);
+        await fetchWithAuth(
+            url,
+            (data) => {
+                // setTests(data.results ?? []);
+                setTests(Array.isArray(data) ? data : (data.results ?? []));
+                console.log("RAW data:", JSON.stringify(data, null, 2));
+            },
+            (type,msg) => showSnackbar("Không tìm được xét nghiệm", "error")
+        );
+        setSearchingTest(false);
+    };
+
+   
+     const filteredTests = tests.filter(
+        t => !testResults.find(r => r.test_id === t.id)
     );
+
 
     const addTestResult = (test) => {
         setTestResults(prev => [
@@ -173,33 +174,40 @@ const UpdateTestResults = ({ navigation, route }) => {
                         value={testSearch}
                         onChangeText={(v) => {
                             setTestSearch(v);
-                            if (v.trim().length > 0 && !testsLoaded) {
-                                loadTests();
-                            }
+                            if (testDebounce.current) clearTimeout(testDebounce.current);
+                            testDebounce.current = setTimeout(() => {
+                                searchTests(v);
+                            }, 500);
                         }}
                         left={<TextInput.Icon icon="magnify" />}
                         outlineColor={COLORS.border}
                         activeOutlineColor={COLORS.primary}
                         style={styles.input}
                     />
-                    <Divider style={{ margin: 10 }} />
+                    
                     {/* Kết quả tìm kiếm xét nghiệm */}
                     {testSearch.trim().length > 0 && (
                         <View style={localStyles.searchResults}>
-                            {filteredTests.map(t => (
-                                <TouchableOpacity  key={t.id} style={localStyles.searchResultItem}  onPress={() => addTestResult(t)} >
-                                    <MaterialCommunityIcons name="test-tube" size={14}  color={COLORS.primary}/>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={localStyles.searchResultText}>
-                                            {t.name}
-                                        </Text>
-                                    </View>
+                            <ScrollView
+                                nestedScrollEnabled={true}
+                                keyboardShouldPersistTaps="handled"
+                                style={{maxHeight:200}}
+                            >
+                                {filteredTests.map(t => (
+                                    <TouchableOpacity  key={t.id} style={localStyles.searchResultItem}  onPress={() => addTestResult(t)} >
+                                        <MaterialCommunityIcons name="test-tube" size={14}  color={COLORS.primary}/>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={localStyles.searchResultText}>
+                                                {t.name}
+                                            </Text>
+                                        </View>
 
-                                    <MaterialCommunityIcons name="plus-circle-outline" size={16}color={COLORS.primary}/>
-                                </TouchableOpacity>
-                            ))}
+                                        <MaterialCommunityIcons name="plus-circle-outline" size={16}color={COLORS.primary}/>
+                                    </TouchableOpacity>
+                                ))}
 
-                            {filteredTests.length === 0 && (<Text style={localStyles.noResult}>  Không tìm thấy xét nghiệm </Text>)}
+                                {filteredTests.length === 0 && (<Text style={localStyles.noResult}>  Không tìm thấy xét nghiệm </Text>)}
+                            </ScrollView>
                         </View>
                     )}
 
@@ -288,8 +296,6 @@ const localStyles = StyleSheet.create({
         borderRadius: 10,
         borderWidth: 1,
         borderColor: "#E5E7EB",
-        maxHeight: 200,
-        overflow: "hidden",
         elevation: 2,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
