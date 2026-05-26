@@ -184,7 +184,7 @@ class Medicine(BaseModel):
         return f"{self.name} ({self.stock} {self.unit})"
 
     def is_low_stock(self):
-        return self.stock < 10
+        return self.stock < 50
 
     def is_expiring_soon(self):
         from django.utils import timezone

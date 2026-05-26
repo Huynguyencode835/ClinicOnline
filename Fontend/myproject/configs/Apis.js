@@ -23,6 +23,7 @@ export const endpoints = {
     'updateworkday': (id) => `/users/workday/${id}/timeslots/`,
     'chatgemini': '/chatbox/',
     'medicines': '/medicines/',
+    'medicineDetail': (id) => `/medicines/${id}/`,
     'prescriptions': '/prescriptions/',
     'prescriptionDetail': (id) => `/prescriptions/${id}/`,
     'medicalRecords': '/medical-records/',

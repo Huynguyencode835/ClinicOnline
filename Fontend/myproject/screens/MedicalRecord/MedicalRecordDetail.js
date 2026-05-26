@@ -1,4 +1,4 @@
-import { useEffect, useState,useContext} from "react";
+import { useEffect, useState,useContext,useCallback} from "react";
 import { View, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
 import { Text, Surface, Chip, Divider } from "react-native-paper";
 import { fetchWithAuth } from "../../utils/apiHelper";
@@ -10,7 +10,7 @@ import InfoCard from "../../components/Appointment/InfoCard";
 import {InfoCard2Col} from "../../components/Appointment/InfoCard";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import AppHeader from "../../components/AppHeader";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation,useFocusEffect } from "@react-navigation/native";
 import { formatDate, formatDate2 } from "../../utils/format";
 import { genderMap } from "../../utils/mapping";
 import { MyUserContext } from "../../utils/contexts/MyUserContext";
@@ -48,15 +48,17 @@ const MedicalRecordDetail = ({ route }) => {
     const { user } = useContext(MyUserContext);
     const { showSnackbar } = useSnackbar();
 
-    useEffect(() => {
-        fetchWithAuth(
-            endpoints.medicalRecordDetail(id),
-            (data) => setRecord(data),
-            (type, msg) => setSnackbar({ visible: true, message: msg, type }),
-            {},
-            setLoading
-        );
-    }, [id]);
+    useFocusEffect(
+        useCallback(() => {
+            fetchWithAuth(
+                endpoints.medicalRecordDetail(id),
+                (data) => setRecord(data),
+                (type, msg) => setSnackbar({ visible: true, message: msg, type }),
+                {},
+                setLoading
+            );
+        }, [id])
+    );
 
     const handleComplete = async () => {
         if (!record?.appointment_id) {
@@ -116,8 +118,9 @@ const MedicalRecordDetail = ({ route }) => {
     );
 
     // console.log('test_results:', JSON.stringify(test_results.map(r => r.id)));
-
-    
+    const hasPrescription = prescription?.details?.length > 0;
+    console.log("record:", JSON.stringify(record, null, 2));
+    console.log("appointment status:", record.appointment);
 
     return (
         <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
@@ -133,12 +136,12 @@ const MedicalRecordDetail = ({ route }) => {
                         {icon: "phone-outline", label: "Điện thoại", value: customer?.phone},
                         { icon: "email-outline", label: "Email", value: customer?.email },
                         {icon: "gender-male-female", label: "Giới tính", value: genderMap[customer?.gender]},
-                        {icon: "card-account-details-outline", label: "Số thẻ BHYT", value: customer.profile.insurance_number},
-                        {icon: "calendar-end", label: "Hết hạn BHYT", value: customer.profile.insurance_expiry_date},
-                        {icon: "water", label: "Nhóm máu", value: customer.profile.blood_group},
-                        {icon: "needle", label: "Tiền sử dị ứng", value: customer.profile.allergy_history},
-                        {icon: "human", label: "Chiều cao", value: customer.profile.height ? `${customer.profile.height} cm` : null},
-                        {icon: "weight", label: "Cân nặng", value: customer.profile.weight ? `${customer.profile.weight} kg` : null}
+                        {icon: "card-account-details-outline", label: "Số thẻ BHYT", value: customer?.profile?.insurance_number},
+                        {icon: "calendar-end", label: "Hết hạn BHYT", value: customer?.profile?.insurance_expiry_date},
+                        {icon: "water", label: "Nhóm máu", value: customer?.profile?.blood_group},
+                        {icon: "needle", label: "Tiền sử dị ứng", value: customer?.profile?.allergy_history},
+                        {icon: "human", label: "Chiều cao", value: customer?.profile?.height ? `${customer?.profile?.height} cm` : null},
+                        {icon: "weight", label: "Cân nặng", value: customer?.profile?.weight ? `${customer?.profile?.weight} kg` : null}
                     ]}
                 />
 
@@ -199,12 +202,8 @@ const MedicalRecordDetail = ({ route }) => {
 
                 {/* ── ĐƠN THUỐC ── */}
                 <SectionTitle icon="pill" text="Đơn thuốc" />
-                {prescription ? (
+                {hasPrescription ? (
                     <Card>
-                        {/* <Text style={styles.prescriptionNote}>Ghi chú: {prescription.instruction_notes}</Text>
-
-                        <Divider style={styles.rowDivider} /> */}
-
                         {/* Danh sách thuốc */}
                         {prescription.details?.map((detail, index) => (
                             <View key={detail.medicine_name ?? index}>
@@ -218,25 +217,13 @@ const MedicalRecordDetail = ({ route }) => {
                                             {detail.dosage} • {detail.quantity} {detail.medicine_unit}
                                         </Text>
                                     </View>
-                                    {/* <Text style={styles.medicinePrice}>
-                                        {detail.total_price?.toLocaleString("vi-VN")}đ
-                                    </Text> */}
+                                
                                 </View>
                                 {index < prescription.details.length - 1 && (
                                     <Divider style={{ marginLeft: 44, marginVertical: 6 }} />
                                 )}
                             </View>
                         ))}
-
-                        {/* <Divider style={styles.rowDivider} /> */}
-
-                        {/* Tổng tiền */}
-                        {/* <View style={styles.totalRow}>
-                            <Text style={styles.totalLabel}>Tổng tiền</Text>
-                            <Text style={styles.totalValue}>
-                                {prescription.total_amount?.toLocaleString("vi-VN")}đ
-                            </Text>
-                        </View> */}
                     </Card>
                 ) : (
                     <Card style={styles.emptyCard}>
@@ -265,11 +252,12 @@ const MedicalRecordDetail = ({ route }) => {
                         <AppButton
                             type="edit"
                             label="Đơn thuốc"
-                            onPress={() =>
+                            onPress={() =>{
                                 navigation.navigate("UpdatePrescription", {
                                     medicalRecordId: record.id,
                                     prescription: record.prescription ?? null,
                                 })
+                            }
                             }
                             style={styles.actionButton}
                         />
@@ -288,16 +276,17 @@ const MedicalRecordDetail = ({ route }) => {
                             style={styles.actionButton}
                         />
                     </View>
-
-                    <View style={styles.actionButtonWrap}>
-                        <AppButton
-                            type="create"
-                            label="Hoàn thành"
-                            onPress={handleComplete}
-                            loading={loading}
-                            style={{ marginHorizontal: 0 }}
-                        />
-                    </View>
+                    {record.appointment_id && record.appointment?.status !== "Confirmed" && ( 
+                        <View style={styles.actionButtonWrap}>
+                            <AppButton
+                                type="create"
+                                label="Hoàn thành"
+                                onPress={handleComplete}
+                                loading={loading}
+                                style={{ marginHorizontal: 0 }}
+                            />
+                        </View>
+                    )}
                 </View>
             )}
 

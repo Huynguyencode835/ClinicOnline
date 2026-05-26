@@ -2,7 +2,7 @@ import { TextInput } from "react-native-paper";
 import COLORS from "../../styles/Colors";
 import styles from "../../styles/Mystyles";
 
-const Field = ({ label, value, onChangeText, placeholder, multiline, keyboardType }) => (
+const Field = ({ label, value, onChangeText, placeholder, multiline, keyboardType,...rest }) => (
     <TextInput
         mode="outlined"
         label={label}
@@ -15,6 +15,7 @@ const Field = ({ label, value, onChangeText, placeholder, multiline, keyboardTyp
         outlineColor={COLORS.border}
         activeOutlineColor={COLORS.primary}
         style={styles.input}
+        {...rest}
     />
 );
 

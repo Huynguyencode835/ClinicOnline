@@ -98,7 +98,7 @@ class MedicineNameValidator:
 
 #đơn vị thuốc
 class UnitValidator:
-    VALID_UNITS = ['viên', 'chai', 'ống', 'hộp', 'vỉ', 'gói', 'lọ', 'ml']
+    VALID_UNITS = ['Viên', 'Chai', 'Ống', 'Hộp', 'Vỉ', 'Gói', 'Lọ', 'ml']
 
     def __call__(self, value):
         if value not in self.VALID_UNITS:
@@ -164,7 +164,8 @@ class ExpiryDateValidator:
     MAX_YEARS = 10
     def __call__(self, value):
         if not value:
-            raise ValidationError("Ngày hết hạn là bắt buộc")
+            return
+            # raise ValidationError("Ngày hết hạn là bắt buộc")
         today = timezone.now().date()
         # Ngày hết hạn phải > ngày hôm nay
         if value <= today:
@@ -383,6 +384,8 @@ class PrescriptionDetailMedicineStockValidator:
         # Refresh để lấy stock mới nhất
         medicine.refresh_from_db()
 
+        if medicine.stock==0:
+            raise ValidationError( f"{medicine.name} đã hết hàng")
         if medicine.stock < quantity:
             raise ValidationError(
                 f"Thuốc '{medicine.name}' không đủ! "

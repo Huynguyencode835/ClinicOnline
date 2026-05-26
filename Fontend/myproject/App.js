@@ -23,6 +23,9 @@ import CreateMedicalRecord from "./screens/MedicalRecord/CreateMedicalRecord";
 import UpdateMedicalRecord from "./screens/MedicalRecord/UpdateMedicalRecord";
 import UpdatePrescription from "./screens/MedicalRecord/UpdatePrescription";
 import UpdateTestResults from "./screens/MedicalRecord/UpdateTestResults";
+import MedicineDetail from "./screens/Medicine/MedicineDetail";
+import MedicineList from "./screens/Medicine/MedicineList";
+import CreateMedicine from "./screens/Medicine/CreateMedicine";
 import ProfileDetail from "./screens/User/ProfileDetail";
 import { createPublic } from "./utils/apiHelper";
 import { endpoints } from "./configs/Apis";
@@ -45,6 +48,7 @@ import { registerForPushNotifications, onForegroundMessage, onNotificationOpened
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
 }
+import UpdateMedicine from "./screens/Medicine/UpdateMedicine";
 
 
 const Stack = createNativeStackNavigator();
@@ -115,6 +119,15 @@ const MedicalRecordNavigator = () => (
   </Stack.Navigator>
 );
 
+const MedicineNavigator = () => (
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="MedicineList" component={MedicineList} />
+    <Stack.Screen name="MedicineDetail" component={MedicineDetail} /> 
+    <Stack.Screen name="CreateMedicine" component={CreateMedicine} />
+    <Stack.Screen name="UpdateMedicine" component={UpdateMedicine}/>
+  </Stack.Navigator>
+);
+
 const TabNavigatior = () => {
   const { user } = useContext(MyUserContext);
 
@@ -152,20 +165,33 @@ const TabNavigatior = () => {
             }}
           />
           {user?.role === "doctor" || user?.role === "healthcare" ? (
-            <Tab.Screen
-              name="WorkdayTab"
-              component={Workday}
-              options={{
-                tabBarLabel: "Lịch làm",
-                tabBarIcon: ({ color }) => (
-                  <Icon
-                    size={22}
-                    source="calendar-check-outline"
-                    color={color}
-                  />
-                ),
-              }}
-            />
+            <>
+              <Tab.Screen
+                name="WorkdayTab"
+                component={Workday}
+                options={{
+                  tabBarLabel: "Lịch làm",
+                  tabBarIcon: ({ color }) => (
+                    <Icon
+                      size={22}
+                      source="calendar-check-outline"
+                      color={color}
+                    />
+                  ),
+                }}
+              />
+
+              <Tab.Screen
+                name="MedicineTab"
+                component={MedicineNavigator}
+                options={{
+                  tabBarLabel: "Thuốc",
+                  tabBarIcon: ({ color }) => (
+                    <Icon size={22} source="pill" color={color} />
+                  ),
+                }}
+              />
+            </>
           ) : (
             <Tab.Screen
               name="BookingTab"
@@ -178,6 +204,8 @@ const TabNavigatior = () => {
               }}
             />
           )}
+
+
           <Tab.Screen
             name="AppointmentsTab"
             component={ListAppointmentNavigator}
