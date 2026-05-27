@@ -33,6 +33,9 @@ const InfoRow = ({ icon, label, value }) => (
 );
 
 const MedicalRecordCard = ({ item, onPress }) => {
+<<<<<<< HEAD
+  const {doctor,customer,diagnosis,symptoms,follow_up_date,created_date,id,} = item;
+=======
   const {
     doctor,
     customer,
@@ -42,14 +45,21 @@ const MedicalRecordCard = ({ item, onPress }) => {
     created_date,
     id,
   } = item;
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
   const { user } = useContext(MyUserContext);
   const target = user?.role === "doctor" ? customer : doctor;
   const targetAvatar = target?.avatar ?? null;
   const fullName = target ? `${target.last_name} ${target.first_name}` : "—";
+<<<<<<< HEAD
+  const roleLabel = user?.role === "doctor" ? "Bệnh nhân" : "Bác sĩ";
+  const nameParts = fullName.trim().split(" ");
+
+=======
 
   const roleLabel = user?.role === "doctor" ? "Bệnh nhân" : "Bác sĩ";
 
   const nameParts = fullName.trim().split(" ");
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
   const initials =
     nameParts.length >= 2
       ? `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase()
@@ -120,8 +130,13 @@ const MedicalRecordCard = ({ item, onPress }) => {
 
           <InfoRow
             icon="calendar-clock"
+<<<<<<< HEAD
+            label="Ngày tạo hồ sơ"
+            value={createdDate}
+=======
             label="Tái khám"
             value={followUpDate}
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
           />
         </View>
       </View>

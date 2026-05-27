@@ -3,6 +3,10 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
+<<<<<<< HEAD
+# Create your models here.
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 class BaseModel(models.Model):
     active = models.BooleanField(default=True)
     created_date = models.DateTimeField(auto_now_add=True)
@@ -41,6 +45,15 @@ class Specialty(BaseModel):
     def __str__(self):
         return self.name
 
+<<<<<<< HEAD
+class ServiceSpecialty(BaseModel):
+    name = models.CharField(max_length=200, unique=True)
+    description = models.TextField(blank=True,max_length=200,null=True)
+    price = models.FloatField(default=0)
+    Specialty = models.ManyToManyField(Specialty, blank=True)
+
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 class StaffProfile(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE,related_name="staff_profile")
     specialties = models.ManyToManyField(Specialty, through="StaffSpecialty", blank=True)

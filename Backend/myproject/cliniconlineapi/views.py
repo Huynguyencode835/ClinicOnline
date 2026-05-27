@@ -1,6 +1,6 @@
 import os
 from datetime import date, timedelta
-
+import time
 from django.db.models import Count, Q, Case, When, Value, CharField, Sum, F
 from django.db.models.functions import ExtractYear, TruncMonth
 from drf_yasg import openapi
@@ -32,7 +32,9 @@ from cliniconlineapi.serializers.userserializer import WorkDaySerializer, TimeSl
     WorkDayLiteSerializer
 from cliniconlineapi.serializers.StaffSerializer import DoctorSerializer
 import google.generativeai as genai
-
+from cliniconlineapi.services.calculator_invoice import calculate_invoice_total
+from cliniconlineapi.services.vnpay import create_vnpay_url
+from cliniconlineapi.services.verifyVNPay import verify_vnpay_signature
 from cliniconlineapi.services.firebase import send_push_to_user
 from cliniconlineapi.services.ocrService import extract_text_from_image, parse_insurance_card
 from cliniconlineapi.validators import MedicalRecordDataValidator, PrescriptionDataValidator, TestResultDataValidator
@@ -210,6 +212,8 @@ class AppointmentViewSet(viewsets.ViewSet,
             return [permission.IsDoctorAndAppointmentOwner()]
         if self.action == 'destroy':
             return [permission.IsCustomerAndAppointmentOwner()]
+        if self.action in ['vnpay_return', 'vnpay_create']:  #
+            return [permissions.AllowAny()]
         return [permission.IsAppointmentOwner()]
 
     def get_serializer_class(self):
@@ -248,6 +252,7 @@ class AppointmentViewSet(viewsets.ViewSet,
         if updated.status == Appointment.Status.CANCELED:
             updated.time_slot.status = TimeSlot.Status.AVAILABLE
             updated.time_slot.save()
+
             send_push_to_user(
                 user_id=updated.customer.id,
                 title='Lịch hẹn bị từ chối',
@@ -278,6 +283,208 @@ class AppointmentViewSet(viewsets.ViewSet,
         instance.time_slot.status = TimeSlot.Status.AVAILABLE
         instance.time_slot.save()
         instance.delete()
+
+
+    @action(methods=["GET"],detail=True,url_path="invoice",url_name="invoice")
+    def invoice(self, request, pk):
+        appointment = get_object_or_404(Appointment, pk=pk)
+        data = calculate_invoice_total(appointment)
+        prescription_items = []
+        try:
+            for d in appointment.medical_record.prescription.details.select_related('medicine').all():
+                prescription_items.append({
+                    "name": d.medicine.name,
+                    "unit": d.medicine.unit,
+                    "quantity": d.quantity,
+                    "unit_price": d.unit_price,
+                    "total": d.quantity * d.unit_price,
+                })
+        except:
+            pass
+        test_items = []
+        try:
+            for t in appointment.medical_record.test_results.select_related('test').all():
+                test_items.append({
+                    "name": t.test.name,
+                    "price": t.test.price or 0,
+                })
+        except:
+            pass
+        return Response({
+            "appointment_id": appointment.id,
+            "service": {
+                "name": appointment.serviceNormal.name if appointment.serviceNormal else None,
+                "fee": data["service_fee"],
+            },
+            "doctor": {
+                "name": appointment.doctor.get_full_name(),
+                "fee": data["doctor_fee"],
+            },
+            "prescription": {
+                "items": prescription_items,
+                "fee": data["medicine_fee"],
+            },
+            "tests": {
+                "items": test_items,
+                "fee": data["test_fee"],
+            },
+            "status": appointment.status,
+            "total": data["total"],
+        })
+
+    @action(methods=["POST"], detail=True, url_path="vnpay/create")
+    def vnpay_create(self, request, pk):
+        appointment = get_object_or_404(Appointment, pk=pk)
+        data = calculate_invoice_total(appointment)
+        # Thêm timestamp để tránh trùng TxnRef
+        txn_ref = f"{appointment.id}_{int(time.time())}"
+        payment_url = create_vnpay_url(
+            order_id=txn_ref,
+            amount=data["total"],
+            order_info=f"Thanh toan lich hen #{appointment.id}",
+            ip_addr=request.META.get("REMOTE_ADDR", "127.0.0.1")
+        )
+        return Response({"payment_url": payment_url})
+
+    @action(methods=["GET"], detail=False, url_path="vnpay/return",permission_classes=[permissions.AllowAny])
+    def vnpay_return(self, request):
+        params = request.GET.dict()
+        if not verify_vnpay_signature(params):
+            from django.http import HttpResponse
+            return HttpResponse("""
+                   <html>
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <style>
+                                * { margin: 0; padding: 0; box-sizing: border-box; }
+                                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                                       background: #f5f5f5; display: flex; align-items: center;
+                                       justify-content: center; min-height: 100vh; }
+                                .card { background: white; border-radius: 20px; padding: 40px;
+                                        text-align: center; max-width: 360px; width: 90%;
+                                        box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+                                .icon { font-size: 64px; margin-bottom: 16px; }
+                                h2 { color: #C62828; font-size: 22px; margin-bottom: 8px; }
+                                p { color: #757575; font-size: 14px; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="card">
+                                <div class="icon">🔒</div>
+                                <h2>Chữ ký không hợp lệ</h2>
+                                <p>Giao dịch không thể xác thực.</p>
+                            </div>
+                        </body>
+                   </html>
+                """, status=400)
+
+        vnp_response_code = request.GET.get("vnp_ResponseCode")
+        vnp_txn_ref = request.GET.get("vnp_TxnRef")
+        # Tách appointment_id từ txn_ref
+        appointment_id = vnp_txn_ref.split("_")[0]
+
+        if vnp_response_code == "00":
+            appointment = get_object_or_404(Appointment, pk=appointment_id)
+            appointment.status = Appointment.Status.COMPLETED
+            appointment.save()
+            from django.http import HttpResponse
+            response = HttpResponse(f"""
+                        <html>
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <style>
+                                * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+                                body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                                        background: linear-gradient(135deg, #E8F5E9, #F1F8E9);
+                                        display: flex; align-items: center;
+                                        justify-content: center; min-height: 100vh; }}
+                                .card {{ background: white; border-radius: 20px; padding: 40px;
+                                         text-align: center; max-width: 360px; width: 90%;
+                                         box-shadow: 0 4px 20px rgba(0,0,0,0.1); }}
+                                .icon {{ font-size: 72px; margin-bottom: 16px; }}
+                                h2 {{ color: #2E7D32; font-size: 24px; margin-bottom: 8px; font-weight: 700; }}
+                                .amount {{ color: #1B5E20; font-size: 28px; font-weight: 800;
+                                           margin: 16px 0; }}
+                                p {{ color: #757575; font-size: 14px; margin-bottom: 8px; }}
+                                .badge {{ background: #E8F5E9; color: #2E7D32; padding: 6px 16px;
+                                          border-radius: 20px; font-size: 13px; font-weight: 600;
+                                          display: inline-block; margin-top: 8px; }}
+                                .redirect {{ color: #BDBDBD; font-size: 12px; margin-top: 20px; }}
+                                .bar {{ height: 4px; background: #E8F5E9; border-radius: 2px;
+                                        margin-top: 12px; overflow: hidden; }}
+                                .bar-fill {{ height: 100%; background: #2E7D32; border-radius: 2px;
+                                             animation: fill 2s linear forwards; }}
+                                @keyframes fill {{ from {{ width: 0%; }} to {{ width: 100%; }} }}
+                            </style>
+                        </head>
+                        <body>
+                            <div class="card">
+                                <div class="icon">✅</div>
+                                <h2>Thanh toán thành công!</h2>
+                                <div class="badge">Mã lịch hẹn #{appointment_id}</div>
+                                <p style="margin-top:20px">Cảm ơn bạn đã sử dụng dịch vụ.</p>
+                                <p class="redirect">Đang chuyển về ứng dụng...</p>
+                                <div class="bar"><div class="bar-fill"></div></div>
+                            </div>
+                            <script>
+                                setTimeout(() => {{
+                                    window.location.href = "myapp://payment/success?appointmentId={appointment_id}";
+                                }}, 2000);
+                            </script>
+                        </body>
+                        </html>
+                    """)
+            response["ngrok-skip-browser-warning"] = "true"
+            return response
+
+        # Thanh toán thất bại
+        from django.http import HttpResponse
+        response = HttpResponse("""
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                               background: linear-gradient(135deg, #FFEBEE, #FFF3F3);
+                               display: flex; align-items: center;
+                               justify-content: center; min-height: 100vh; }
+                        .card { background: white; border-radius: 20px; padding: 40px;
+                                text-align: center; max-width: 360px; width: 90%;
+                                box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+                        .icon { font-size: 72px; margin-bottom: 16px; }
+                        h2 { color: #C62828; font-size: 24px; margin-bottom: 8px; font-weight: 700; }
+                        p { color: #757575; font-size: 14px; margin-bottom: 8px; }
+                        .redirect { color: #BDBDBD; font-size: 12px; margin-top: 20px; }
+                        .bar { height: 4px; background: #FFEBEE; border-radius: 2px;
+                               margin-top: 12px; overflow: hidden; }
+                        .bar-fill { height: 100%; background: #C62828; border-radius: 2px;
+                                    animation: fill 2s linear forwards; }
+                        @keyframes fill { from { width: 0%; } to { width: 100%; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="card">
+                        <div class="icon">❌</div>
+                        <h2>Thanh toán thất bại!</h2>
+                        <p>Giao dịch không thành công.</p>
+                        <p>Vui lòng quay lại ứng dụng và thử lại.</p>
+                        <p class="redirect">Đang chuyển về ứng dụng...</p>
+                        <div class="bar"><div class="bar-fill"></div></div>
+                    </div>
+                    <script>
+                        setTimeout(() => {
+                            window.location.href = "myapp://payment/failed";
+                        }, 2000);
+                    </script>
+                </body>
+                </html>
+            """)
+        response["ngrok-skip-browser-warning"] = "true"
+        return response
 
 class SpecialtyViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Specialty.objects.filter(active=True)
@@ -542,9 +749,6 @@ class TestViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_permissions(self):
         return [permission.IsStaffRole()]
-
-
-
 
 
 class TestResultViewSet(viewsets.ModelViewSet):
