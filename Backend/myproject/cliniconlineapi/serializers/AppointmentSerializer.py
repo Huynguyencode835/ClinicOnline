@@ -99,8 +99,10 @@ class AppointmentDetailSerializer(AppointmentSerializer):
             record = instance.medical_record
             print("medicalrecord:", record)
             data["has_medical_record"] = record is not None
+            data["medical_record_id"] = record.id if record else None
         except Exception as e:
             print("Exception:", e)
             data["has_medical_record"] = False
+            data["medical_record_id"] = None
         return data
 

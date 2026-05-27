@@ -3,9 +3,9 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import COLORS from "../../styles/Colors";
 import React from "react";
 
-const Row = ({ icon, label, value }) => (
+const Row = ({ icon, label, value ,iconBgColor }) => (
     <View style={styles.row}>
-        <View style={styles.rowIconWrap}>
+        <View style={[styles.rowIconWrap,iconBgColor && { backgroundColor: iconBgColor}]}>
             <MaterialCommunityIcons name={icon} size={16} color={COLORS.primary} />
         </View>
         <View style={{ flex: 1 }}>

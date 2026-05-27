@@ -8,7 +8,7 @@ import AppHeader from "../../components/AppHeader";
 import AppButton from "../../components/AppButton";
 import COLORS from "../../styles/Colors";
 import { useAlert } from "../../utils/contexts/AlertContext";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Linking } from "react-native";
 
 const Payment = ({ route }) => {

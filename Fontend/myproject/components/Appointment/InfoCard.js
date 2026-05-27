@@ -5,14 +5,14 @@ import COLORS from "../../styles/Colors";
 import Row from "./Row";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-const InfoCard = ({ style, rows }) => (
+const InfoCard = ({ style, rows,iconBgColor  }) => (
     <Card style={[styles.card, style]}>
         <Card.Content style={styles.cardContent}>
             {rows.map((row, i) => (
                 <React.Fragment key={i}>
                     {i > 0 && <View style={styles.divider} />}
                     {row.custom ?? (
-                        <Row icon={row.icon} label={row.label} value={row.value} />
+                        <Row icon={row.icon} label={row.label} value={row.value} iconBgColor={iconBgColor}/>
                     )}
                 </React.Fragment>
             ))}

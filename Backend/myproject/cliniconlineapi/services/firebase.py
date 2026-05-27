@@ -29,5 +29,12 @@ def send_push_to_user(user_id, title, body, data={}):
         token=token,
     )
 
-    response = messaging.send(message)
-    print(f'Gửi thông báo thành công: {response}')
+    try:
+        response = messaging.send(message)
+        print(f'Gửi thông báo thành công: {response}')
+    except messaging.UnregisteredError:
+        # Token hết hạn → xóa khỏi Firestore
+        db.collection('users').document(str(user_id)).update({'fcmToken': None})
+        print(f'Token của user {user_id} không hợp lệ, đã xóa')
+    except Exception as e:
+        print(f'Lỗi gửi notification: {e}')

@@ -7,7 +7,7 @@ import COLORS from "../../styles/Colors";
 import { updatePatchWithAuth, createWithAuth ,fetchWithAuth,deleteWithAuth} from "../../utils/apiHelper";
 import { endpoints } from "../../configs/Apis";
 import { useSnackbar } from "../../utils/contexts/SnackBarContext";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import SectionTitle from "../../components/Appointment/SectionTilte";
 import Field from "../../components/MedicalRecord/Field";
 import styles from "../../styles/Mystyles";

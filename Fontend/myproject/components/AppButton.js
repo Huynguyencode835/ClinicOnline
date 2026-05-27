@@ -28,6 +28,9 @@ const BUTTON_CONFIGS = {
     reject:   { icon: 'close-octagon',      label: 'Từ chối',      color: COLORS.btnDanger  },
     done:     { icon: 'check-all',          label: 'Hoàn thành',   color: COLORS.success    },
     pay:      { icon: 'credit-card',        label: 'Thanh toán',   color: COLORS.btnPrimary },
+
+    // ─── Trạng thái ───────────────────────────────────────
+    pending:  { icon: 'clock-outline',      label: 'Chờ thanh toán', color: "#fcd1a6" },
 };
 
 const AppButton = ({

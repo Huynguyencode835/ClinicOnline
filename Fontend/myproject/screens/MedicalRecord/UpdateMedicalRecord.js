@@ -11,7 +11,7 @@ import styles from "../../styles/Mystyles";
 import { fetchWithAuth, createWithAuth , updatePatchWithAuth} from "../../utils/apiHelper";
 import { endpoints } from "../../configs/Apis";
 import { useSnackbar } from "../../utils/contexts/SnackBarContext";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { TextInput } from "react-native-paper";
 import SectionTitle from "../../components/Appointment/SectionTilte";
 import Field from "../../components/MedicalRecord/Field";

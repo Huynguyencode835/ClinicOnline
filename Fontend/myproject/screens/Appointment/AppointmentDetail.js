@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState, useCallback } from "react";
-import { ScrollView, View, ActivityIndicator ,Text} from "react-native";
+import { ScrollView, View, ActivityIndicator ,Text,TouchableOpacity} from "react-native";
 import { fetchWithAuth, updatePatchWithAuth } from "../../utils/apiHelper";
 import { endpoints } from "../../configs/Apis";
 import AppSnackbar from "../../components/AppSnackbar";
@@ -137,9 +137,15 @@ const AppointmentDetail = ({ route }) => {
 
             {user?.role === "doctor" &&  (
                 appointmentDetail.has_medical_record ? (
-                    <View style={{ marginHorizontal: 16, marginVertical: 16, padding: 12, backgroundColor: "#E8F5E9", borderRadius: 8, alignItems: "center" }}>
-                    <Text style={{ color: "#2E7D32", fontWeight: "600" }}>✓ Đã có hồ sơ bệnh án</Text>
-                    </View>
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate("MedicalRecordDetail", {
+                            id: appointmentDetail.medical_record_id
+                        })}
+                        style={{ marginHorizontal: 16, marginVertical: 16, padding: 12, backgroundColor: "#E8F5E9", borderRadius: 8, alignItems: "center" }}
+                    >
+                        <Text style={{ color: "#2E7D32", fontWeight: "600" }}>✓ Đã có hồ sơ bệnh án</Text>
+                        <Text style={{ color: "#2E7D32", fontSize: 11, marginTop: 2 }}>Nhấn để xem chi tiết</Text>
+                    </TouchableOpacity>
                 ):(
                     appointmentDetail.status === "Confirmed" &&(
                         <Button
@@ -179,14 +185,27 @@ const AppointmentDetail = ({ route }) => {
             )}
 
             {user?.role === "customer" && (appointmentDetail.status === "Pending_payment" || appointmentDetail.status === "Completed") &&(
-                <AppButton
-                    type="confirm"
-                    label={"Xem hóa đơn"} 
-                    onPress={() => {
-                        navigation.navigate("Payment", { appointmentId: id });
-                    }}
-                    loading = {loading}
-                />
+                <View style={{ flexDirection: "row", paddingHorizontal: 5 ,marginTop:10}}>
+                    <View style={{ flex: 1 }}>
+                        <AppButton
+                            type="confirm"
+                            label={"Xem hóa đơn"} 
+                            onPress={() => {
+                                navigation.navigate("Payment", { appointmentId: id });
+                            }}
+                            loading = {loading}
+                        />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                        <AppButton
+                            type="detail"
+                            label="Xem hồ sơ bệnh án"
+                            onPress={() => navigation.navigate("MedicalRecordDetail", {
+                                id: appointmentDetail.medical_record_id
+                            })}
+                        />
+                    </View>
+                </View>
             )}
             <AppSnackbar
                 visible={snackbar.visible}
