@@ -1,8 +1,5 @@
 import { useEffect, useState ,useRef} from "react";
-import {
-    View, ScrollView, StyleSheet,
-    TouchableOpacity, ActivityIndicator
-} from "react-native";
+import {View, ScrollView, StyleSheet,TouchableOpacity, ActivityIndicator} from "react-native";
 import { Text, Divider } from "react-native-paper";
 import AppHeader from "../../components/AppHeader";
 import AppButton from "../../components/AppButton";
@@ -46,7 +43,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
     const [searchingMedicine, setSearchingMedicine] = useState(false);
     const [searchingTest, setSearchingTest] = useState(false);
 
-    // ─── LOAD THUỐC ───
+  
     const searchMedicines = async (keyword) => {
         if (!keyword.trim()) { setMedicineResults([]); return; }
         let url = `${endpoints.medicines}?search=${encodeURIComponent(keyword)}`;
@@ -64,7 +61,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
         setSearchingMedicine(false);
     };
 
-    // ─── LOAD XÉT NGHIỆM ───
+   
     const searchTests = async (keyword) => {
         if (!keyword.trim()) { setTests([]); return; }
         let url = `${endpoints.tests}?search=${encodeURIComponent(keyword)}`;

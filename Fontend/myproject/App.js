@@ -17,6 +17,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import ListAppointments from "./screens/Appointment/ListAppointments";
 import AppointmentDetail from "./screens/Appointment/AppointmentDetail";
+import Payment from "./screens/Payment/Payment";
+import VNPayWebView from "./screens/Payment/VNPayWebView";
 import MedicalRecordDetail from "./screens/MedicalRecord/MedicalRecordDetail";
 import MedicalRecordList from "./screens/MedicalRecord/MedicalRecordList";
 import CreateMedicalRecord from "./screens/MedicalRecord/CreateMedicalRecord";
@@ -92,6 +94,8 @@ const AppointmentNavigator = () => {
       <Stack.Screen name="Booking" component={Booking} />
       <Stack.Screen name="ListAppointments" component={ListAppointments} />
       <Stack.Screen name="AppointmentDetail" component={AppointmentDetail} />
+      <Stack.Screen name="Payment" component={Payment}/>
+      <Stack.Screen name="VNPayWebView" component={VNPayWebView}/>
     </Stack.Navigator>
   );
 };
@@ -103,6 +107,8 @@ const ListAppointmentNavigator = () => (
     <Stack.Screen name="MedicalRecordList" component={MedicalRecordList} />
     <Stack.Screen name="MedicalRecordDetail" component={MedicalRecordDetail} />
     <Stack.Screen name="CreateMedicalRecord" component={CreateMedicalRecord} />
+    <Stack.Screen name="Payment" component={Payment} /> 
+    <Stack.Screen name="VNPayWebView" component={VNPayWebView}/>
   </Stack.Navigator>
 );
 

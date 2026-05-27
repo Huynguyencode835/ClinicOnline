@@ -79,6 +79,7 @@ const AppointmentDetail = ({ route }) => {
     console.log("status:", appointmentDetail?.status);
     console.log("check:", user?.role === "doctor" && appointmentDetail?.status === "Pending");
     console.log("has_medical_record:", appointmentDetail?.has_medical_record);
+    console.log("Status : ",appointmentDetail.status)
     return (
         <View style={{ flex: 1, backgroundColor: COLORS.bg, }}>
             <AppHeader titles="Chi tiết lịch hẹn" onBack={() => {
@@ -140,18 +141,19 @@ const AppointmentDetail = ({ route }) => {
                     <Text style={{ color: "#2E7D32", fontWeight: "600" }}>✓ Đã có hồ sơ bệnh án</Text>
                     </View>
                 ):(
-                    
-                    <Button
-                        mode="contained"
-                        style={[Mystyles.primaryButton, { marginVertical: 16, marginHorizontal: 16 }]}
-                        onPress={() =>
-                            navigation.navigate("CreateMedicalRecord", {
-                                appointmentId: appointmentDetail.id,
-                            })
-                        }
-                    >
-                        Tạo hồ sơ bệnh án
-                    </Button>
+                    appointmentDetail.status === "Confirmed" &&(
+                        <Button
+                            mode="contained"
+                            style={[Mystyles.primaryButton, { marginVertical: 16, marginHorizontal: 16 }]}
+                            onPress={() =>
+                                navigation.navigate("CreateMedicalRecord", {
+                                    appointmentId: appointmentDetail.id,
+                                })
+                            }
+                        >
+                            Tạo hồ sơ bệnh án
+                        </Button>
+                    )
                 )
 
             )}
@@ -173,14 +175,18 @@ const AppointmentDetail = ({ route }) => {
                             loading = {loading}
                         />
                     </View>
-
-
                 </View>
             )}
-            {user?.role === "customer" && appointmentDetail.status !== "Confirmed" && (
-                <>
-                    <AppButton type="delete" onPress={console.log("anh yeu em")} />
-                </>
+
+            {user?.role === "customer" && (appointmentDetail.status === "Pending_payment" || appointmentDetail.status === "Completed") &&(
+                <AppButton
+                    type="confirm"
+                    label={"Xem hóa đơn"} 
+                    onPress={() => {
+                        navigation.navigate("Payment", { appointmentId: id });
+                    }}
+                    loading = {loading}
+                />
             )}
             <AppSnackbar
                 visible={snackbar.visible}

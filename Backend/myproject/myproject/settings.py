@@ -77,8 +77,16 @@ ALLOWED_HOSTS = [
     '192.168.100.173',
     'localhost',
     '192.168.100.152', #hung
-    '192.168.1.166'
+    '192.168.1.177',
+    "unbalked-kayce-spindly.ngrok-free.dev"
 ]
+
+VNPAY_CONFIG = {
+    "TMN_CODE": os.environ.get("VNPAY_TMN_CODE"),
+    "SECRET_KEY": os.environ.get("VNPAY_SECRET_KEY"),
+    "RETURN_URL": os.environ.get("VNPAY_RETURN_URL", "myapp://payment/vnpay-return"),
+    "PAYMENT_URL": "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
+}
 
 ROOT_URLCONF = 'myproject.urls'
 load_dotenv()
