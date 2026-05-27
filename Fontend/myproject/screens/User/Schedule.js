@@ -1,12 +1,6 @@
 import { View, ScrollView, RefreshControl } from "react-native";
-import { useEffect, useState } from "react";
-import {
-    Button,
-    SegmentedButtons,
-    Text,
-    Card,
-    Icon
-} from "react-native-paper";
+import { useEffect, useRef, useState } from "react";
+import { Button, SegmentedButtons, Text, Card, Icon } from "react-native-paper";
 import Mystyles from "../../styles/Mystyles";
 import DaychipGroup from "../../components/Schedule/DayChipGroup";
 import TimeSlot from "../../components/Schedule/TimeSlot";
@@ -31,6 +25,7 @@ const Schedule = ({ route }) => {
     const { showAlert } = useAlert();
     const [loading, setLoading] = useState(false);
     const [loadingFetch, setLoadingFetch] = useState(false);
+    const hasChangedRef = useRef(false);
 
     const generateSlots = (fromHour, toHour, duration = 60, step = 15) => {
         const slots = [];
@@ -55,7 +50,9 @@ const Schedule = ({ route }) => {
         }
         return slots;
     };
+
     const DAY_KEYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
     const DAYS = Array.from({ length: 7 }, (_, i) => {
         const date = new Date();
         date.setDate(date.getDate() + i + 1);
@@ -64,6 +61,7 @@ const Schedule = ({ route }) => {
             value: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
         };
     });
+
     const [schedule, setSchedule] = useState({
         "date": DAYS[0].value,
         "time_slots": []
@@ -90,7 +88,6 @@ const Schedule = ({ route }) => {
         await fetchWithAuth(
             endpoints.workday,
             (data) => {
-                console.log(data)
                 setSelectDay(data)
             },
             (type, msg, errData) => {
@@ -106,7 +103,6 @@ const Schedule = ({ route }) => {
             endpoints.workdayDetail(id),
             (data) => {
                 setSchedule(prev => ({ ...prev, time_slots: data.time_slots }));
-                console.log("Workday detail loaded:", data);
             },
             (type, msg, errData) => {
                 showSnackbar(msg, 'error', errData ? JSON.stringify(errData) : '')
@@ -114,6 +110,7 @@ const Schedule = ({ route }) => {
             setLoadingFetch
         )
     }
+    console.log(schedule)
 
     const deleteWorkday = async (id) => {
         await deleteWithAuth(
@@ -157,10 +154,25 @@ const Schedule = ({ route }) => {
         )
     }
 
+    const buildPayload = (schedule) => ({
+        date: schedule.date,
+        time_slots: schedule.time_slots.map(slot => {
+            const s = {
+                start_time: slot.start_time,
+                end_time: slot.end_time,
+            };
+            if (slot.id !== undefined && slot.id !== null) {
+                s.id = slot.id;
+                s.status = slot.status;
+            }
+            return s;
+        })
+    });
+
     const updateWorkday = async (id) => {
         await updatePatchWithAuth(
             endpoints.updateworkday(id),
-            schedule,
+            buildPayload(schedule),
             (data) => {
                 showSnackbar("Cập nhật lịch trình thành công!", "success");
                 loadWorkDay();
@@ -175,7 +187,6 @@ const Schedule = ({ route }) => {
     useEffect(() => {
         if (!route.params?.id) loadWorkDay()
         else {
-            console.log("Loading workday detail for ID:", route.params.id);
             loadDetailWorkday(route.params.id);
         }
     }, [route.params?.id]);
@@ -235,7 +246,7 @@ const Schedule = ({ route }) => {
                                     }}
                                     markedDates={markedDates}
                                     minDate={minDate}
-                                    maxDate={maxDate}
+                                // maxDate={maxDate}
                                 />
                             </Card.Content>
                         </Card>
@@ -261,7 +272,10 @@ const Schedule = ({ route }) => {
                                 shift={shift}
                                 selectedSlots={schedule.time_slots}
                                 SLOTS={SLOTS}
-                                onSlotsChange={(slots) => setSchedule(prev => ({ ...prev, time_slots: slots }))}
+                                onSlotsChange={(slots) => {
+                                    setSchedule(prev => ({ ...prev, time_slots: slots }))
+                                    hasChangedRef.current = true;
+                                }}
                             />
                         </View>
                     </Card.Content>
@@ -314,6 +328,7 @@ const Schedule = ({ route }) => {
                 <AppButton
                     type="save"
                     label="Lưu lịch trình"
+                    disabled={schedule.time_slots.length === 0 ? true : false}
                     loading={loading}
                     onPress={() => createWorkday()}
                 />
@@ -323,8 +338,11 @@ const Schedule = ({ route }) => {
                         <AppButton
                             type="save"
                             label="Cập nhật lịch trình"
+                            disabled={!hasChangedRef.current}
                             loading={loading}
-                            onPress={() => updateWorkday(route.params?.id)}
+                            onPress={() => {
+                                updateWorkday(route.params?.id)
+                            }}
                         />
                     </View>
                     <View style={{ flex: 1 }}>

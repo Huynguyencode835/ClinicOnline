@@ -244,8 +244,6 @@ const AppointmentCard = ({ item, onPress, onConfirm, onReject }) => {
                             </Animated.View>
                         </View>
                     )}
-
-
                     {(user?.role === "customer" && status === "Pending_payment") && (
                         <View>
                             <View style={styles.divider} />

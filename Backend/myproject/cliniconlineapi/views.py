@@ -134,22 +134,22 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
 
         time_slots_data = request.data.get("time_slots", [])
 
-        protected_ids = set(
-            workday.time_slots
-            .filter(appointment_time_slot__isnull=False)
-            .values_list('id', flat=True)
+        incoming_ids = set(
+            s.get('id') for s in time_slots_data if s.get('id')
         )
 
-        workday.time_slots.filter(appointment_time_slot__isnull=True).delete()
+        workday.time_slots.filter(
+            appointment_time_slot__isnull=True
+        ).exclude(
+            id__in=incoming_ids
+        ).delete()
 
-        new_slots = [s for s in time_slots_data if s.get('id') not in protected_ids]
+        new_slots = [s for s in time_slots_data if not s.get('id')]
 
-        for slot in new_slots:
-            slot.pop('id', None)
-
-        serializer = TimeSlotSerializer(data=new_slots, many=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(work_day=workday)
+        if new_slots:
+            serializer = TimeSlotSerializer(data=new_slots, many=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(work_day=workday)
 
         return Response(WorkDaySerializer(workday).data, status=status.HTTP_200_OK)
 
@@ -409,8 +409,7 @@ class InsuranceCardOCRView(APIView):
             parsed = parse_insurance_card(raw_text)
 
             return Response({
-                "success": True,
-                "raw_text": raw_text,      # debug
+                "raw_text": raw_text,
                 "data": parsed
             })
 

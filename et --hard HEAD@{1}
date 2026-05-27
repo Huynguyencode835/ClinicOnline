@@ -1,0 +1,18 @@
+[33m6b012e2[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: pull --ff --recurse-submodules --progress origin: Merge made by the 'ort' strategy.
+[33me194369[m HEAD@{1}: commit: notification
+[33m56da221[m HEAD@{2}: reset: moving to 56da2217d26e61a4cc7f61f15c54b13055f34a25
+[33mf9f47d4[m HEAD@{3}: reset: moving to f9f47d4ae5c5aeee54890dc1ab919b36635de434
+[33mbff297a[m HEAD@{4}: commit: remove firebase secrets
+[33m75ad611[m HEAD@{5}: reset: moving to 75ad6111991bfb07eeb078fbe4762dd119c33b0c
+[33mc5e64a1[m HEAD@{6}: commit: remove firebase secrets
+[33m75ad611[m HEAD@{7}: pull --ff --recurse-submodules --progress origin: Merge made by the 'ort' strategy.
+[33mf9f47d4[m HEAD@{8}: commit: notification
+[33m56da221[m HEAD@{9}: commit: updateRegisterGoogleVesion
+[33m27c865b[m HEAD@{10}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33m09cb8ae[m HEAD@{11}: commit: stats
+[33m2b24cbb[m HEAD@{12}: pull --ff --recurse-submodules --progress origin: Merge made by the 'ort' strategy.
+[33mc622082[m HEAD@{13}: commit: changeModel
+[33m4ecfeab[m HEAD@{14}: commit: add
+[33mf7cccca[m HEAD@{15}: commit (merge): Merge branch 'main' of https://github.com/Huynguyencode835/ClinicOnline
+[33mf3363b6[m HEAD@{16}: commit: fixFE+CHATBOX
+[33me3d28df[m HEAD@{17}: clone: from https://github.com/Huynguyencode835/ClinicOnline.git

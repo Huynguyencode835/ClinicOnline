@@ -34,7 +34,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Trạng thái không hợp lệ.")
 
             if current_status == Appointment.Status.CANCELED and value == Appointment.Status.CONFIRMED:
-                raise serializers.ValidationError("Không thể xác nhận phiếu đã bị hủy.")
+                raise serializers.ValidationError("Không thể xác nhận phiếu.")
 
             if current_status == Appointment.Status.CONFIRMED and value == Appointment.Status.CANCELED:
                 raise serializers.ValidationError("Không thể hủy phiếu đã được xác nhận.")
@@ -78,10 +78,6 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
         with transaction.atomic():
             slot = TimeSlot.objects.select_for_update().get(pk=time_slot.id)
-
-            if slot.status == TimeSlot.Status.BOOKED:
-                raise serializers.ValidationError("Khung giờ này vừa được đặt, vui lòng chọn giờ khác.")
-
             appointment = Appointment(**validated_data)
             appointment.save()
 
