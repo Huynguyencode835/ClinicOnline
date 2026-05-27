@@ -39,7 +39,6 @@ const AppSnackbar = ({
     duration = 3000,
 }) => {
     const cfg = CONFIGS[type] ?? CONFIGS.success;
-
     return (
         <Snackbar
             visible={visible}

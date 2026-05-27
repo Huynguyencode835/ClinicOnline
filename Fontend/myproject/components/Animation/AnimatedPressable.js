@@ -30,7 +30,7 @@ const AnimatedPressable = ({
     return (
         <Animated.View
             style={[{ transform: [{ scale }] }, style]}
-            onStartShouldSetResponder={() => false}  // ← không chặn gesture của children
+            onStartShouldSetResponder={() => false}
         >
             {React.cloneElement(children, {
                 onPressIn,

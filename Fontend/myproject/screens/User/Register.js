@@ -183,12 +183,8 @@ const Register = ({ navigation, is_superuser }) => {
                 }
             }
 
-            console.log('formData:', formData._parts);
-            console.log('is_superuser:', is_superuser);
             const token = await AsyncStorage.getItem("access_token");
-            console.log('token:', token);
             if (is_superuser) {
-                console.log(1)
                 await createWithAuth(
                     endpoints.register,
                     formData,
@@ -205,7 +201,6 @@ const Register = ({ navigation, is_superuser }) => {
                     setLoading
                 );
             } else {
-                console.log(2)
                 await createPublic(
                     endpoints.register,
                     formData,
