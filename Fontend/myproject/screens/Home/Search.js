@@ -108,6 +108,7 @@ const Search = () => {
                                         <Pressable
                                             key={s.id}
                                             style={({ pressed }) => [styles.tag, pressed && { opacity: 0.7 }]}
+                                            onPress={() => navigation.navigate("BookingTab", { specialty: s })}
                                         >
                                             <Text style={styles.tagText}>{s.name}</Text>
                                         </Pressable>

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ClinicOnline",
-    "slug": "cliniconline",
+    "name": "myproject",
+    "slug": "myproject",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,8 +12,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.cliniconline"
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
@@ -22,15 +21,14 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.cliniconline",
+      "package": "com.anonymous.myproject",
+  
       "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "@react-native-firebase/app",
-      "@react-native-firebase/messaging",
       "expo-secure-store",
       "@react-native-community/datetimepicker"
     ]

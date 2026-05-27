@@ -33,23 +33,14 @@ const InfoRow = ({ icon, label, value }) => (
 );
 
 const MedicalRecordCard = ({ item, onPress }) => {
-  const {
-    doctor,
-    customer,
-    diagnosis,
-    symptoms,
-    follow_up_date,
-    created_date,
-    id,
-  } = item;
+  const {doctor,customer,diagnosis,symptoms,follow_up_date,created_date,id,} = item;
   const { user } = useContext(MyUserContext);
   const target = user?.role === "doctor" ? customer : doctor;
   const targetAvatar = target?.avatar ?? null;
   const fullName = target ? `${target.last_name} ${target.first_name}` : "—";
-
   const roleLabel = user?.role === "doctor" ? "Bệnh nhân" : "Bác sĩ";
-
   const nameParts = fullName.trim().split(" ");
+
   const initials =
     nameParts.length >= 2
       ? `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase()
@@ -120,8 +111,8 @@ const MedicalRecordCard = ({ item, onPress }) => {
 
           <InfoRow
             icon="calendar-clock"
-            label="Tái khám"
-            value={followUpDate}
+            label="Ngày tạo hồ sơ"
+            value={createdDate}
           />
         </View>
       </View>

@@ -102,12 +102,12 @@ const BookingContent = () => {
                 formatBooking(bookingData),
                 (data) => {
                     setSnackbar({ visible: true, message: "Đặt lịch thành công!", type: 'success' });
-                    resetAll(user);
-                    // updateBooking("patient", user);
+                    resetAll();
+                    updateBooking("patient", user);
                     setStep(0);
                 },
-                (type, msg,errData) => {
-                    setSnackbar({ visible: true, message: errData, type: 'error' });
+                (type, msg) => {
+                    setSnackbar({ visible: true, message: msg, type: 'error' });
                 }
             );
         } finally {

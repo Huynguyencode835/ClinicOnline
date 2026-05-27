@@ -68,31 +68,18 @@ class UserSerializer(serializers.ModelSerializer):
     def validate_role(self, value):
         request = self.context.get("request")
         user = request.user if request else None
-        print("role:", value)
-        print("user:", user)
-        print("is_superuser:", user.is_superuser if user else None)
         if value != User.Role.CUSTOMER:
             if not (user and user.is_superuser):
                 raise serializers.ValidationError("Chỉ admin mới có thể gán quyền này.")
         return value
 
     def create(self, validated_data):
-        profile_data = validated_data.pop('profile', {})
         user = User(**validated_data)
         user.set_password(user.password)
         user.save()
         if user.role in [User.Role.DOCTOR, User.Role.HEALTHCARE]:
             StaffProfile.objects.create(user=user)
         elif user.role == User.Role.CUSTOMER:
-            # CustomerProfile.objects.create(
-            #     user=user,
-            #     height=profile_data.get('height'),
-            #     weight=profile_data.get('weight'),
-            #     insurance_number=profile_data.get('insurance_number'),
-            #     insurance_expiry_date = profile_data.get('insurance_expiry_date'),
-            #     allergy_history = profile_data.get('allergy_history'),
-            # )
-
             CustomerProfile.objects.create(user=user)
         return user
 
@@ -200,8 +187,8 @@ class WorkDayLiteSerializer(serializers.ModelSerializer):
         last_day = monthrange(today.year, today.month)[1]
         end_of_month = today.replace(day=last_day)
 
-        if value > end_of_month:
-            raise serializers.ValidationError("Chỉ được đặt lịch trong tháng hiện tại.")
+        # if value > end_of_month:
+        #     raise serializers.ValidationError("Chỉ được đặt lịch trong tháng hiện tại.")
         if value < today:
             raise serializers.ValidationError("Không được đặt lịch trong quá khứ.")
 

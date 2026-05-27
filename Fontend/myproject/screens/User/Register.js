@@ -201,6 +201,7 @@ const Register = ({ navigation, is_superuser }) => {
                     setLoading
                 );
             } else {
+                console.log(2)
                 await createPublic(
                     endpoints.register,
                     formData,

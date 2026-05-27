@@ -17,6 +17,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import ListAppointments from "./screens/Appointment/ListAppointments";
 import AppointmentDetail from "./screens/Appointment/AppointmentDetail";
+import Payment from "./screens/Payment/Payment";
+import VNPayWebView from "./screens/Payment/VNPayWebView";
 import MedicalRecordDetail from "./screens/MedicalRecord/MedicalRecordDetail";
 import MedicalRecordList from "./screens/MedicalRecord/MedicalRecordList";
 import CreateMedicalRecord from "./screens/MedicalRecord/CreateMedicalRecord";
@@ -41,9 +43,6 @@ import Chat from "./screens/BoxChat/Chat";
 import Search from "./screens/Home/Search";
 import Total from "./screens/Report/Total";
 import { Platform, UIManager } from 'react-native';
-import messaging from '@react-native-firebase/messaging';
-import { registerForPushNotifications, onForegroundMessage, onNotificationOpenedApp, getInitialNotification, setBackgroundMessageHandler, saveFCMTokenToFirestore } from './configs/firebase/notifications';
-
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -95,6 +94,8 @@ const AppointmentNavigator = () => {
       <Stack.Screen name="Booking" component={Booking} />
       <Stack.Screen name="ListAppointments" component={ListAppointments} />
       <Stack.Screen name="AppointmentDetail" component={AppointmentDetail} />
+      <Stack.Screen name="Payment" component={Payment}/>
+      <Stack.Screen name="VNPayWebView" component={VNPayWebView}/>
     </Stack.Navigator>
   );
 };
@@ -106,6 +107,8 @@ const ListAppointmentNavigator = () => (
     <Stack.Screen name="MedicalRecordList" component={MedicalRecordList} />
     <Stack.Screen name="MedicalRecordDetail" component={MedicalRecordDetail} />
     <Stack.Screen name="CreateMedicalRecord" component={CreateMedicalRecord} />
+    <Stack.Screen name="Payment" component={Payment} /> 
+    <Stack.Screen name="VNPayWebView" component={VNPayWebView}/>
   </Stack.Navigator>
 );
 
@@ -150,7 +153,7 @@ const TabNavigatior = () => {
           ),
         }}
       />
-
+    
 
       {!user?.is_superuser && (
         <>
@@ -270,6 +273,7 @@ const TabNavigatior = () => {
 
 const App = () => {
   const [user, dispatch] = useReducer(MyUserReducer, null);
+  const { requestPermission } = useNotification();
   const loadUser = async () => {
     try {
       const savedStr = await SecureStore.getItemAsync("user");
