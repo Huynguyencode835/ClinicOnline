@@ -40,25 +40,15 @@ const MENU_SECTIONS = [
     {
         title: 'Tiện ích',
         items: [
-<<<<<<< HEAD
-            { id: 'health', icon: 'heart-pulse', label: 'Xem/Lưu thông tin sức khoẻ', iconBg: '#E3F2FD', iconColor: '#1565C0' },
-            { id: 'hotline', icon: 'phone-outline', label: 'Hỗ trợ tư vấn/đặt khám 19002115', iconBg: '#E0F7FA', iconColor: '#00695C' },
-=======
             { id: 'health', icon: 'heart-pulse', label: 'Xem/Lưu thông tin sức khoẻ', iconBg: '#E3F2FD', iconColor: '#1565C0',type: TYPE_INFORMATION.RULE },
             { id: 'hotline', icon: 'phone-outline', label: 'Hỗ trợ tư vấn/đặt khám 19002115', iconBg: '#E0F7FA', iconColor: '#00695C', type: TYPE_INFORMATION.SECURITY },
->>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
         ],
     },
     {
         title: 'Khác',
         items: [
-<<<<<<< HEAD
-            { id: 'rate', icon: 'star-outline', label: 'Đánh giá ứng dụng', iconBg: '#FFF8E1', iconColor: '#F57F17' },
-            { id: 'community', icon: 'account-group-outline', label: 'Tham gia cộng đồng Medpro', iconBg: '#F1F8E9', iconColor: '#33691E' },
-=======
             { id: 'rate', icon: 'star-outline', label: 'Đánh giá ứng dụng', iconBg: '#FFF8E1', iconColor: '#F57F17', type: TYPE_INFORMATION.SECURITY },
             { id: 'community', icon: 'account-group-outline', label: 'Tham gia cộng đồng Medpro', iconBg: '#F1F8E9', iconColor: '#33691E', type: TYPE_INFORMATION.SECURITY },
->>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
         ],
     },
 ];

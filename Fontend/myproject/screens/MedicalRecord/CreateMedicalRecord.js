@@ -1,12 +1,5 @@
 import { useEffect, useState ,useRef} from "react";
-<<<<<<< HEAD
 import {View, ScrollView, StyleSheet,TouchableOpacity, ActivityIndicator} from "react-native";
-=======
-import {
-    View, ScrollView, StyleSheet,
-    TouchableOpacity, ActivityIndicator
-} from "react-native";
->>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 import { Text, Divider } from "react-native-paper";
 import AppHeader from "../../components/AppHeader";
 import AppButton from "../../components/AppButton";
@@ -50,11 +43,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
     const [searchingMedicine, setSearchingMedicine] = useState(false);
     const [searchingTest, setSearchingTest] = useState(false);
 
-<<<<<<< HEAD
   
-=======
-    // ─── LOAD THUỐC ───
->>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
     const searchMedicines = async (keyword) => {
         if (!keyword.trim()) { setMedicineResults([]); return; }
         let url = `${endpoints.medicines}?search=${encodeURIComponent(keyword)}`;
@@ -72,11 +61,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
         setSearchingMedicine(false);
     };
 
-<<<<<<< HEAD
    
-=======
-    // ─── LOAD XÉT NGHIỆM ───
->>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
     const searchTests = async (keyword) => {
         if (!keyword.trim()) { setTests([]); return; }
         let url = `${endpoints.tests}?search=${encodeURIComponent(keyword)}`;

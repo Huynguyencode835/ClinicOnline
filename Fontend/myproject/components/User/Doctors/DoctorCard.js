@@ -68,11 +68,7 @@ const DoctorCard = ({ item, navigation }) => {
 
                 <Card.Actions style={StylesDoctorCard.cardActions}>
                     <AppButton
-<<<<<<< HEAD
-                        label="Tư vấn ngay"
-=======
                         label="Xem chi tiết"
->>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
                         type="book"
                         onPress={() => navigation.navigate("DoctorDetail", { doctorId: item.id })}
                         textColor="#fff"
