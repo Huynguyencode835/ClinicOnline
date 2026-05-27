@@ -1,6 +1,10 @@
 import os
 from datetime import date, timedelta
+<<<<<<< HEAD
 import time
+=======
+
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 from django.db.models import Count, Q, Case, When, Value, CharField, Sum, F
 from django.db.models.functions import ExtractYear, TruncMonth
 from drf_yasg import openapi
@@ -32,9 +36,14 @@ from cliniconlineapi.serializers.userserializer import WorkDaySerializer, TimeSl
     WorkDayLiteSerializer
 from cliniconlineapi.serializers.StaffSerializer import DoctorSerializer
 import google.generativeai as genai
+<<<<<<< HEAD
 from cliniconlineapi.services.calculator_invoice import calculate_invoice_total
 from cliniconlineapi.services.vnpay import create_vnpay_url
 from cliniconlineapi.services.verifyVNPay import verify_vnpay_signature
+=======
+
+from cliniconlineapi.services.firebase import send_push_to_user
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 from cliniconlineapi.services.ocrService import extract_text_from_image, parse_insurance_card
 from cliniconlineapi.validators import MedicalRecordDataValidator, PrescriptionDataValidator, TestResultDataValidator
 
@@ -211,8 +220,11 @@ class AppointmentViewSet(viewsets.ViewSet,
             return [permission.IsDoctorAndAppointmentOwner()]
         if self.action == 'destroy':
             return [permission.IsCustomerAndAppointmentOwner()]
+<<<<<<< HEAD
         if self.action in ['vnpay_return', 'vnpay_create']:  #
             return [permissions.AllowAny()]
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
         return [permission.IsAppointmentOwner()]
 
     def get_serializer_class(self):
@@ -251,6 +263,27 @@ class AppointmentViewSet(viewsets.ViewSet,
         if updated.status == Appointment.Status.CANCELED:
             updated.time_slot.status = TimeSlot.Status.AVAILABLE
             updated.time_slot.save()
+<<<<<<< HEAD
+=======
+            send_push_to_user(
+                user_id=updated.customer.id,
+                title='Lịch hẹn bị từ chối',
+                body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã từ chối lịch hẹn của bạn.',
+                data={'type': 'appointment', 'id': str(updated.id)}
+            )
+
+        elif updated.status == Appointment.Status.CONFIRMED:
+            send_push_to_user(
+                user_id=updated.customer.id,
+                title='Lịch hẹn được xác nhận',
+                body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã xác nhận lịch hẹn của bạn.',
+                data={'type': 'appointment', 'id': str(updated.id)}
+            )
+
+        if updated.status == Appointment.Status.CANCELED:
+            updated.time_slot.status = TimeSlot.Status.AVAILABLE
+            updated.time_slot.save()
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 
     def perform_destroy(self, instance):
 
@@ -264,6 +297,7 @@ class AppointmentViewSet(viewsets.ViewSet,
         instance.time_slot.save()
         instance.delete()
 
+<<<<<<< HEAD
 
     @action(methods=["GET"],detail=True,url_path="invoice",url_name="invoice")
     def invoice(self, request, pk):
@@ -468,6 +502,8 @@ class AppointmentViewSet(viewsets.ViewSet,
 
 
 
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 class SpecialtyViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Specialty.objects.filter(active=True)
     serializer_class = SpecialtySerializer

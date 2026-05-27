@@ -10,6 +10,10 @@ import Apis, { endpoints } from "../../configs/Apis";
 import { useSnackbar } from "../../utils/contexts/SnackBarContext";
 import DoctorCard from "../../components/User/Doctors/DoctorCard";
 import { fetchPublic, fetchWithAuth } from "../../utils/apiHelper";
+<<<<<<< HEAD
+=======
+import AnimatedPressable from "../../components/Animation/AnimatedPressable";
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 
 const Search = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -98,7 +102,10 @@ const Search = () => {
                         style={{ marginTop: 32 }}
                     />
                 ) : searchQuery.trim() ? (
+<<<<<<< HEAD
                     // ── Kết quả search ──
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
                     <View>
                         {searchResults.specialties.length > 0 && (
                             <>
@@ -108,7 +115,10 @@ const Search = () => {
                                         <Pressable
                                             key={s.id}
                                             style={({ pressed }) => [styles.tag, pressed && { opacity: 0.7 }]}
+<<<<<<< HEAD
                                             onPress={() => navigation.navigate("BookingTab", { specialty: s })}
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
                                         >
                                             <Text style={styles.tagText}>{s.name}</Text>
                                         </Pressable>
@@ -148,6 +158,7 @@ const Search = () => {
                         <SectionLabel text="Tìm kiếm phổ biến" />
                         <View style={styles.tagRow}>
                             {["Tim mạch", "Nhi khoa", "Da liễu", "Nội tổng quát", "Mắt", "Tai mũi họng", "Ngoại tổng quát", "Chấn thương chỉnh hình", "Sản phụ khoa"].map(tag => (
+<<<<<<< HEAD
                                 <Pressable
                                     key={tag}
                                     style={({ pressed }) => [styles.tag, pressed && { opacity: 0.7 }]}
@@ -155,6 +166,18 @@ const Search = () => {
                                 >
                                     <Text style={styles.tagText}>{tag}</Text>
                                 </Pressable>
+=======
+                                <AnimatedPressable scaleTo={0.97} bounciness={8}>
+                                    <Pressable
+                                        key={tag}
+                                        style={({ pressed }) => [styles.tag, pressed && { opacity: 0.7 }]}
+                                        onPress={() => setSearchQuery(tag)}
+                                    >
+                                        <Text style={styles.tagText}>{tag}</Text>
+                                    </Pressable>
+                                </AnimatedPressable>
+
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
                             ))}
                         </View>
                     </>

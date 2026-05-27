@@ -129,7 +129,11 @@ class PrescriptionDetailItemSerializer(serializers.ModelSerializer):
 #Xem chi tiết 1 đơn thuốc
 class PrescriptionDetailedSerializer(serializers.ModelSerializer):
     details = PrescriptionDetailItemSerializer(many=True, read_only=True)
+<<<<<<< HEAD
     total_prescription = serializers.SerializerMethodField()
+=======
+    total_amount = serializers.SerializerMethodField()
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
     detail_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -138,7 +142,11 @@ class PrescriptionDetailedSerializer(serializers.ModelSerializer):
             'id',
             'instruction_notes',
             'details',
+<<<<<<< HEAD
             'total_prescription',
+=======
+            'total_amount',
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
             'detail_count',
             'created_date',
             'updated_date',
@@ -152,7 +160,11 @@ class PrescriptionDetailedSerializer(serializers.ModelSerializer):
             'phone': customer.phone,
         }
 
+<<<<<<< HEAD
     def get_total_prescription(self, obj):
+=======
+    def get_total_amount(self, obj):
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
         return sum(
             d.quantity * d.unit_price
             for d in obj.details.all()

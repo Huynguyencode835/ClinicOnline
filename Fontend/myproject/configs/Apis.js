@@ -20,8 +20,11 @@ export const endpoints = {
     'register': '/users/',
     'appointments': '/appointments/',
     'appointmentDetail': (id) => `/appointments/${id}/`,
+<<<<<<< HEAD
     'appointmentInvoice':(id) => `/appointments/${id}/invoice/`,
     'vnpayCreate':(id) => `/appointments/${id}/vnpay/create/`,
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
     'updateworkday': (id) => `/users/workday/${id}/timeslots/`,
     'chatgemini': '/chatbox/',
     'medicines': '/medicines/',

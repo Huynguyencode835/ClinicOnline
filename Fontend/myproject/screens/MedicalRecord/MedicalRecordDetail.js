@@ -119,7 +119,11 @@ const MedicalRecordDetail = ({ route }) => {
 
     // console.log('test_results:', JSON.stringify(test_results.map(r => r.id)));
     const hasPrescription = prescription?.details?.length > 0;
+<<<<<<< HEAD
     // console.log("record:", JSON.stringify(record, null, 2));
+=======
+    console.log("record:", JSON.stringify(record, null, 2));
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
     console.log("appointment status:", record.appointment);
 
     return (

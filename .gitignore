@@ -5,7 +5,12 @@ __pycache__/
 
 # C extensions
 *.so
+<<<<<<< HEAD
 myapp-490307-7f8c5fec59d0.json
+=======
+Backend/myproject/serviceAccountKey.json
+Backend/myproject/myapp-490307-7f8c5fec59d0.json
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 # Distribution / packaging
 .Python
 build/

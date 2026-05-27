@@ -19,7 +19,12 @@ const genderMap = { male: "Nam", female: "Nữ", other: "Khác" };
 const Step3Confirm = () => {
     const {bookingData} = useBooking();
     const p = bookingData?.patient;
+<<<<<<< HEAD
 
+=======
+    console.log(bookingData.slots)
+    console.log(bookingData.slots?.start_time)
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
     const fullName = `${p.last_name} ${p.first_name}`;
 
     return (

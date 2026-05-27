@@ -1,7 +1,12 @@
 {
   "expo": {
+<<<<<<< HEAD
     "name": "myproject",
     "slug": "myproject",
+=======
+    "name": "ClinicOnline",
+    "slug": "cliniconline",
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,7 +17,12 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
+<<<<<<< HEAD
       "supportsTablet": true
+=======
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cliniconline"
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
     },
     "android": {
       "adaptiveIcon": {
@@ -21,14 +31,28 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
+<<<<<<< HEAD
       "package": "com.anonymous.myproject"
+=======
+      "package": "com.cliniconline",
+      "googleServicesFile": "./google-services.json"
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+<<<<<<< HEAD
+=======
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
       "expo-secure-store",
       "@react-native-community/datetimepicker"
     ]
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074

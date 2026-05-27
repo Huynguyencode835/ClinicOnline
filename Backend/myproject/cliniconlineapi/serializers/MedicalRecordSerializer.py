@@ -72,8 +72,11 @@ class MedicalRecordDetailSerializer(serializers.ModelSerializer):
     appointment = serializers.SerializerMethodField()
     prescription = PrescriptionDetailedSerializer(read_only=True)
     test_results = TestResultSerializer(many=True, read_only=True)
+<<<<<<< HEAD
     total_test = serializers.SerializerMethodField()
     total_amount = serializers.SerializerMethodField()
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 
     class Meta:
         model = MedicalRecord
@@ -90,8 +93,11 @@ class MedicalRecordDetailSerializer(serializers.ModelSerializer):
             'follow_up_date',
             'prescription',
             'test_results',
+<<<<<<< HEAD
             'total_test',
             'total_amount',
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
             'created_date',
             'updated_date',
         ]
@@ -137,6 +143,7 @@ class MedicalRecordDetailSerializer(serializers.ModelSerializer):
             'specialties': specialties
         }
 
+<<<<<<< HEAD
     def get_total_test(self, obj):
         return sum(
             t.test.price or 0
@@ -153,6 +160,8 @@ class MedicalRecordDetailSerializer(serializers.ModelSerializer):
 
         test_total = self.get_total_test(obj)
         return prescription_total + test_total
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 
 class MedicalRecordUpdateSerializer(serializers.ModelSerializer):
     class Meta:

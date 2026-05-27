@@ -1,7 +1,10 @@
 import React, { useContext, useRef, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image, Animated } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+<<<<<<< HEAD
 import { useNavigation } from '@react-navigation/native';
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 import COLORS from "../../styles/Colors";
 import { DAY_VI } from "../../utils/mapping";
 import { formatDate } from "../../utils/format";
@@ -11,8 +14,11 @@ import AnimatedPressable from "../Animation/AnimatedPressable";
 import { useAlert } from "../../utils/contexts/AlertContext";
 
 const statusMap = {
+<<<<<<< HEAD
     Pending_payment: {label: "Chờ thanh toán", bg: "#FFF8E1", text: "#F57F17"},
     Completed:{label:"Đã hoàn thành", bg: "#E8F5E9", text: "#2E7D32" },
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
     Pending: { label: "Chờ duyệt", bg: "#FFF3E0", text: "#E65100" },
     Confirmed: { label: "Đã xác nhận", bg: "#E3F2FD", text: "#1565C0" },
     Done: { label: "Hoàn thành", bg: "#E8F5E9", text: "#2E7D32" },
@@ -49,7 +55,11 @@ const AppointmentCard = ({ item, onPress, onConfirm, onReject }) => {
     const target = isDoctor ? customer : doctor;
     const targetRole = isDoctor ? "Bệnh nhân" : "Bác sĩ";
     const { showAlert } = useAlert();
+<<<<<<< HEAD
     const navigation = useNavigation();
+=======
+
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
     const [selected, setSelected] = useState(false);
     const actionHeight = useRef(new Animated.Value(0)).current;
     const actionOpacity = useRef(new Animated.Value(0)).current;
@@ -140,7 +150,11 @@ const AppointmentCard = ({ item, onPress, onConfirm, onReject }) => {
                 onLongPress={
                     (user?.role === "doctor" && status === "Pending") ||
                         (user?.role === "customer" && (status === "Pending" || status === "Canceled")) ||
+<<<<<<< HEAD
                         (user?.role === "customer" && (status === "Pending_payment" || status === "Completed"))
+=======
+                        (user?.role === "customer" && status === "Pending_payment")
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
                         ? showActions
                         : undefined
                 }
@@ -249,7 +263,11 @@ const AppointmentCard = ({ item, onPress, onConfirm, onReject }) => {
                     )}
 
 
+<<<<<<< HEAD
                     {(user?.role === "customer" && (status === "Pending_payment" || status === "Completed")) && (
+=======
+                    {(user?.role === "customer" && status === "Pending_payment") && (
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
                         <View>
                             <View style={styles.divider} />
 
@@ -266,7 +284,11 @@ const AppointmentCard = ({ item, onPress, onConfirm, onReject }) => {
                                 <View style={{ flex: 1 }}>
                                     <AppButton
                                         type="confirm"
+<<<<<<< HEAD
                                         label={"xem hóa đơn"}
+=======
+                                        label={"Xác nhận"}
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
                                         style={styles.actionBtn}
                                         onPress={() => {
                                             hideActions();

@@ -17,8 +17,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import ListAppointments from "./screens/Appointment/ListAppointments";
 import AppointmentDetail from "./screens/Appointment/AppointmentDetail";
+<<<<<<< HEAD
 import Payment from "./screens/Payment/Payment";
 import VNPayWebView from "./screens/Payment/VNPayWebView";
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 import MedicalRecordDetail from "./screens/MedicalRecord/MedicalRecordDetail";
 import MedicalRecordList from "./screens/MedicalRecord/MedicalRecordList";
 import CreateMedicalRecord from "./screens/MedicalRecord/CreateMedicalRecord";
@@ -32,7 +35,11 @@ import ProfileDetail from "./screens/User/ProfileDetail";
 import { createPublic } from "./utils/apiHelper";
 import { endpoints } from "./configs/Apis";
 import { CLIENT_ID_APP, CLIENT_SECRET_APP } from "@env";
+<<<<<<< HEAD
 import SnackbarProvider from "./utils/contexts/SnackBarContext";
+=======
+import SnackbarProvider, { useSnackbar } from "./utils/contexts/SnackBarContext";
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Workday from "./screens/WorkDay/Workday";
 import AlertProvider, { useAlert } from "./utils/contexts/AlertContext";
@@ -43,6 +50,7 @@ import Chat from "./screens/BoxChat/Chat";
 import Search from "./screens/Home/Search";
 import Total from "./screens/Report/Total";
 import { Platform, UIManager } from 'react-native';
+<<<<<<< HEAD
 import { useNotification } from "./utils/notification";
 
 if (Platform.OS === 'android') {
@@ -50,6 +58,18 @@ if (Platform.OS === 'android') {
 }
 import UpdateMedicine from "./screens/Medicine/UpdateMedicine";
 
+=======
+import messaging from '@react-native-firebase/messaging';
+import { registerForPushNotifications, onForegroundMessage, onNotificationOpenedApp, getInitialNotification, setBackgroundMessageHandler, saveFCMTokenToFirestore } from './configs/firebase/notifications';
+
+
+if (Platform.OS === 'android') {
+  UIManager.setLayoutAnimationEnabledExperimental?.(true);
+}
+import UpdateMedicine from "./screens/Medicine/UpdateMedicine";
+
+
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -94,8 +114,11 @@ const AppointmentNavigator = () => {
       <Stack.Screen name="Booking" component={Booking} />
       <Stack.Screen name="ListAppointments" component={ListAppointments} />
       <Stack.Screen name="AppointmentDetail" component={AppointmentDetail} />
+<<<<<<< HEAD
       <Stack.Screen name="Payment" component={Payment}/>
       <Stack.Screen name="VNPayWebView" component={VNPayWebView}/>
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
     </Stack.Navigator>
   );
 };
@@ -107,8 +130,11 @@ const ListAppointmentNavigator = () => (
     <Stack.Screen name="MedicalRecordList" component={MedicalRecordList} />
     <Stack.Screen name="MedicalRecordDetail" component={MedicalRecordDetail} />
     <Stack.Screen name="CreateMedicalRecord" component={CreateMedicalRecord} />
+<<<<<<< HEAD
     <Stack.Screen name="Payment" component={Payment} /> 
     <Stack.Screen name="VNPayWebView" component={VNPayWebView}/>
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
   </Stack.Navigator>
 );
 
@@ -153,7 +179,11 @@ const TabNavigatior = () => {
           ),
         }}
       />
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 
       {!user?.is_superuser && (
         <>
@@ -273,7 +303,10 @@ const TabNavigatior = () => {
 
 const App = () => {
   const [user, dispatch] = useReducer(MyUserReducer, null);
+<<<<<<< HEAD
   const { requestPermission } = useNotification();
+=======
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
   const loadUser = async () => {
     try {
       const savedStr = await SecureStore.getItemAsync("user");
@@ -338,9 +371,57 @@ const App = () => {
 
   useEffect(() => {
     loadUser();
+<<<<<<< HEAD
     requestPermission();
   }, []);
 
+=======
+    setBackgroundMessageHandler();
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      // 1. Lấy FCM token gửi lên Django
+      registerForPushNotifications().then(token => {
+        if (token) {
+          saveFCMTokenToFirestore(user.id, token);
+        }
+      });
+
+      // 2. Thông báo khi app đang mở
+      const unsubscribeForeground = onForegroundMessage(async remoteMessage => {
+        console.log('App đang mở, nhận thông báo:', remoteMessage.notification);
+
+        Alert.alert(
+          remoteMessage.notification?.title || 'Thông báo',
+          remoteMessage.notification?.body || '',
+        );
+      });
+
+      // 3. User nhấn thông báo khi app background
+      const unsubscribeBackground = onNotificationOpenedApp(remoteMessage => {
+        const { type, id } = remoteMessage.data;
+        console.log('User nhấn thông báo:', type, id);
+        // Điều hướng màn hình tương ứng
+      });
+
+      // 4. App mở từ thông báo khi đang tắt hoàn toàn
+      getInitialNotification().then(remoteMessage => {
+        if (remoteMessage) {
+          const { type, id } = remoteMessage.data;
+          console.log('App mở từ thông báo:', type, id);
+          // Điều hướng màn hình tương ứng
+        }
+      });
+
+      return () => {
+        unsubscribeForeground();
+        unsubscribeBackground();
+      };
+    }
+  }, [user]);
+
+>>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
   return (
     <SafeAreaProvider>
       <MyUserContext.Provider value={{ user, dispatch }}>
