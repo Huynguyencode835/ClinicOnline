@@ -990,13 +990,14 @@ class TotalStatView(APIView):
         from django.utils.timezone import make_aware
         from datetime import datetime
 
-        start = request.query_params.get('start')  # '2026-01-01'
-        end = request.query_params.get('end')  # '2026-05-31'
+        start = request.query_params.get('start')
+        end = request.query_params.get('end')
 
-        start_date = make_aware(datetime.strptime(start, '%Y-%m-%d')) if start else make_aware(datetime(now().year, 1, 1))
+        start_date = make_aware(datetime.strptime(start, '%Y-%m-%d')) if start else make_aware(
+            datetime(now().year, 1, 1))
         end_date = make_aware(datetime.strptime(end, '%Y-%m-%d')) if end else make_aware(datetime(now().year, 12, 31))
 
-        appointment_revenue = Appointment.objects.filter(
+        result = Appointment.objects.filter(
             status=Appointment.Status.COMPLETED,
             created_date__gte=start_date,
             created_date__lte=end_date
@@ -1005,108 +1006,20 @@ class TotalStatView(APIView):
         ).values('month').annotate(
             service_revenue=Sum('serviceNormal__price'),
             doctor_revenue=Sum('doctor__staff_profile__price'),
+            medicine_revenue=Sum(
+                F('medical_record__prescription__details__unit_price') *
+                F('medical_record__prescription__details__quantity')
+            ),
+            test_revenue=Sum('medical_record__test_results__test__price'),
         ).order_by('month')
 
-        medicine_revenue = PrescriptionDetail.objects.filter(
-            prescription__medical_record__appointment__status=Appointment.Status.COMPLETED,
-            prescription__medical_record__appointment__created_date__gte=start_date,
-            prescription__medical_record__appointment__created_date__lte=end_date
-        ).annotate(
-            month=TruncMonth('prescription__medical_record__appointment__created_date')
-        ).values('month').annotate(
-            medicine_revenue=Sum(F('unit_price') * F('quantity')),
-        ).order_by('month')
-
-        medicine_map = {}
-        for item in medicine_revenue:
-            medicine_map[item['month']] = item['medicine_revenue'] or 0
-
-        result = []
-        for item in appointment_revenue:
-            s = item['service_revenue'] or 0
-            d = item['doctor_revenue'] or 0
-            m = medicine_map.get(item['month'], 0)
-            result.append({
+        return [
+            {
                 'month': f"T{item['month'].month}/{item['month'].year}",
-                'total': s + d + m
-            })
-
-        return result
-
-# Báo cáo số lượng bệnh nhân theo độ tuổi
-# current_year = timezone.now().year
-#
-# User.objects.filter(
-#     role='customer',
-#     active=True,
-#     dob__isnull=False
-# ).annotate(
-#     age=current_year - ExtractYear('dob'),
-#     age_group=Case(
-#         When(age__lte=18, then=Value('0-18')),
-#         When(age__range=(19, 30), then=Value('19-30')),
-#         When(age__range=(31, 50), then=Value('31-50')),
-#         default=Value('50+'),
-#         output_field=CharField()
-#     )
-# ).values('age_group').annotate(
-#     completed_appointments=Count(
-#         'appointments_customer',
-#         filter=Q(appointments_customer__status=Appointment.Status.COMPLETED)
-#     )
-# ).order_by('age_group')
-
-# theo giới tính
-# User.objects.filter(
-#     role='customer',
-#     active=True,
-# ).values('gender').annotate(
-#     Count_gender=Count(
-#         'appointments_customer',
-#         filter=Q(appointments_customer__status=Appointment.Status.COMPLETED)
-#     )
-# ).order_by('gender')
-
-# theo chuyên khoa
-# User.objects.filter(
-#     role='customer',
-#     active=True,
-# ).values(
-#     specialty_name=F('appointments_customer__doctor__staff_profile__specialties__name')
-# ).annotate(
-#     completed_appointments=Count(
-#         'appointments_customer',
-#         filter=Q(appointments_customer__status=Appointment.Status.COMPLETED),
-#         distinct=True
-#     )
-# ).order_by('specialty_name')
-
-# Báo cáo số lượng dịch vụ y tế
-# ServiceNormal.objects.filter(
-#      active = True
-# ).values('name').annotate(
-#       completed_appointments=Count(
-#           'appointments_serviceNormal',
-#           filter=Q(appointments_serviceNormal__status=Appointment.Status.COMPLETED),
-#       )
-# ).order_by('name')
-
-# tổng doanh thu
-# Appointment.objects.filter(
-#     status=Appointment.Status.COMPLETED
-# ).annotate(
-#     month=TruncMonth('updated_date')
-# ).values('month').annotate(
-#     total_revenue=Sum(
-#         F('serviceNormal__price') +
-#         F('doctor__staff_profile__price')
-#     )
-# ).order_by('month')
-
-# medicine_revenue = PrescriptionDetail.objects.filter(
-#     prescription__medical_record__appointment__status=Appointment.Status.COMPLETED
-# ).annotate(
-#     month=TruncMonth('prescription__medical_record__appointment__updated_date')
-# ).values('month').annotate(
-#     medicine_revenue=Coalesce(Sum(F('unit_price') * F('quantity')), Value(0.0))
-# ).order_by('month')
+                'total': (item['service_revenue'] or 0) +
+                         (item['doctor_revenue'] or 0) +
+                         (item['medicine_revenue'] or 0) +
+                         (item['test_revenue'] or 0),
+            }
+            for item in result
+        ]

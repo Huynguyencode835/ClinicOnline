@@ -6,7 +6,7 @@ import COLORS from "../../../styles/Colors";
 
 const BLOOD_TYPES = ["A+", "B+", "AB+", "O+", "A-", "B-", "AB-", "O-"];
 
-const MedicalInfoCard = ({ data, updateProfile}) => {
+const MedicalInfoCard = ({ data, updateProfile }) => {
     const p = data.patient ? data.patient : data;
 
     return (
@@ -48,6 +48,46 @@ const MedicalInfoCard = ({ data, updateProfile}) => {
                             />
                         </View>
                     </Field>
+
+                    <View style={{ flex: 1, flexDirection: "row" , gap: 20 }}>
+                        <View style={{ flex: 1}}>
+                            <Field label="Chiều cao">
+                                <View>
+                                    <StyledInput
+                                        placeholder="VD: ...cm"
+
+                                        value={p.profile?.height ?? ""}
+                                        onChangeText={(v) => {
+                                            if (v === "" || /^\d+\.?\d*$/.test(v)) {
+                                                updateProfile("height", v);
+                                            }
+                                        }}
+                                        keyboardType="numeric"
+                                        returnKeyType="done"
+                                        style={{ flex: 1 }}
+                                    />
+                                </View>
+                            </Field>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Field label="Cân nặng">
+                                <View>
+                                    <StyledInput
+                                        placeholder="VD: ...kg"
+                                        value={p.profile?.weight ?? ""}
+                                        onChangeText={(v) => {
+                                            if (v === "" || /^\d+\.?\d*$/.test(v)) {
+                                                updateProfile("weight", v);
+                                            }
+                                        }}
+                                        keyboardType="numeric"
+                                        returnKeyType="done"
+                                        style={{ flex: 1 }}
+                                    />
+                                </View>
+                            </Field>
+                        </View>
+                    </View>
 
                 </Card.Content>
             </Card>
