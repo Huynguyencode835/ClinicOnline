@@ -77,7 +77,6 @@ ALLOWED_HOSTS = [
     '192.168.100.173',
     'localhost',
     '192.168.100.152', #hung
-<<<<<<< HEAD
     '192.168.1.177',
     "unbalked-kayce-spindly.ngrok-free.dev"
 ]
@@ -89,11 +88,6 @@ VNPAY_CONFIG = {
     "PAYMENT_URL": "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
 }
 
-=======
-    '192.168.1.166'
-]
-
->>>>>>> 6a97c2ab3aa46475216b679b9f79150b445a6074
 ROOT_URLCONF = 'myproject.urls'
 load_dotenv()
 DATABASES = {
