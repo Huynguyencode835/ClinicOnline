@@ -1,5 +1,5 @@
-import { useEffect, useState ,useRef} from "react";
-import {View, ScrollView, StyleSheet,TouchableOpacity, ActivityIndicator} from "react-native";
+import { useEffect, useState, useRef } from "react";
+import { View, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Text, Divider } from "react-native-paper";
 import AppHeader from "../../components/AppHeader";
 import AppButton from "../../components/AppButton";
@@ -26,49 +26,49 @@ const CreateMedicalRecord = ({ navigation, route }) => {
     const [medicineResults, setMedicineResults] = useState([]);
     const medicineDebounce = useRef(null);
 
-   
+
     const [instructionNotes, setInstructionNotes] = useState("");
     const [prescriptionDetails, setPrescriptionDetails] = useState([]);
     const [medicineSearch, setMedicineSearch] = useState("");
 
-   
+
     const [tests, setTests] = useState([]);
     const testDebounce = useRef(null);
 
-    
+
     const [testResults, setTestResults] = useState([]);
     const [testSearch, setTestSearch] = useState("");
 
     const [searchingMedicine, setSearchingMedicine] = useState(false);
     const [searchingTest, setSearchingTest] = useState(false);
 
-  
+
     const searchMedicines = async (keyword) => {
         if (!keyword.trim()) { setMedicineResults([]); return; }
         let url = `${endpoints.medicines}?search=${encodeURIComponent(keyword)}`;
         setSearchingMedicine(true);
         await fetchWithAuth(
             url,
-            (data) => {setMedicineResults(Array.isArray(data) ? data : (data.results ?? []));},
+            (data) => { setMedicineResults(Array.isArray(data) ? data : (data.results ?? [])); },
             () => showSnackbar("Không tìm được thuốc", "error")
         );
         setSearchingMedicine(false);
     };
 
-   
+
     const searchTests = async (keyword) => {
         if (!keyword.trim()) { setTests([]); return; }
         let url = `${endpoints.tests}?search=${encodeURIComponent(keyword)}`;
         setSearchingTest(true);
         await fetchWithAuth(
             url,
-            (data) => {setTests(Array.isArray(data) ? data : (data.results ?? []));},
-            (type,msg) => showSnackbar("Không tìm được xét nghiệm", "error")
+            (data) => { setTests(Array.isArray(data) ? data : (data.results ?? [])); },
+            (type, msg) => showSnackbar("Không tìm được xét nghiệm", "error")
         );
         setSearchingTest(false);
     };
 
-    
+
     const filteredMedicines = medicineResults.filter(
         m => !prescriptionDetails.find(d => d.medicine_id === m.id)
     );
@@ -79,12 +79,12 @@ const CreateMedicalRecord = ({ navigation, route }) => {
             {
                 medicine_id: medicine.id,
                 name: medicine.name,
-                stock:medicine.stock,
+                stock: medicine.stock,
                 quantity: "",
                 dosage: ""
             }
         ]);
-        setMedicineSearch(""); 
+        setMedicineSearch("");
     };
 
     const removeMedicine = (index) => {
@@ -92,7 +92,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
     };
 
     const updateMedicine = (index, field, value) => {
-        if (field === "quantity"){
+        if (field === "quantity") {
             const stock = prescriptionDetails[index].stock;
             const quantity = parseInt(value) || 0;
             if (quantity > stock) {
@@ -107,7 +107,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
         );
     };
 
-    
+
     const filteredTests = tests.filter(
         t => !testResults.find(r => r.test_id === t.id)
     );
@@ -123,7 +123,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                 file: null,
             }
         ]);
-        setTestSearch(""); 
+        setTestSearch("");
     };
 
     const removeTestResult = (index) => {
@@ -136,7 +136,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
         );
     };
 
-    
+
     const handleSubmit = async () => {
         if (!diagnosis.trim()) {
             showSnackbar("Vui lòng nhập chẩn đoán", "error");
@@ -190,7 +190,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
             setLoading
         );
     };
-    
+
 
     return (
         <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
@@ -203,10 +203,10 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                     <Field label="Chẩn đoán *" value={diagnosis} onChangeText={setDiagnosis} multiline />
                     <Field label="Triệu chứng" value={symptoms} onChangeText={setSymptoms} multiline />
                     <Field label="Ghi chú" value={medical_notes} onChangeText={setMedicalNotes} multiline />
-                    <DateField label="Ngày tái khám" value={followUpDate} onChange={setFollowUpDate} placeholder="01/01/2026"/>
+                    <DateField label="Ngày tái khám" value={followUpDate} onChange={setFollowUpDate} placeholder="01/01/2026" />
                 </View>
 
-                
+
                 <SectionTitle icon="pill" text="Đơn thuốc" />
                 <View style={styles.card}>
                     <Field
@@ -216,7 +216,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                         multiline
                     />
 
-                    
+
                     <TextInput
                         mode="outlined"
                         label="Tìm và thêm thuốc..."
@@ -234,33 +234,33 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                         style={styles.input}
                     />
 
-                    
+
                     {medicineSearch.trim().length > 0 && (
                         <View style={localStyles.searchResults}>
                             <ScrollView
                                 nestedScrollEnabled={true}
                                 keyboardShouldPersistTaps="handled"
-                                style={{maxHeight:200}}
+                                style={{ maxHeight: 200 }}
                             >
-                            {filteredMedicines.map(m => (
-                                <TouchableOpacity
-                                    key={m.id}
-                                    style={localStyles.searchResultItem}
-                                    onPress={() => addMedicine(m)}
-                                >
-                                    <MaterialCommunityIcons name="pill" size={14} color={COLORS.primary} />
-                                    <Text style={localStyles.searchResultText}>{m.name}</Text>
-                                    <MaterialCommunityIcons name="plus-circle-outline" size={16} color={COLORS.primary} />
-                                </TouchableOpacity>
-                            ))}
-                            {filteredMedicines.length === 0 && (
-                                <Text style={localStyles.noResult}>Không tìm thấy thuốc</Text>
-                            )}
+                                {filteredMedicines.map(m => (
+                                    <TouchableOpacity
+                                        key={m.id}
+                                        style={localStyles.searchResultItem}
+                                        onPress={() => addMedicine(m)}
+                                    >
+                                        <MaterialCommunityIcons name="pill" size={14} color={COLORS.primary} />
+                                        <Text style={localStyles.searchResultText}>{m.name}</Text>
+                                        <MaterialCommunityIcons name="plus-circle-outline" size={16} color={COLORS.primary} />
+                                    </TouchableOpacity>
+                                ))}
+                                {filteredMedicines.length === 0 && (
+                                    <Text style={localStyles.noResult}>Không tìm thấy thuốc</Text>
+                                )}
                             </ScrollView>
                         </View>
                     )}
 
-                
+
                     {prescriptionDetails.map((detail, index) => (
                         <View key={`medicine-${detail.medicine_id}`} style={localStyles.medicineItem}>
                             <View style={localStyles.medicineHeader}>
@@ -288,7 +288,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                     ))}
                 </View>
 
-                
+
                 <SectionTitle icon="test-tube" text="Kết quả xét nghiệm" />
                 <View style={styles.card}>
                     <TextInput
@@ -308,28 +308,28 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                         style={styles.input}
                     />
 
-        
+
                     {testSearch.trim().length > 0 && (
                         <View style={localStyles.searchResults}>
                             <ScrollView
                                 nestedScrollEnabled={true}
                                 keyboardShouldPersistTaps="handled"
-                                style={{maxHeight:200}}
+                                style={{ maxHeight: 200 }}
                             >
                                 {filteredTests.map(t => (
-                                    <TouchableOpacity  key={t.id} style={localStyles.searchResultItem}  onPress={() => addTestResult(t)} >
-                                        <MaterialCommunityIcons name="test-tube" size={14}  color={COLORS.primary}/>
+                                    <TouchableOpacity key={t.id} style={localStyles.searchResultItem} onPress={() => addTestResult(t)} >
+                                        <MaterialCommunityIcons name="test-tube" size={14} color={COLORS.primary} />
                                         <View style={{ flex: 1 }}>
                                             <Text style={localStyles.searchResultText}>
                                                 {t.name}
                                             </Text>
                                         </View>
 
-                                        <MaterialCommunityIcons name="plus-circle-outline" size={16}color={COLORS.primary}/>
+                                        <MaterialCommunityIcons name="plus-circle-outline" size={16} color={COLORS.primary} />
                                     </TouchableOpacity>
                                 ))}
 
-                                {filteredTests.length === 0 && 
+                                {filteredTests.length === 0 &&
                                     (<Text style={localStyles.noResult}>  Không tìm thấy xét nghiệm </Text>)}
                             </ScrollView>
                         </View>
@@ -394,15 +394,18 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                     ))}
                 </View>
 
-                <AppButton
-                    type="create"
-                    label="Tạo hồ sơ bệnh án"
-                    onPress={handleSubmit}
-                    loading={loading}
-                    style={{ marginTop: 8 }}
-                />
+                
 
             </ScrollView>
+            <View>
+                    <AppButton
+                        type="create"
+                        label="Tạo hồ sơ bệnh án"
+                        onPress={handleSubmit}
+                        loading={loading}
+                        style={{ marginTop: 8 }}
+                    />
+                </View>
         </View>
     );
 };

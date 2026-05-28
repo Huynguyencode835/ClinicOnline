@@ -32,7 +32,7 @@ const MENU_SECTIONS = [
     {
         title: 'Điều khoản & quy định',
         items: [
-            { id: 'terms', icon: 'shield-check-outline', label: 'Quy định sử dụng', iconBg: '#E1F5EE', iconColor: '#0F6E56' ,type: TYPE_INFORMATION.RULE},
+            { id: 'terms', icon: 'shield-check-outline', label: 'Quy định sử dụng', iconBg: '#E1F5EE', iconColor: '#0F6E56', type: TYPE_INFORMATION.RULE },
             { id: 'privacy', icon: 'lock-outline', label: 'Chính sách bảo mật', iconBg: '#EDE7F6', iconColor: '#6200EA', type: TYPE_INFORMATION.SECURITY },
             { id: 'service', icon: 'file-document-outline', label: 'Điều khoản dịch vụ', iconBg: '#FFEBEE', iconColor: '#C62828', type: TYPE_INFORMATION.TERMSOFSERVICE },
         ],
@@ -40,7 +40,7 @@ const MENU_SECTIONS = [
     {
         title: 'Tiện ích',
         items: [
-            { id: 'health', icon: 'heart-pulse', label: 'Xem/Lưu thông tin sức khoẻ', iconBg: '#E3F2FD', iconColor: '#1565C0',type: TYPE_INFORMATION.RULE },
+            { id: 'health', icon: 'heart-pulse', label: 'Xem/Lưu thông tin sức khoẻ', iconBg: '#E3F2FD', iconColor: '#1565C0', type: TYPE_INFORMATION.RULE },
             { id: 'hotline', icon: 'phone-outline', label: 'Hỗ trợ tư vấn/đặt khám 19002115', iconBg: '#E0F7FA', iconColor: '#00695C', type: TYPE_INFORMATION.SECURITY },
         ],
     },
@@ -64,12 +64,12 @@ const UserProfile = ({ navigation, onLogin, onRegister, onMenuItem }) => {
         await createPublic(
             endpoints.logout,
             qs.stringify(
-            {
-                token: token,
-                client_id: CLIENT_ID_APP,
-                client_secret: CLIENT_SECRET_APP,
-            }),
-            () => {showSnackbar('Đăng xuất thành công', 'success');},
+                {
+                    token: token,
+                    client_id: CLIENT_ID_APP,
+                    client_secret: CLIENT_SECRET_APP,
+                }),
+            () => { showSnackbar('Đăng xuất thành công', 'success'); },
             (err) => showSnackbar(err, 'error', 'Đăng xuất thất bại'),
 
             {},
@@ -127,12 +127,13 @@ const UserProfile = ({ navigation, onLogin, onRegister, onMenuItem }) => {
                                         variant="bodyMedium"
                                         style={[styles.heroSub, { color: theme.colors.onPrimary, opacity: 0.8 }]}
                                     >
-                                        Chào mừng bạn đã trở lại! Hãy khám phá các dịch vụ của chúng tôi.
+                                        Chào mừng bạn đã trở lại!{'\n'}Hãy khám phá các dịch vụ của chúng tôi.
                                     </Text>
                                 </View>
-                                {user?.role == "doctor" && (
+                                {(user?.role == "doctor" || user?.role == "healthcare") && (
                                     <AppButton
                                         type="book"
+                                        label="Tạo lịch làm việc"
                                         style={{ borderWidth: 1, borderColor: "#FFFFFF" }}
                                         onPress={() => navigation.navigate('Schedule')}
                                     />
@@ -155,7 +156,7 @@ const UserProfile = ({ navigation, onLogin, onRegister, onMenuItem }) => {
                                     Đăng nhập để trải nghiệm đầy đủ tính năng
                                 </Text>
 
-                                
+
                                 <View style={styles.authRow}>
 
                                     <AppButton
@@ -176,11 +177,11 @@ const UserProfile = ({ navigation, onLogin, onRegister, onMenuItem }) => {
 
                     </View>
 
-                    
+
                     <View style={[styles.wave, { backgroundColor: theme.colors.background }]} />
                 </Surface>
 
-                
+
                 <View style={styles.menuWrap}>
                     {MENU_SECTIONS.map((section, si) => (
                         <View key={section.title} style={styles.section}>
@@ -205,7 +206,7 @@ const UserProfile = ({ navigation, onLogin, onRegister, onMenuItem }) => {
                                                 title={item.label}
                                                 titleStyle={[styles.itemTitle, { color: theme.colors.onSurface }]}
                                                 style={styles.listItem}
-                                                onPress={()=>{navigation.navigate("Information", {type: item.type})}}
+                                                onPress={() => { navigation.navigate("Information", { type: item.type }) }}
                                                 left={() => (
                                                     <View
                                                         style={[
@@ -238,7 +239,7 @@ const UserProfile = ({ navigation, onLogin, onRegister, onMenuItem }) => {
                         </View>
                     ))}
 
-        
+
                     <Text
                         variant="bodySmall"
                         style={[styles.version, { color: theme.colors.onSurfaceVariant }]}

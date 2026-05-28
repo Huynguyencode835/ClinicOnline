@@ -43,8 +43,8 @@ import Chat from "./screens/BoxChat/Chat";
 import Search from "./screens/Home/Search";
 import Total from "./screens/Report/Total";
 import { Platform, UIManager } from 'react-native';
-// import messaging from '@react-native-firebase/messaging';
-// import { registerForPushNotifications, onForegroundMessage, onNotificationOpenedApp, getInitialNotification, setBackgroundMessageHandler, saveFCMTokenToFirestore } from './configs/firebase/notifications';
+import messaging from '@react-native-firebase/messaging';
+import { registerForPushNotifications, onForegroundMessage, onNotificationOpenedApp, getInitialNotification, setBackgroundMessageHandler, saveFCMTokenToFirestore } from './configs/firebase/notifications';
 import { createNavigationContainerRef } from '@react-navigation/native';
 
 
@@ -352,94 +352,94 @@ const AppContent = () => {
 
   useEffect(() => {
     loadUser();
-    // setBackgroundMessageHandler();
+    setBackgroundMessageHandler();
   }, []);
 
-  // useEffect(() => {
-  //   if (user) {
-  //     registerForPushNotifications().then(token => {
-  //       if (token) {
-  //         saveFCMTokenToFirestore(user.id, token);
-  //       }
-  //     });
+  useEffect(() => {
+    if (user) {
+      registerForPushNotifications().then(token => {
+        if (token) {
+          saveFCMTokenToFirestore(user.id, token);
+        }
+      });
 
-  //     const unsubscribeForeground = onForegroundMessage(async remoteMessage => {
-  //       const { type, sub_type, id } = remoteMessage.data;
+      const unsubscribeForeground = onForegroundMessage(async remoteMessage => {
+        const { type, sub_type, id } = remoteMessage.data;
 
-  //       if (type === 'appointment') {
-  //         if (sub_type === 'canceled') {
-  //           showSnackbar(
-  //             remoteMessage.notification?.title || 'Thông báo',
-  //             'warning',
-  //             remoteMessage.notification?.body || '',
-  //           );
-  //         } else if (sub_type === 'confirmed') {
-  //           showSnackbar(
-  //             remoteMessage.notification?.title || 'Thông báo',
-  //             'success',
-  //             remoteMessage.notification?.body || '',
-  //           );
-  //         } else if (sub_type === 'pending_payment') {
-  //           showAlert({
-  //             type: 'info',
-  //             title: remoteMessage.notification?.title || 'Thông báo thanh toán',
-  //             message: remoteMessage.notification?.body || '',
-  //             actions: [
-  //               {
-  //                 text: 'Thanh toán sau',
-  //                 style: 'cancel'
-  //               },
-  //               {
-  //                 text: 'Đi đến thanh toán',
-  //                 onPress: () => {
-  //                   navigationRef.navigate("AppointmentsTab", {
-  //                     screen: "Payment",
-  //                     params: { appointmentId: id },
-  //                   })
-  //                 },
-  //               },
-  //             ],
-  //           })
-  //         }
-  //       } else {
-  //         showSnackbar(
-  //           remoteMessage.notification?.title || 'Thông báo',
-  //           'info',
-  //           remoteMessage.notification?.body || '',
-  //         );
-  //       }
-  //     });
+        if (type === 'appointment') {
+          if (sub_type === 'canceled') {
+            showSnackbar(
+              remoteMessage.notification?.title || 'Thông báo',
+              'warning',
+              remoteMessage.notification?.body || '',
+            );
+          } else if (sub_type === 'confirmed') {
+            showSnackbar(
+              remoteMessage.notification?.title || 'Thông báo',
+              'success',
+              remoteMessage.notification?.body || '',
+            );
+          } else if (sub_type === 'pending_payment') {
+            showAlert({
+              type: 'info',
+              title: remoteMessage.notification?.title || 'Thông báo thanh toán',
+              message: remoteMessage.notification?.body || '',
+              actions: [
+                {
+                  text: 'Thanh toán sau',
+                  style: 'cancel'
+                },
+                {
+                  text: 'Đi đến thanh toán',
+                  onPress: () => {
+                    navigationRef.navigate("AppointmentsTab", {
+                      screen: "Payment",
+                      params: { appointmentId: id },
+                    })
+                  },
+                },
+              ],
+            })
+          }
+        } else {
+          showSnackbar(
+            remoteMessage.notification?.title || 'Thông báo',
+            'info',
+            remoteMessage.notification?.body || '',
+          );
+        }
+      });
 
-  //     const unsubscribeBackground = onNotificationOpenedApp(remoteMessage => {
-  //       const { type, id } = remoteMessage.data;
+      const unsubscribeBackground = onNotificationOpenedApp(remoteMessage => {
+        const { type, id } = remoteMessage.data;
 
-  //       if (type === 'appointment' && navigationRef.isReady()) {
-  //         navigationRef.navigate('AppointmentsTab', {
-  //           screen: 'AppointmentDetail',
-  //           params: { id },
-  //         });
-  //       }
-  //     });
+        if (type === 'appointment' && navigationRef.isReady()) {
+          navigationRef.navigate('AppointmentsTab', {
+            screen: 'AppointmentDetail',
+            params: { id },
+          });
+        }
+      });
 
-  //     getInitialNotification().then(remoteMessage => {
-  //       if (remoteMessage) {
-  //         const { type, id } = remoteMessage.data;
+      getInitialNotification().then(remoteMessage => {
+        if (remoteMessage) {
+          const { type, id } = remoteMessage.data;
 
-  //         if (type === 'appointment' && navigationRef.isReady()) {
-  //           navigationRef.navigate('AppointmentsTab', {
-  //             screen: 'AppointmentDetail',
-  //             params: { id },
-  //           });
-  //         }
-  //       }
-  //     });
+          if (type === 'appointment' && navigationRef.isReady()) {
+            navigationRef.navigate('AppointmentsTab', {
+              screen: 'AppointmentDetail',
+              params: { id },
+            });
+          }
+        }
+      });
 
-  //     return () => {
-  //       unsubscribeForeground();
-  //       unsubscribeBackground();
-  //     };
-  //   }
-  // }, [user]);
+      return () => {
+        unsubscribeForeground();
+        unsubscribeBackground();
+      };
+    }
+  }, [user]);
 
   return <TabNavigatior />;
 };

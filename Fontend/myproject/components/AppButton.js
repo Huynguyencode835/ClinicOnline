@@ -6,7 +6,7 @@ import { Animated} from 'react-native';
 
 const BUTTON_CONFIGS = {
     login:    { icon: 'login',              label: 'Đăng nhập',    color: COLORS.btnPrimary },
-    logout:   { icon: 'logout',             label: 'Đăng xuất',    color: COLORS.btnDanger  },
+    logout:   { icon: 'logout',             label: 'Đăng xuất',    color: "#94A3B8"  },
     register: { icon: 'account-plus',       label: 'Đăng ký',      color: COLORS.btnPrimary },
 
     

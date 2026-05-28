@@ -16,8 +16,6 @@ export const registerForPushNotifications = async () => {
     }
 
     const token = await messaging().getToken();
-    console.log('FCM Token:', token);
-
     return token;
 };
 

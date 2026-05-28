@@ -14,7 +14,8 @@ const Field = ({ label, value, onChangeText, placeholder, multiline, keyboardTyp
         numberOfLines={multiline ? 3 : 1}
         outlineColor={COLORS.border}
         activeOutlineColor={COLORS.primary}
-        style={styles.input}
+        outlineStyle={{ borderRadius: 12 }}
+        style={[styles.input, { backgroundColor: COLORS.bg }]}
         {...rest}
     />
 );

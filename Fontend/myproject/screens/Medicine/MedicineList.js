@@ -129,7 +129,7 @@ const MedicineList = () => {
         }, [user])
     );
 
-    
+
     if (loadingScreen) return <LoadingScreen text="Đang tải danh sách thuốc..." />;
 
     return (
@@ -186,7 +186,6 @@ const MedicineList = () => {
                 />
             </View>
 
-
             <FlatList
                 contentContainerStyle={{ padding: 16 }}
                 data={medicines}
@@ -225,41 +224,40 @@ const MedicineList = () => {
                         </View>
                     )
                 }
-                ListFooterComponent={
-                    loading
-                        ? <ActivityIndicator size="large" color={COLORS.primary} style={{ marginVertical: 16 }} />
-                        : totalPages > 1 && (
-                            <View style={StyleMedicine.pagination}>
-                                <TouchableOpacity
-                                    style={[StyleMedicine.pageBtn, page <= 1 && StyleMedicine.pageBtnDisabled]}
-                                    onPress={handlePrev}
-                                    disabled={page <= 1 || loading}
-                                >
-                                    <MaterialCommunityIcons name="chevron-left" size={20}
-                                        color={page <= 1 ? COLORS.textMuted : COLORS.primary} />
-                                    <Text style={[StyleMedicine.pageBtnText, page <= 1 && StyleMedicine.pageBtnTextDisabled]}>
-                                        Trước
-                                    </Text>
-                                </TouchableOpacity>
-
-                                <Text style={StyleMedicine.pageInfo}>Trang {page} / {totalPages}</Text>
-
-                                <TouchableOpacity
-                                    style={[StyleMedicine.pageBtn, page >= totalPages && StyleMedicine.pageBtnDisabled]}
-                                    onPress={handleNext}
-                                    disabled={page >= totalPages || loading}
-                                >
-                                    <Text style={[StyleMedicine.pageBtnText, page >= totalPages && StyleMedicine.pageBtnTextDisabled]}>
-                                        Sau
-                                    </Text>
-                                    <MaterialCommunityIcons name="chevron-right" size={20}
-                                        color={page >= totalPages ? COLORS.textMuted : COLORS.primary} />
-                                </TouchableOpacity>
-                            </View>
-                        )
-                }
             />
+            {
+                loading
+                    ? <ActivityIndicator size="large" color={COLORS.primary} style={{ marginVertical: 16 }} />
+                    : totalPages > 1 && (
+                        <View style={StyleMedicine.pagination}>
+                            <TouchableOpacity
+                                style={[StyleMedicine.pageBtn, page <= 1 && StyleMedicine.pageBtnDisabled]}
+                                onPress={handlePrev}
+                                disabled={page <= 1 || loading}
+                            >
+                                <MaterialCommunityIcons name="chevron-left" size={20}
+                                    color={page <= 1 ? COLORS.textMuted : COLORS.primary} />
+                                <Text style={[StyleMedicine.pageBtnText, page <= 1 && StyleMedicine.pageBtnTextDisabled]}>
+                                    Trước
+                                </Text>
+                            </TouchableOpacity>
 
+                            <Text style={StyleMedicine.pageInfo}>Trang {page} / {totalPages}</Text>
+
+                            <TouchableOpacity
+                                style={[StyleMedicine.pageBtn, page >= totalPages && StyleMedicine.pageBtnDisabled]}
+                                onPress={handleNext}
+                                disabled={page >= totalPages || loading}
+                            >
+                                <Text style={[StyleMedicine.pageBtnText, page >= totalPages && StyleMedicine.pageBtnTextDisabled]}>
+                                    Sau
+                                </Text>
+                                <MaterialCommunityIcons name="chevron-right" size={20}
+                                    color={page >= totalPages ? COLORS.textMuted : COLORS.primary} />
+                            </TouchableOpacity>
+                        </View>
+                    )
+            }
             {user?.role === "healthcare" && (
                 <AppButton
                     type="create"

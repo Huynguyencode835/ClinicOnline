@@ -136,7 +136,7 @@ class Appointment(BaseModel):
     reason = models.TextField(blank=False, null= False)
     symptoms = models.TextField(blank=True, null= True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
-    time_slot=models.OneToOneField(TimeSlot, on_delete=models.PROTECT,related_name="appointment_time_slot")
+    time_slot=models.OneToOneField(TimeSlot, on_delete=models.PROTECT,related_name="appointment_time_slot", null=True, blank=True)
 
     customer = models.ForeignKey(User, on_delete=models.CASCADE,related_name="appointments_customer")
     doctor = models.ForeignKey(User, on_delete=models.CASCADE,related_name="appointments_doctor")

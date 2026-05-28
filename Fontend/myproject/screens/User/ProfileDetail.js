@@ -154,7 +154,6 @@ const ProfileDetail = () => {
                 const updated = { ...saved, ...data };
                 await SecureStore.setItemAsync("user", JSON.stringify(updated));
                 dispatch({ type: "UPDATE", payload: data });
-                console.log('API response:', JSON.stringify(data));
                 setProfileDetail(data);
                 setErro({});
             },
@@ -199,7 +198,6 @@ const ProfileDetail = () => {
             name: 'insurance_card.jpg',
         });
 
-        console.log(formData)
 
         await createWithAuth(
             endpoints.insuranceScan,

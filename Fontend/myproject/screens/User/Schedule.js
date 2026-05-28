@@ -26,6 +26,7 @@ const Schedule = ({ route }) => {
     const [loading, setLoading] = useState(false);
     const [loadingFetch, setLoadingFetch] = useState(false);
     const hasChangedRef = useRef(false);
+    const [loadingInit, setLoadingInit] = useState(true); 
 
     const generateSlots = (fromHour, toHour, duration = 60, step = 15) => {
         const slots = [];
@@ -81,7 +82,7 @@ const Schedule = ({ route }) => {
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     });
 
-    const loadWorkDay = async (isRefreshing = false) => {
+    const loadWorkDay = async (isRefreshing = false, month = currentMonth) => {
         if (isRefreshing) {
             setRefreshing(true);
         }
@@ -92,10 +93,11 @@ const Schedule = ({ route }) => {
             },
             (type, msg, errData) => {
                 showSnackbar(msg, 'error', errData ? JSON.stringify(errData) : '')
-            }, { month: currentMonth },
+            }, { month: month },
             setLoadingFetch
         )
         setRefreshing(false);
+        setLoadingInit(false);
     }
 
     const loadDetailWorkday = async (id) => {
@@ -110,7 +112,6 @@ const Schedule = ({ route }) => {
             setLoadingFetch
         )
     }
-    console.log(schedule)
 
     const deleteWorkday = async (id) => {
         await deleteWithAuth(
@@ -185,11 +186,14 @@ const Schedule = ({ route }) => {
     };
 
     useEffect(() => {
-        if (!route.params?.id) loadWorkDay()
+        if (!route.params?.id){
+            loadWorkDay(currentMonth)
+        } 
         else {
             loadDetailWorkday(route.params.id);
         }
-    }, [route.params?.id]);
+    }, [route.params?.id, currentMonth]);
+
 
     if (schedule.date) {
         markedDates[schedule.date] = {
@@ -199,7 +203,7 @@ const Schedule = ({ route }) => {
         };
     }
 
-    if (loadingFetch) return <LoadingScreen text="Đang tải thông tin..." />;
+    if (loadingInit) return <LoadingScreen text="Đang tải thông tin..." />;
 
     const formattedSlots = schedule.time_slots.map(slot => ({
         ...slot,
@@ -245,7 +249,7 @@ const Schedule = ({ route }) => {
                                         setCurrentMonth(key);
                                     }}
                                     markedDates={markedDates}
-                                    minDate={minDate}
+                                    // minDate={minDate}
                                 // maxDate={maxDate}
                                 />
                             </Card.Content>

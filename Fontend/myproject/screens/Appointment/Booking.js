@@ -105,7 +105,8 @@ const BookingContent = () => {
                     resetAll(user);
                     setStep(0);
                 },
-                (type, msg) => {
+                (type, msg,err) => {
+                    console.log(err)
                     setSnackbar({ visible: true, message: msg, type: 'error' });
                 }
             );
@@ -144,7 +145,6 @@ const BookingContent = () => {
                                 disabled={!canGoNext()}
                                 onPress={() => {
                                     setStep(prev => prev + 1);
-                                    console.log(bookingData)
                                 }}
                             />
                         )}
@@ -153,7 +153,6 @@ const BookingContent = () => {
                             type="back"
                             disabled={step === 0}
                             onPress={() => {
-                                console.log(bookingData)
                                 setStep(prev => prev - 1)
                             }}
                         />

@@ -65,6 +65,7 @@ const Step1Schedule = ({ doctor, specialty }) => {
         await fetchWithAuth(
             endpoints.doctorWorkDay(id),
             (data) => {
+                console.log(formatSlots(data))
                 setWorkDay(formatSlots(data))
             },
             (type, msg) => setSnackbar({ visible: true, message: msg, type: 'error' }),

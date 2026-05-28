@@ -1,4 +1,4 @@
-import { useEffect, useState,useContext,useCallback} from "react";
+import { useEffect, useState, useContext, useCallback } from "react";
 import { View, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
 import { Text, Surface, Chip, Divider } from "react-native-paper";
 import { fetchWithAuth } from "../../utils/apiHelper";
@@ -7,10 +7,10 @@ import COLORS from "../../styles/Colors";
 import AppSnackbar from "../../components/AppSnackbar";
 import SectionTitle from "../../components/Appointment/SectionTilte";
 import InfoCard from "../../components/Appointment/InfoCard";
-import {InfoCard2Col} from "../../components/Appointment/InfoCard";
+import { InfoCard2Col } from "../../components/Appointment/InfoCard";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AppHeader from "../../components/AppHeader";
-import { useNavigation,useFocusEffect } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { formatDate, formatDate2 } from "../../utils/format";
 import { genderMap } from "../../utils/mapping";
 import { MyUserContext } from "../../utils/contexts/MyUserContext";
@@ -32,9 +32,9 @@ const InfoRow = ({ icon, label, value }) => (
     </View>
 );
 
-const Card = ({ title, children,style }) => (
+const Card = ({ title, children, style }) => (
     <Surface style={[styles.card, style]}>
-         {title && <Text style={styles.cardTitle}>{title}</Text>}
+        {title && <Text style={styles.cardTitle}>{title}</Text>}
         {children}
     </Surface>
 );
@@ -72,29 +72,29 @@ const MedicalRecordDetail = ({ route }) => {
         try {
             setLoading(true);
             await updatePatchWithAuth(endpoint,
-            { status: "Pending_payment" },
-            (data) => {
-                showSnackbar("Hoàn thành hồ sơ, chờ bệnh nhân thanh toán", "success");
-                setLoading(false);
-                navigation.goBack();
-            },
-            (type, msg, errData) => {
-                console.log("errData:",JSON.stringify(errData, null, 2));
-                if (errData && typeof errData === "object") {
-                    const messages = Object.entries(errData).map(([field, errors]) =>Array.isArray(errors)? errors.join(", "): errors).join("\n");
-                    showSnackbar(
-                        messages || "Hoàn thành hồ sơ thất bại",
-                        "error"
-                    );
-                } else {
-                    showSnackbar(
-                        msg || "Hoàn thành hồ sơ thất bại",
-                        "error"
-                    );
-                }
-                setLoading(false);
-            },
-            setLoading 
+                { status: "Pending_payment" },
+                (data) => {
+                    showSnackbar("Hoàn thành hồ sơ, chờ bệnh nhân thanh toán", "success");
+                    setLoading(false);
+                    navigation.goBack();
+                },
+                (type, msg, errData) => {
+                    console.log("errData:", JSON.stringify(errData, null, 2));
+                    if (errData && typeof errData === "object") {
+                        const messages = Object.entries(errData).map(([field, errors]) => Array.isArray(errors) ? errors.join(", ") : errors).join("\n");
+                        showSnackbar(
+                            messages || "Hoàn thành hồ sơ thất bại",
+                            "error"
+                        );
+                    } else {
+                        showSnackbar(
+                            msg || "Hoàn thành hồ sơ thất bại",
+                            "error"
+                        );
+                    }
+                    setLoading(false);
+                },
+                setLoading
             );
         } catch (error) {
             showSnackbar("Có lỗi xảy ra", "error");
@@ -108,15 +108,15 @@ const MedicalRecordDetail = ({ route }) => {
         </View>
     );
 
-    const { customer, doctor, prescription, test_results : rawTestResults= [] ,appointment} = record;
-  
+    const { customer, doctor, prescription, test_results: rawTestResults = [], appointment } = record;
+
     const fullNameC = customer ? `${customer.last_name} ${customer.first_name}` : "—";
     const fullNameD = doctor ? `${doctor.last_name} ${doctor.first_name}` : "—";
 
     const test_results = rawTestResults.filter(
         (item, index, self) => index === self.findIndex(r => r.id === item.id)
     );
-    
+
     const hasPrescription = prescription?.details?.length > 0;
 
     return (
@@ -128,16 +128,16 @@ const MedicalRecordDetail = ({ route }) => {
                 <SectionTitle icon="account" text="Thông tin bệnh nhân" />
                 <InfoCard2Col
                     rows={[
-                        {icon: "account-outline", label: "Họ và tên", value: fullNameC},
-                        {icon: "phone-outline", label: "Điện thoại", value: customer?.phone},
-                        {icon: "email-outline", label: "Email", value: customer?.email },
-                        {icon: "gender-male-female", label: "Giới tính", value: genderMap[customer?.gender]},
-                        {icon: "card-account-details-outline", label: "Số thẻ BHYT", value: customer?.profile?.insurance_number},
-                        {icon: "calendar-end", label: "Hết hạn BHYT", value: customer?.profile?.insurance_expiry_date},
-                        {icon: "water", label: "Nhóm máu", value: customer?.profile?.blood_group},
-                        {icon: "needle", label: "Tiền sử dị ứng", value: customer?.profile?.allergy_history},
-                        {icon: "human", label: "Chiều cao", value: customer?.profile?.height ? `${customer?.profile?.height} cm` : null},
-                        {icon: "weight", label: "Cân nặng", value: customer?.profile?.weight ? `${customer?.profile?.weight} kg` : null}
+                        { icon: "account-outline", label: "Họ và tên", value: fullNameC },
+                        { icon: "phone-outline", label: "Điện thoại", value: customer?.phone },
+                        { icon: "email-outline", label: "Email", value: customer?.email },
+                        { icon: "gender-male-female", label: "Giới tính", value: genderMap[customer?.gender] },
+                        { icon: "card-account-details-outline", label: "Số thẻ BHYT", value: customer?.profile?.insurance_number },
+                        { icon: "calendar-end", label: "Hết hạn BHYT", value: customer?.profile?.insurance_expiry_date },
+                        { icon: "water", label: "Nhóm máu", value: customer?.profile?.blood_group },
+                        { icon: "needle", label: "Tiền sử dị ứng", value: customer?.profile?.allergy_history },
+                        { icon: "human", label: "Chiều cao", value: customer?.profile?.height ? `${customer?.profile?.height} cm` : null },
+                        { icon: "weight", label: "Cân nặng", value: customer?.profile?.weight ? `${customer?.profile?.weight} kg` : null }
                     ]}
                 />
 
@@ -145,14 +145,14 @@ const MedicalRecordDetail = ({ route }) => {
                 <SectionTitle icon="account-tie" text="Thông tin bác sĩ" />
                 <InfoCard
                     rows={[
-                        {icon: "account-outline", label: "Họ và tên", value: fullNameD},
-                        {icon: "phone-outline", label: "Điện thoại", value: doctor?.phone},
-                        {icon: "stethoscope", label: "Chuyên khoa", value: doctor?.specialties?.join(", ")}
+                        { icon: "account-outline", label: "Họ và tên", value: fullNameD },
+                        { icon: "phone-outline", label: "Điện thoại", value: doctor?.phone },
+                        { icon: "stethoscope", label: "Chuyên khoa", value: doctor?.specialties?.join(", ") }
                     ]}
                     iconBgColor="#c2dcfa"
                 />
 
-        
+
                 <SectionTitle icon="file-document-outline" text="Hồ sơ bệnh án" />
                 <InfoCard
                     rows={[
@@ -165,7 +165,7 @@ const MedicalRecordDetail = ({ route }) => {
                     iconBgColor="#FFF3E0"
                 />
 
-            
+
                 <SectionTitle icon="test-tube" text="Kết quả xét nghiệm" />
                 {test_results.length > 0 ? (
                     <Card>
@@ -226,7 +226,7 @@ const MedicalRecordDetail = ({ route }) => {
                                             {detail.dosage} • {detail.quantity} {detail.medicine_unit}
                                         </Text>
                                     </View>
-                                
+
                                 </View>
                                 {index < prescription.details.length - 1 && (
                                     <Divider style={{ marginLeft: 44, marginVertical: 6 }} />
@@ -246,61 +246,63 @@ const MedicalRecordDetail = ({ route }) => {
                         <View style={{ margin: 16, padding: 12, backgroundColor: "#E8F5E9", borderRadius: 8, alignItems: "center" }}>
                             <Text style={{ color: "#2E7D32", fontWeight: "600" }}>Đã hoàn thành hồ sơ</Text>
                         </View>
-                    ):(
+                    ) : (
                         <View style={styles.actionContainer}>
-                            <View style={styles.actionButtonWrap}>
-                                <AppButton
-                                    type="edit"
-                                    label="Hồ sơ"
-                                    onPress={() =>
-                                        navigation.navigate("UpdateMedicalRecord", {
-                                            id: record.id,
-                                            record,
-                                        })
-                                    }
-                                    style={styles.actionButton}
-                                />
-                            </View>
 
-                            <View style={styles.actionButtonWrap}>
-                                <AppButton
-                                    type="edit"
-                                    label="Đơn thuốc"
-                                    onPress={() =>{
-                                        navigation.navigate("UpdatePrescription", {
-                                            medicalRecordId: record.id,
-                                            prescription: record.prescription ?? null,
-                                        })
-                                    }
-                                    }
-                                    style={styles.actionButton}
-                                />
-                            </View>
 
-                            <View style={styles.actionButtonWrap}>
-                                <AppButton
-                                    type="edit"
-                                    label="KQXN"
-                                    onPress={() =>
-                                        navigation.navigate("UpdateTestResults", {
-                                            medicalRecordId: record.id,
-                                            testResults: record.test_results ?? [],
-                                        })
-                                    }
-                                    style={styles.actionButton}
-                                />
-                            </View>
-                            
-                            {record.appointment?.status === "Pending_payment" ?(
+                            {record.appointment?.status === "Pending_payment" ? (
+                                <View style={{flex: 1}}>
+                                    <AppButton
+                                        type="pending"
+                                        textColor="#F57C00"
+                                        label="Chờ thanh toán"
+                                        style={{ marginHorizontal: 0 }}
+                                    />
+                                </View>
+                            ) : (
+                                <>
                                     <View style={styles.actionButtonWrap}>
                                         <AppButton
-                                            type="pending"
-                                            textColor="#F57C00"
-                                            label="Chờ thanh toán"
-                                            style={{ marginHorizontal: 0 }}
+                                            type="edit"
+                                            label="Hồ sơ"
+                                            onPress={() =>
+                                                navigation.navigate("UpdateMedicalRecord", {
+                                                    id: record.id,
+                                                    record,
+                                                })
+                                            }
+                                            style={styles.actionButton}
                                         />
                                     </View>
-                                ):(
+
+                                    <View style={styles.actionButtonWrap}>
+                                        <AppButton
+                                            type="edit"
+                                            label="Đơn thuốc"
+                                            onPress={() => {
+                                                navigation.navigate("UpdatePrescription", {
+                                                    medicalRecordId: record.id,
+                                                    prescription: record.prescription ?? null,
+                                                })
+                                            }
+                                            }
+                                            style={styles.actionButton}
+                                        />
+                                    </View>
+
+                                    <View style={styles.actionButtonWrap}>
+                                        <AppButton
+                                            type="edit"
+                                            label="KQXN"
+                                            onPress={() =>
+                                                navigation.navigate("UpdateTestResults", {
+                                                    medicalRecordId: record.id,
+                                                    testResults: record.test_results ?? [],
+                                                })
+                                            }
+                                            style={styles.actionButton}
+                                        />
+                                    </View>
                                     <View style={styles.actionButtonWrap}>
                                         <AppButton
                                             type="create"
@@ -310,14 +312,15 @@ const MedicalRecordDetail = ({ route }) => {
                                             style={{ marginHorizontal: 0 }}
                                         />
                                     </View>
-                                )
+                                </>
+                            )
                             }
                         </View>
                     )
                 )}
 
             </ScrollView>
-            
+
 
             <AppSnackbar
                 visible={snackbar.visible}

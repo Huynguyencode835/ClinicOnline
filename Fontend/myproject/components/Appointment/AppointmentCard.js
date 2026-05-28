@@ -11,8 +11,8 @@ import AnimatedPressable from "../Animation/AnimatedPressable";
 import { useAlert } from "../../utils/contexts/AlertContext";
 
 const statusMap = {
-    Pending_payment: {label: "Chờ thanh toán", bg: "#FFF8E1", text: "#F57F17"},
-    Completed:{label:"Đã hoàn thành", bg: "#E8F5E9", text: "#2E7D32" },
+    Pending_payment: { label: "Chờ thanh toán", bg: "#FFF8E1", text: "#F57F17" },
+    Completed: { label: "Đã hoàn thành", bg: "#E8F5E9", text: "#2E7D32" },
     Pending: { label: "Chờ duyệt", bg: "#FFF3E0", text: "#E65100" },
     Confirmed: { label: "Đã xác nhận", bg: "#E3F2FD", text: "#1565C0" },
     Done: { label: "Hoàn thành", bg: "#E8F5E9", text: "#2E7D32" },
@@ -169,18 +169,23 @@ const AppointmentCard = ({ item, onPress, onConfirm, onReject }) => {
 
                     <View style={styles.divider} />
 
-                  
+
                     <View style={styles.infoBlock}>
                         <InfoRow label="Lý do" value={reason} />
                         <InfoRow label="Triệu chứng" value={symptoms} />
-                        <InfoRow label="Ngày" value={date} />
-                        <InfoRow label="Khung giờ" value={time} />
+                        {status !== "Canceled" && (
+                            <>
+                                <InfoRow label="Ngày" value={date} />
+                                <InfoRow label="Khung giờ" value={time} />
+                            </>
+                        )}
+
                     </View>
 
                     {user?.role === "doctor" && status === "Pending" && (
                         <View>
                             <View style={styles.divider} />
-        
+
                             <View style={styles.footer}>
                                 <Text style={styles.appointmentId}>Mã lịch hẹn #{id}</Text>
                                 {selected

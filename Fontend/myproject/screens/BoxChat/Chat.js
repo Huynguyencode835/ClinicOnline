@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext, useCallback } from 'react';
+import React, { useState, useRef, useContext, useCallback, useEffect } from 'react';
 import { View, FlatList, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { Text, TextInput, IconButton, Avatar, Surface } from 'react-native-paper';
 import { createWithAuth } from '../../utils/apiHelper';
@@ -16,7 +16,7 @@ const Chat = () => {
     const flatListRef = useRef(null);
     const navigation = useNavigation();
     const { user } = useContext(MyUserContext);
-    const {showAlertAuth} = useAlert();
+    const { showAlertAuth } = useAlert();
 
     useFocusEffect(
         useCallback(() => {
@@ -26,6 +26,10 @@ const Chat = () => {
             }
         }, [user])
     );
+
+    useEffect(() => {
+        if (user) setMessages([]);
+    }, [user]);
 
     const appendMessage = (text, sender) => {
         setMessages(prev => [...prev, { id: Date.now().toString(), text, sender }]);
@@ -139,7 +143,7 @@ const Chat = () => {
                         maxLength={500}
                         disabled={loading}
                         outlineColor="transparent"
-                        activeOutlineColor={COLORS.primary}
+                        activeOutlineColor="transparent"
                         dense
                     />
                     <IconButton

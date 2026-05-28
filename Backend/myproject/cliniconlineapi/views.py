@@ -249,33 +249,36 @@ class AppointmentViewSet(viewsets.ViewSet,
 
         updated = serializer.save()
 
-        # if updated.status == Appointment.Status.CANCELED:
-        #     updated.time_slot.status = TimeSlot.Status.AVAILABLE
-        #     updated.time_slot.save()
-        #
-        #     send_push_to_user(
-        #         user_id=updated.customer.id,
-        #         title='Lịch hẹn bị từ chối',
-        #         body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã từ chối lịch hẹn của bạn.',
-        #         data={'type': 'appointment', 'id': str(updated.id),'sub_type': 'canceled'}
-        #     )
-        #
-        # elif updated.status == Appointment.Status.CONFIRMED:
-        #     send_push_to_user(
-        #         user_id=updated.customer.id,
-        #         title='Lịch hẹn được xác nhận',
-        #         body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã xác nhận lịch hẹn của bạn.',
-        #         data={'type': 'appointment', 'id': str(updated.id), 'sub_type': 'confirmed'}
-        #     )
-        #
-        # elif updated.status == Appointment.Status.PENDING_PAYMENT:
-        #     print("Hóa đơn đã sẳn sàng chờ bạn thanh toán")
-        #     send_push_to_user(
-        #         user_id=updated.customer.id,
-        #         title='Hóa đơn đã sẳn sàng chờ bạn thanh toán',
-        #         body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã xác nh của bạn.',
-        #         data={'type': 'appointment', 'id': str(updated.id), 'sub_type': 'pending_payment'}
-        #     )
+        if updated.status == Appointment.Status.CANCELED:
+            if updated.time_slot:
+                time_slot = updated.time_slot
+                updated.time_slot = None
+                updated.save(update_fields=['time_slot'])
+                time_slot.status = TimeSlot.Status.AVAILABLE
+                time_slot.save(update_fields=['status'])
+
+            send_push_to_user(
+                user_id=updated.customer.id,
+                title='Lịch hẹn bị từ chối',
+                body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã từ chối lịch hẹn của bạn.',
+                data={'type': 'appointment', 'id': str(updated.id), 'sub_type': 'canceled'}
+            )
+
+        elif updated.status == Appointment.Status.CONFIRMED:
+            send_push_to_user(
+                user_id=updated.customer.id,
+                title='Lịch hẹn được xác nhận',
+                body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã xác nhận lịch hẹn của bạn.',
+                data={'type': 'appointment', 'id': str(updated.id), 'sub_type': 'confirmed'}
+            )
+
+        elif updated.status == Appointment.Status.PENDING_PAYMENT:
+            send_push_to_user(
+                user_id=updated.customer.id,
+                title='Hóa đơn đã sẵn sàng thanh toán',
+                body=f'Lịch hẹn với bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã hoàn tất khám, vui lòng thanh toán để hoàn tất.',
+                data={'type': 'appointment', 'id': str(updated.id), 'sub_type': 'pending_payment'}
+            )
 
 
     def perform_destroy(self, instance):
@@ -286,8 +289,9 @@ class AppointmentViewSet(viewsets.ViewSet,
         if instance.status == Appointment.Status.PENDING and now() - instance.created_date > timedelta(hours=24):
             raise ValidationError("Không thể xóa lịch hẹn sau 24 giờ kể từ khi đặt.")
 
-        instance.time_slot.status = TimeSlot.Status.AVAILABLE
-        instance.time_slot.save()
+        if instance.time_slot:
+            instance.time_slot.status = TimeSlot.Status.AVAILABLE
+            instance.time_slot.save(update_fields=['status'])
         instance.delete()
 
 

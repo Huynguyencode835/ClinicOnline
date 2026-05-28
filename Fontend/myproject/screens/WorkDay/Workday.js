@@ -33,7 +33,6 @@ const Workday = ({ route }) => {
         await fetchWithAuth(
             endpoints.workday,
             (data) => {
-                console.log(data)
                 setWorkdays(data)
             },
             () => showSnackbar("Lỗi vui lòng thử lại sau", "error"),
@@ -202,6 +201,7 @@ const styles = StyleSheet.create({
     },
     calendar: {
         borderRadius: 16,
+        paddingTop: 10,
         elevation: 2,
         shadowColor: COLORS.primary,
         shadowOffset: { width: 0, height: 2 },
@@ -213,7 +213,9 @@ const styles = StyleSheet.create({
     hintRow: {
         flexDirection: "row",
         alignItems: "center",
+        justifyContent: "center",
         gap: 6,
+        paddingTop: 10,
         paddingHorizontal: 4,
     },
     hintDot: {
