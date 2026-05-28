@@ -78,7 +78,8 @@ ALLOWED_HOSTS = [
     'localhost',
     '192.168.100.152', #hung
     '192.168.1.177',
-    "unbalked-kayce-spindly.ngrok-free.dev"
+    "unbalked-kayce-spindly.ngrok-free.dev",
+    ".ngrok-free.dev",
 ]
 
 VNPAY_CONFIG = {

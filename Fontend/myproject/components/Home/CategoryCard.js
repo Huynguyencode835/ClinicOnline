@@ -46,6 +46,10 @@ const CategoryCard = () => {
                                     showSnackbar("Bạn không có quyền truy cập","warning")
                                     return;
                                 }
+                                if (user === null){
+                                    showSnackbar("Bạn vui lòng đăng nhập ","warning")
+                                    return;
+                                }
                                 if (item.nestedScreen) {
                                     navigation.navigate(item.screen, { screen: item.nestedScreen });
                                 } else {

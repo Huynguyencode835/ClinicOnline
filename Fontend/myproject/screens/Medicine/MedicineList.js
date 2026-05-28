@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext, useCallback, useRef } from "react";
-import { View, FlatList, ActivityIndicator, StyleSheet, TouchableOpacity,ScrollView } from "react-native";
-import { Text, TextInput,Chip } from "react-native-paper";
+import { View, FlatList, ActivityIndicator, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import { Text, TextInput, Chip, Searchbar } from "react-native-paper";
 import { fetchWithAuth } from "../../utils/apiHelper";
 import { endpoints } from "../../configs/Apis";
 import COLORS from "../../styles/Colors";
@@ -14,6 +14,7 @@ import { useSnackbar } from "../../utils/contexts/SnackBarContext";
 import LoadingScreen from "../../components/LoadingScreen";
 import StyleMedicine from "../../components/Medicine/StyleMedicine";
 import styles from "../../styles/Mystyles"
+import Mystyles from "../../styles/Mystyles";
 
 
 
@@ -40,12 +41,12 @@ const MedicineList = () => {
     const debounceTimer = useRef(null);
     const currentQ = useRef("");
     const isLoadingRef = useRef(false);
-    
+
     const [activeFilter, setActiveFilter] = useState("all");
 
     // ========== API ==========
 
-    const loadMedicines = async (pageNum, searchTerm,filterKey="all") => {
+    const loadMedicines = async (pageNum, searchTerm, filterKey = "all") => {
         if (isLoadingRef.current) return;
         isLoadingRef.current = true;
         try {
@@ -76,11 +77,11 @@ const MedicineList = () => {
             isLoadingRef.current = false;
         }
     };
-  
+
     const handleFilterChange = (key) => {
         setActiveFilter(key);
         setPage(1);
-        loadMedicines(1,currentQ.current,key);
+        loadMedicines(1, currentQ.current, key);
     };
 
     // ========== SEARCH ==========
@@ -91,8 +92,8 @@ const MedicineList = () => {
         if (debounceTimer.current) clearTimeout(debounceTimer.current);
         debounceTimer.current = setTimeout(() => {
             setPage(1);
-            loadMedicines(1, v,activeFilter);
-            console.info(`${endpoints.medicines}?page=${page}&search=${encodeURIComponent(v)}`);   
+            loadMedicines(1, v, activeFilter);
+            console.info(`${endpoints.medicines}?page=${page}&search=${encodeURIComponent(v)}`);
         }, 500);
     };
 
@@ -102,14 +103,14 @@ const MedicineList = () => {
         if (page <= 1 || loading) return;
         const prevPage = page - 1;
         setPage(prevPage);
-        loadMedicines(prevPage, currentQ.current,activeFilter);
+        loadMedicines(prevPage, currentQ.current, activeFilter);
     };
 
     const handleNext = () => {
         if (page >= totalPages || loading) return;
         const nextPage = page + 1;
         setPage(nextPage);
-        loadMedicines(nextPage, currentQ.current,activeFilter);
+        loadMedicines(nextPage, currentQ.current, activeFilter);
     };
 
     // ========== EFFECTS ==========
@@ -129,7 +130,7 @@ const MedicineList = () => {
             currentQ.current = "";
             setMedicines([]);
             setLoadingScreen(true);
-            loadMedicines(1, "",activeFilter);
+            loadMedicines(1, "", activeFilter);
         }, [user])
     );
 
@@ -166,21 +167,31 @@ const MedicineList = () => {
                             );
                         })}
                     </ScrollView>
-                </View>                
+                </View>
             </AppHeader>
-            <TextInput
-                mode="outlined"
-                label="Tìm thuốc..."
-                value={q}
-                onChangeText={handleSearchChange}
-                left={<TextInput.Icon icon="magnify" />}
-                right={q.length > 0
-                    ? <TextInput.Icon icon="close" onPress={() => handleSearchChange("")} />
-                    : null}
-                outlineColor={COLORS.border}
-                activeOutlineColor={COLORS.primary}
-                style={styles.input}
-            />
+            <View style={Mystyles.margin}>
+                <Searchbar
+                    value={q}
+                    onChangeText={handleSearchChange}
+                    placeholder="Tìm thuốc..."
+                    onClearIconPress={() => handleSearchChange("")}
+                    clearIcon={q.length > 0 ? "close" : undefined}
+                    style={{
+                        backgroundColor: COLORS.white,
+                        elevation: 2,
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.06,
+                        shadowRadius: 6,
+                    }}
+                    inputStyle={{
+                        fontSize: 14,
+                        color: COLORS.text,
+                    }}
+                    iconColor={COLORS.primary}
+                />
+            </View>
+
 
             <FlatList
                 contentContainerStyle={{ padding: 16 }}
@@ -223,7 +234,7 @@ const MedicineList = () => {
                 ListFooterComponent={
                     loading
                         ? <ActivityIndicator size="large" color={COLORS.primary} style={{ marginVertical: 16 }} />
-                        : totalPages>1 && (
+                        : totalPages > 1 && (
                             <View style={StyleMedicine.pagination}>
                                 <TouchableOpacity
                                     style={[StyleMedicine.pageBtn, page <= 1 && StyleMedicine.pageBtnDisabled]}

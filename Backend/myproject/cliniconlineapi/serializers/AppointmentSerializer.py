@@ -39,7 +39,12 @@ class AppointmentSerializer(serializers.ModelSerializer):
             if current_status == Appointment.Status.CONFIRMED and value == Appointment.Status.CANCELED:
                 raise serializers.ValidationError("Không thể hủy phiếu đã được xác nhận.")
 
-            # validate khi hoàn thành khám
+            if value == Appointment.Status.PENDING_PAYMENT and current_status != Appointment.Status.CONFIRMED:
+                raise  serializers.ValidationError("Chỉ có thể chuyển từ xác nhận sang chờ thanh toán.")
+
+            if value == Appointment.Status.COMPLETED and current_status != Appointment.Status.PENDING_PAYMENT:
+                raise serializers.ValidationError("Chỉ có thể hoàn thành từ trạng thái chờ thanh toán.")
+
             if value == Appointment.Status.PENDING_PAYMENT:
                 try:
                     record = self.instance.medical_record

@@ -21,6 +21,7 @@ const FILTERS = [
     { key: "Pending", label: "Chờ duyệt" },
     { key: "Confirmed", label: "Đã xác nhận" },
     { key: "Completed", label: "Hoàn thành" },
+    { key: "Pending_payment", label: "Chờ thanh toán"},
     { key: "Canceled", label: "Đã từ chối" },
 ];
 

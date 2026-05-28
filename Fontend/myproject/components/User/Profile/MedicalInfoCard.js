@@ -55,8 +55,7 @@ const MedicalInfoCard = ({ data, updateProfile }) => {
                                 <View>
                                     <StyledInput
                                         placeholder="VD: ...cm"
-
-                                        value={p.profile?.height ?? ""}
+                                        value={p.profile?.height != null ? String(p.profile.height) : ""}
                                         onChangeText={(v) => {
                                             if (v === "" || /^\d+\.?\d*$/.test(v)) {
                                                 updateProfile("height", v);
@@ -74,7 +73,7 @@ const MedicalInfoCard = ({ data, updateProfile }) => {
                                 <View>
                                     <StyledInput
                                         placeholder="VD: ...kg"
-                                        value={p.profile?.weight ?? ""}
+                                        value={p.profile?.weight != null ? String(p.profile.weight) : ""}
                                         onChangeText={(v) => {
                                             if (v === "" || /^\d+\.?\d*$/.test(v)) {
                                                 updateProfile("weight", v);

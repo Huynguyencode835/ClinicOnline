@@ -3,7 +3,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { useContext, useEffect, useState } from "react"
 import { createWithAuth, fetchPublic, updatePatchWithAuth } from "../../utils/apiHelper"
 import { endpoints } from "../../configs/Apis"
-import { ScrollView, View, Text, TouchableOpacity } from "react-native"
+import { ScrollView, View, Text, TouchableOpacity, Platform,KeyboardAvoidingView } from "react-native"
 import { MyUserContext } from "../../utils/contexts/MyUserContext"
 import PersonalInfoCard from "../../components/User/Profile/PersonalInfoCard"
 import InsuranceCard from "../../components/User/Profile/InsuranceCard"
@@ -29,8 +29,8 @@ const ProfileDetail = () => {
             ? {
                 allergy_history: u?.profile?.allergy_history ?? null,
                 blood_group: u?.profile?.blood_group ?? null,
-                height: u?.profile?.height ?? null,
-                weight: u?.profile?.weight ?? null,
+                height: u?.profile?.height != null ? String(u.profile.height) : null,
+                weight: u?.profile?.weight != null ? String(u.profile.weight) : null,
                 insurance_number: u?.profile?.insurance_number ?? null,
                 insurance_expiry_date: u?.profile?.insurance_expiry_date ?? null,
             }
@@ -154,6 +154,7 @@ const ProfileDetail = () => {
                 const updated = { ...saved, ...data };
                 await SecureStore.setItemAsync("user", JSON.stringify(updated));
                 dispatch({ type: "UPDATE", payload: data });
+                console.log('API response:', JSON.stringify(data));
                 setProfileDetail(data);
                 setErro({});
             },
@@ -247,47 +248,52 @@ const ProfileDetail = () => {
                     <Text style={styles.editingText}>Đang chỉnh sửa thông tin...</Text>
                 </View>
             )}
-            <ScrollView
-                contentContainerStyle={styles.scrollContent}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={{ flex: 1 }}
             >
-                <View pointerEvents={change ? "none" : "auto"}>
-                    <PersonalInfoCard err={erro} data={profileDetail} updatePatient={updatePatient} />
-                    {user?.role === "customer" ? (
-                        <>
-                            <InsuranceCard err={erro} data={profileDetail} updateProfile={updateProfile} />
-                            {change === false && (
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <TouchableOpacity onPress={pickImage} style={{
-                                        alignSelf: 'flex-start',
-                                        fontSize: 14,
-                                        width: '60%',
-                                        paddingHorizontal: 12,
-                                        paddingVertical: 8,
-                                        borderRadius: 14,
-                                        backgroundColor: '#e0e0e8',
-                                        marginVertical: 12,
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        gap: 6,
-                                    }}
-                                    >
-                                        <Text style={{ color: '#000000' }}>
-                                            {scanning ? 'Đang xử lý...' : 'Chụp thẻ BHYT'}
-                                        </Text>
-                                        <Icon source={scanning ? 'loading' : 'camera'} size={20} />
-                                    </TouchableOpacity>
-                                </View>
-                            )}
-                            <MedicalInfoCard data={profileDetail} updateProfile={updateProfile} />
-                        </>
-                    ) : (
-                        <DoctorProfileCard data={profileDetail} />
-                    )}
-                </View>
-            </ScrollView>
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <View pointerEvents={change ? "none" : "auto"}>
+                        <PersonalInfoCard err={erro} data={profileDetail} updatePatient={updatePatient} />
+                        {user?.role === "customer" ? (
+                            <>
+                                <InsuranceCard err={erro} data={profileDetail} updateProfile={updateProfile} />
+                                {change === false && (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <TouchableOpacity onPress={pickImage} style={{
+                                            alignSelf: 'flex-start',
+                                            fontSize: 14,
+                                            width: '60%',
+                                            paddingHorizontal: 12,
+                                            paddingVertical: 8,
+                                            borderRadius: 14,
+                                            backgroundColor: '#e0e0e8',
+                                            marginVertical: 12,
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            gap: 6,
+                                        }}
+                                        >
+                                            <Text style={{ color: '#000000' }}>
+                                                {scanning ? 'Đang xử lý...' : 'Chụp thẻ BHYT'}
+                                            </Text>
+                                            <Icon source={scanning ? 'loading' : 'camera'} size={20} />
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+                                <MedicalInfoCard data={profileDetail} updateProfile={updateProfile} />
+                            </>
+                        ) : (
+                            <DoctorProfileCard data={profileDetail} />
+                        )}
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
             {change === true ?
                 <AppButton type="edit" onPress={() => setChange(false)} />
                 :

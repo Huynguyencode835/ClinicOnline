@@ -257,7 +257,7 @@ class AppointmentViewSet(viewsets.ViewSet,
                 user_id=updated.customer.id,
                 title='Lịch hẹn bị từ chối',
                 body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã từ chối lịch hẹn của bạn.',
-                data={'type': 'appointment', 'id': str(updated.id)}
+                data={'type': 'appointment', 'id': str(updated.id),'sub_type': 'canceled'}
             )
 
         elif updated.status == Appointment.Status.CONFIRMED:
@@ -265,12 +265,18 @@ class AppointmentViewSet(viewsets.ViewSet,
                 user_id=updated.customer.id,
                 title='Lịch hẹn được xác nhận',
                 body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã xác nhận lịch hẹn của bạn.',
-                data={'type': 'appointment', 'id': str(updated.id)}
+                data={'type': 'appointment', 'id': str(updated.id), 'sub_type': 'confirmed'}
             )
 
-        if updated.status == Appointment.Status.CANCELED:
-            updated.time_slot.status = TimeSlot.Status.AVAILABLE
-            updated.time_slot.save()
+        elif updated.status == Appointment.Status.PENDING_PAYMENT:
+            print("Hóa đơn đã sẳn sàng chờ bạn thanh toán")
+            send_push_to_user(
+                user_id=updated.customer.id,
+                title='Hóa đơn đã sẳn sàng chờ bạn thanh toán',
+                body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã xác nh của bạn.',
+                data={'type': 'appointment', 'id': str(updated.id), 'sub_type': 'pending_payment'}
+            )
+
 
     def perform_destroy(self, instance):
 
@@ -519,8 +525,6 @@ class ServiceNormalViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = ServiceNormal.objects.all()
     serializer_class = ServiceNormalSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-
 
 class GeminiChatViewSet(viewsets.ViewSet, generics.CreateAPIView):
 

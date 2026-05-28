@@ -43,16 +43,20 @@ import Chat from "./screens/BoxChat/Chat";
 import Search from "./screens/Home/Search";
 import Total from "./screens/Report/Total";
 import { Platform, UIManager } from 'react-native';
-// import messaging from '@react-native-firebase/messaging';
-// import { registerForPushNotifications, onForegroundMessage, onNotificationOpenedApp, getInitialNotification, setBackgroundMessageHandler, saveFCMTokenToFirestore } from './configs/firebase/notifications';
+import messaging from '@react-native-firebase/messaging';
+import { registerForPushNotifications, onForegroundMessage, onNotificationOpenedApp, getInitialNotification, setBackgroundMessageHandler, saveFCMTokenToFirestore } from './configs/firebase/notifications';
+import { createNavigationContainerRef } from '@react-navigation/native';
+
 
 if (Platform.OS === 'android') {
-    UIManager.setLayoutAnimationEnabledExperimental?.(true);
+  UIManager.setLayoutAnimationEnabledExperimental?.(true);
 }
 import UpdateMedicine from "./screens/Medicine/UpdateMedicine";
 
+
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+const navigationRef = createNavigationContainerRef();
 
 const StackUserNavigator = () => {
   const { user } = useContext(MyUserContext);
@@ -95,8 +99,8 @@ const AppointmentNavigator = () => {
       <Stack.Screen name="Booking" component={Booking} />
       <Stack.Screen name="ListAppointments" component={ListAppointments} />
       <Stack.Screen name="AppointmentDetail" component={AppointmentDetail} />
-      <Stack.Screen name="Payment" component={Payment}/>
-      <Stack.Screen name="VNPayWebView" component={VNPayWebView}/>
+      <Stack.Screen name="Payment" component={Payment} />
+      <Stack.Screen name="VNPayWebView" component={VNPayWebView} />
     </Stack.Navigator>
   );
 };
@@ -108,8 +112,8 @@ const ListAppointmentNavigator = () => (
     <Stack.Screen name="MedicalRecordList" component={MedicalRecordList} />
     <Stack.Screen name="MedicalRecordDetail" component={MedicalRecordDetail} />
     <Stack.Screen name="CreateMedicalRecord" component={CreateMedicalRecord} />
-    <Stack.Screen name="Payment" component={Payment} /> 
-    <Stack.Screen name="VNPayWebView" component={VNPayWebView}/>
+    <Stack.Screen name="Payment" component={Payment} />
+    <Stack.Screen name="VNPayWebView" component={VNPayWebView} />
   </Stack.Navigator>
 );
 
@@ -126,9 +130,9 @@ const MedicalRecordNavigator = () => (
 const MedicineNavigator = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="MedicineList" component={MedicineList} />
-    <Stack.Screen name="MedicineDetail" component={MedicineDetail} /> 
+    <Stack.Screen name="MedicineDetail" component={MedicineDetail} />
     <Stack.Screen name="CreateMedicine" component={CreateMedicine} />
-    <Stack.Screen name="UpdateMedicine" component={UpdateMedicine}/>
+    <Stack.Screen name="UpdateMedicine" component={UpdateMedicine} />
   </Stack.Navigator>
 );
 
@@ -154,7 +158,7 @@ const TabNavigatior = () => {
           ),
         }}
       />
-    
+
 
       {!user?.is_superuser && (
         <>
@@ -209,27 +213,31 @@ const TabNavigatior = () => {
             />
           )}
 
+          {(user?.role === "doctor" || user?.role === "customer") && (
+            <>
+              <Tab.Screen
+                name="AppointmentsTab"
+                component={ListAppointmentNavigator}
+                options={{
+                  tabBarLabel: "Lịch hẹn",
+                  tabBarIcon: ({ color }) => (
+                    <Icon size={22} source="clipboard-list-outline" color={color} />
+                  ),
+                }}
+              />
+              <Tab.Screen
+                name="MedicalRecordTab"
+                component={MedicalRecordNavigator}
+                options={{
+                  tabBarLabel: "Bệnh án",
+                  tabBarIcon: ({ color }) => (
+                    <Icon size={20} source="file-document" color={color} />
+                  ),
+                }}
+              />
+            </>
+          )}
 
-          <Tab.Screen
-            name="AppointmentsTab"
-            component={ListAppointmentNavigator}
-            options={{
-              tabBarLabel: "Lịch hẹn",
-              tabBarIcon: ({ color }) => (
-                <Icon size={22} source="clipboard-list-outline" color={color} />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="MedicalRecordTab"
-            component={MedicalRecordNavigator}
-            options={{
-              tabBarLabel: "Bệnh án",
-              tabBarIcon: ({ color }) => (
-                <Icon size={20} source="file-document" color={color} />
-              ),
-            }}
-          />
         </>
       )}
 
@@ -272,9 +280,11 @@ const TabNavigatior = () => {
   );
 };
 
-const App = () => {
-  const [user, dispatch] = useReducer(MyUserReducer, null);
-  // const { requestPermission } = useNotification();
+
+const AppContent = () => {
+  const { user, dispatch } = useContext(MyUserContext);
+  const { showAlert } = useAlert();
+  const { showSnackbar } = useSnackbar();
   const loadUser = async () => {
     try {
       const savedStr = await SecureStore.getItemAsync("user");
@@ -306,25 +316,25 @@ const App = () => {
           (err) => {
             SecureStore.deleteItemAsync("user");
             dispatch({ type: "LOGOUT" });
-            // showAlert({
-            //   type: 'info',
-            //   title: 'Xác nhận',
-            //   message: 'Bạn đã hết phiên đăng nhập vui lòng đăng nhập lại để tiếp tực xử dụng dv?',
-            //   actions: [
-            //     {
-            //       text: 'Hủy',
-            //       style: 'cancel'
-            //     },
-            //     {
-            //       text: 'Đăng nhặp',
-            //       onPress: () => {
-            //         navigation.navigate("User", {
-            //           screen: "Login"
-            //         })
-            //       },
-            //     },
-            //   ],
-            // })
+            showAlert({
+              type: 'info',
+              title: 'Xác nhận',
+              message: 'Bạn đã hết phiên đăng nhập vui lòng đăng nhập lại để tiếp tực xử dụng dv?',
+              actions: [
+                {
+                  text: 'Hủy',
+                  style: 'cancel'
+                },
+                {
+                  text: 'Đăng nhặp',
+                  onPress: () => {
+                    navigation.navigate("User", {
+                      screen: "Login"
+                    })
+                  },
+                },
+              ],
+            })
           },
         );
       } else {
@@ -339,17 +349,108 @@ const App = () => {
 
   useEffect(() => {
     loadUser();
-    // requestPermission();
-    // setBackgroundMessageHandler();
+    setBackgroundMessageHandler();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      registerForPushNotifications().then(token => {
+        if (token) {
+          saveFCMTokenToFirestore(user.id, token);
+        }
+      });
+
+      const unsubscribeForeground = onForegroundMessage(async remoteMessage => {
+        const { type, sub_type, id } = remoteMessage.data;
+
+        if (type === 'appointment') {
+          if (sub_type === 'canceled') {
+            showSnackbar(
+              remoteMessage.notification?.title || 'Thông báo',
+              'warning',
+              remoteMessage.notification?.body || '',
+            );
+          } else if (sub_type === 'confirmed') {
+            showSnackbar(
+              remoteMessage.notification?.title || 'Thông báo',
+              'success',
+              remoteMessage.notification?.body || '',
+            );
+          } else if (sub_type === 'pending_payment') {
+            showAlert({
+              type: 'info',
+              title: remoteMessage.notification?.title || 'Thông báo thanh toán',
+              message: remoteMessage.notification?.body || '',
+              actions: [
+                {
+                  text: 'Thanh toán sau',
+                  style: 'cancel'
+                },
+                {
+                  text: 'Đi đến thanh toán',
+                  onPress: () => {
+                    navigationRef.navigate("AppointmentsTab", {
+                      screen: "Payment",
+                      params: { appointmentId: id },
+                    })
+                  },
+                },
+              ],
+            })
+          }
+        } else {
+          showSnackbar(
+            remoteMessage.notification?.title || 'Thông báo',
+            'info',
+            remoteMessage.notification?.body || '',
+          );
+        }
+      });
+
+      const unsubscribeBackground = onNotificationOpenedApp(remoteMessage => {
+        const { type, id } = remoteMessage.data;
+
+        if (type === 'appointment' && navigationRef.isReady()) {
+          navigationRef.navigate('AppointmentsTab', {
+            screen: 'AppointmentDetail',
+            params: { id },
+          });
+        }
+      });
+
+      getInitialNotification().then(remoteMessage => {
+        if (remoteMessage) {
+          const { type, id } = remoteMessage.data;
+
+          if (type === 'appointment' && navigationRef.isReady()) {
+            navigationRef.navigate('AppointmentsTab', {
+              screen: 'AppointmentDetail',
+              params: { id },
+            });
+          }
+        }
+      });
+
+      return () => {
+        unsubscribeForeground();
+        unsubscribeBackground();
+      };
+    }
+  }, [user]);
+
+  return <TabNavigatior />;
+};
+
+const App = () => {
+  const [user, dispatch] = useReducer(MyUserReducer, null);
 
   return (
     <SafeAreaProvider>
       <MyUserContext.Provider value={{ user, dispatch }}>
         <SnackbarProvider>
-          <NavigationContainer>
+          <NavigationContainer ref={navigationRef}>
             <AlertProvider>
-              <TabNavigatior />
+              <AppContent />
             </AlertProvider>
           </NavigationContainer>
         </SnackbarProvider>
