@@ -35,7 +35,6 @@ const chartConfig = {
 const REPORT_TYPES = [
     { id: "patient", name: "Báo cáo số lượng bệnh nhân" },
     { id: "serviceNormal", name: "Báo cáo số lượng dịch vụ y tế" },
-    { id: "disease", name: "Báo cáo tình hình bệnh phổ biến" },
     { id: "totalSales", name: "Báo cáo doanh thu tổng hợp" },
 ];
 
@@ -167,7 +166,7 @@ const Total = ({ navigation }) => {
                 console.log(converData(data))
                 setDataChart(converData(data));
             },
-            (type, msg) => showSnackbar(msg, 'error', 'Không thể tải danh sách bác sĩ'),
+            (type, msg) => showSnackbar(msg, 'warning', 'dữ liệu không hợp lệ vui lòng chọn khoảng thời gian khác'),
             isMonthRange ? { type: type, start: monthRange?.start.toISOString().split('T')[0], end: monthRange?.end.toISOString().split('T')[0] } : { type: type },
             setLoading
         )
@@ -180,7 +179,6 @@ const Total = ({ navigation }) => {
             </View>
         );
 
-        // Tính width động theo số lượng label
         const labelCount = dataChart.bar.labels.length;
         const dynamicWidth = Math.max(screenWidth, labelCount * 60);
 

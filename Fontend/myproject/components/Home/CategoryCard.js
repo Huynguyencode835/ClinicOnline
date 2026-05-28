@@ -17,9 +17,7 @@ const categories = [
     { id: "6", icon: "account-circle-outline", label: "Hồ sơ\ncá nhân", screen: "UserTab", nestedScreen: "ProfileDetail" },
     { id: "7", icon: "doctor", label: "Danh sách\nbác sĩ", screen: "HomeTab", nestedScreen: "Home" },
     { id: "8", icon: "calendar-check-outline", label: "Lịch làm\nviệc", screen: "WorkdayTab" },
-    { id: "9", icon: "needle", label: "Kết quả\nxét nghiệm", screen: "MedicalRecordTab", nestedScreen: "UpdateTestResults" },
-    { id: "10", icon: "pill", label: "Đơn thuốc\ncủa tôi", screen: "MedicalRecordTab", nestedScreen: "UpdatePrescription" },
-    { id: "11", icon: "calendar-account", label: "Chi tiết\nlịch hẹn", screen: "AppointmentsTab" },
+    { id: "10", icon: "calendar-account", label: "Chi tiết\nlịch hẹn", screen: "AppointmentsTab" },
 ];
 
 const CategoryCard = () => {

@@ -225,7 +225,7 @@ const Register = ({ navigation, is_superuser }) => {
 
     return (
         <View style={{ flex: 1 }}>
-            <AppHeader titles={titles}>
+            <AppHeader titles={titles} onBack={() => { navigation.goBack()}}>
 
             </AppHeader>
             <ScrollView style={{ flex: 1, backgroundColor: COLORS.bg }}
@@ -377,7 +377,13 @@ const Register = ({ navigation, is_superuser }) => {
                     </View>
                 )}
             </ScrollView>
-            <View style={{marginBottom: 16}}>
+            <View style={{marginBottom: 10,flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    <Text style={{ color: '#8a8a9a' }}>Bạn chưa có tài khoản?</Text>
+                    <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                        <Text style={{ color: '#000000' }}>Đăng nhập</Text>
+                    </TouchableOpacity>
+                </View>
+            <View >
                 <AppButton loading={loading} type="register" icon="account-plus" onPress={register} />
             </View>
         </View>

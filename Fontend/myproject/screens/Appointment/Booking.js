@@ -102,8 +102,7 @@ const BookingContent = () => {
                 formatBooking(bookingData),
                 (data) => {
                     setSnackbar({ visible: true, message: "Đặt lịch thành công!", type: 'success' });
-                    resetAll();
-                    updateBooking("patient", user);
+                    resetAll(user);
                     setStep(0);
                 },
                 (type, msg) => {
