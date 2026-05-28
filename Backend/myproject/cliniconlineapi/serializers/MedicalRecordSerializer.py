@@ -65,10 +65,8 @@ class MedicalRecordListSerializer(serializers.ModelSerializer):
         return obj.test_results.count()
 
 class MedicalRecordDetailSerializer(serializers.ModelSerializer):
-    appointment_id = serializers.IntegerField(source='appointment.id', read_only=True)
     customer = serializers.SerializerMethodField()
     doctor = serializers.SerializerMethodField()
-    appointment_date = serializers.DateTimeField(source='appointment.appointment_date',read_only=True)
     appointment = serializers.SerializerMethodField()
     prescription = PrescriptionDetailedSerializer(read_only=True)
     test_results = TestResultSerializer(many=True, read_only=True)
@@ -80,11 +78,9 @@ class MedicalRecordDetailSerializer(serializers.ModelSerializer):
         model = MedicalRecord
         fields = [
             'id',
-            'appointment_id',
             'appointment',
             'customer',
             'doctor',
-            'appointment_date',
             'diagnosis',
             'symptoms',
             'medical_notes',
@@ -120,7 +116,10 @@ class MedicalRecordDetailSerializer(serializers.ModelSerializer):
         }
 
     def get_appointment(self, obj):
-        return obj.appointment.status
+        return {
+            "id": obj.appointment.id,
+            "status": obj.appointment.status,
+        }
 
     #Lấy thong tin bác sĩ cho hồ sơ bênh án nếu cần
     def get_doctor(self, obj):

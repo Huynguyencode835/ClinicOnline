@@ -4,7 +4,7 @@ import { Text, TextInput,Chip } from "react-native-paper";
 import { fetchWithAuth } from "../../utils/apiHelper";
 import { endpoints } from "../../configs/Apis";
 import COLORS from "../../styles/Colors";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AppHeader from "../../components/AppHeader";
 import AppButton from "../../components/AppButton";
 import SectionTitle from "../../components/Appointment/SectionTilte";

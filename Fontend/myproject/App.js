@@ -43,14 +43,13 @@ import Chat from "./screens/BoxChat/Chat";
 import Search from "./screens/Home/Search";
 import Total from "./screens/Report/Total";
 import { Platform, UIManager } from 'react-native';
-import messaging from '@react-native-firebase/messaging';
-import { registerForPushNotifications, onForegroundMessage, onNotificationOpenedApp, getInitialNotification, setBackgroundMessageHandler, saveFCMTokenToFirestore } from './configs/firebase/notifications';
+// import messaging from '@react-native-firebase/messaging';
+// import { registerForPushNotifications, onForegroundMessage, onNotificationOpenedApp, getInitialNotification, setBackgroundMessageHandler, saveFCMTokenToFirestore } from './configs/firebase/notifications';
 
 if (Platform.OS === 'android') {
-  UIManager.setLayoutAnimationEnabledExperimental?.(true);
+    UIManager.setLayoutAnimationEnabledExperimental?.(true);
 }
 import UpdateMedicine from "./screens/Medicine/UpdateMedicine";
-
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -275,6 +274,7 @@ const TabNavigatior = () => {
 
 const App = () => {
   const [user, dispatch] = useReducer(MyUserReducer, null);
+  // const { requestPermission } = useNotification();
   const loadUser = async () => {
     try {
       const savedStr = await SecureStore.getItemAsync("user");
@@ -339,50 +339,9 @@ const App = () => {
 
   useEffect(() => {
     loadUser();
-    setBackgroundMessageHandler();
+    // requestPermission();
+    // setBackgroundMessageHandler();
   }, []);
-
-  useEffect(() => {
-    if (user) {
-      // 1. Lấy FCM token gửi lên Django
-      registerForPushNotifications().then(token => {
-        if (token) {
-          saveFCMTokenToFirestore(user.id, token);
-        }
-      });
-
-      // 2. Thông báo khi app đang mở
-      const unsubscribeForeground = onForegroundMessage(async remoteMessage => {
-        console.log('App đang mở, nhận thông báo:', remoteMessage.notification);
-
-        Alert.alert(
-          remoteMessage.notification?.title || 'Thông báo',
-          remoteMessage.notification?.body || '',
-        );
-      });
-
-      // 3. User nhấn thông báo khi app background
-      const unsubscribeBackground = onNotificationOpenedApp(remoteMessage => {
-        const { type, id } = remoteMessage.data;
-        console.log('User nhấn thông báo:', type, id);
-        // Điều hướng màn hình tương ứng
-      });
-
-      // 4. App mở từ thông báo khi đang tắt hoàn toàn
-      getInitialNotification().then(remoteMessage => {
-        if (remoteMessage) {
-          const { type, id } = remoteMessage.data;
-          console.log('App mở từ thông báo:', type, id);
-          // Điều hướng màn hình tương ứng
-        }
-      });
-
-      return () => {
-        unsubscribeForeground();
-        unsubscribeBackground();
-      };
-    }
-  }, [user]);
 
   return (
     <SafeAreaProvider>

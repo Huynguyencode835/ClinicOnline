@@ -148,9 +148,8 @@ const Search = () => {
                         <SectionLabel text="Tìm kiếm phổ biến" />
                         <View style={styles.tagRow}>
                             {["Tim mạch", "Nhi khoa", "Da liễu", "Nội tổng quát", "Mắt", "Tai mũi họng", "Ngoại tổng quát", "Chấn thương chỉnh hình", "Sản phụ khoa"].map(tag => (
-                                <AnimatedPressable scaleTo={0.97} bounciness={8}>
+                                <AnimatedPressable   key={tag} scaleTo={0.97} bounciness={8}>
                                     <Pressable
-                                        key={tag}
                                         style={({ pressed }) => [styles.tag, pressed && { opacity: 0.7 }]}
                                         onPress={() => setSearchQuery(tag)}
                                     >

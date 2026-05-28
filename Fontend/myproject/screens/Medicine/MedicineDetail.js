@@ -8,7 +8,7 @@ import AppSnackbar from "../../components/AppSnackbar";
 import SectionTitle from "../../components/Appointment/SectionTilte";
 import InfoCard from "../../components/Appointment/InfoCard";
 import {InfoCard2Col} from "../../components/Appointment/InfoCard";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AppHeader from "../../components/AppHeader";
 import { useNavigation } from "@react-navigation/native";
 import { formatDate, formatDate2 } from "../../utils/format";

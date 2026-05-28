@@ -12,7 +12,7 @@ import { useSnackbar } from "../../utils/contexts/SnackBarContext";
 import Field from "../../components/MedicalRecord/Field";
 import FieldWithError from "../../components/MedicalRecord/FieldWithError";
 import SectionTitle from "../../components/Appointment/SectionTilte";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import styles from "../../styles/Mystyles"
 
 const UpdateMedicine = ({ navigation, route }) => {
