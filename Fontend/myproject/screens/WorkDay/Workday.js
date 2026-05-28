@@ -84,7 +84,6 @@ const Workday = ({ route }) => {
 
             <View style={styles.body}>
 
-                {/* Stats row */}
                 <View style={styles.statsRow}>
                     <View style={styles.statCard}>
                         <Icon source="clock-outline" size={20} color={COLORS.primary} />
@@ -99,7 +98,6 @@ const Workday = ({ route }) => {
                     </View>
                 </View>
 
-                {/* Calendar */}
                 <View style={styles.calendarWrap}>
                     <SectionLabel text="Lịch làm việc theo tháng" />
                     <Calendar
@@ -167,7 +165,6 @@ const styles = StyleSheet.create({
         gap: 16,
     },
 
-    // Stats
     statsRow: {
         flexDirection: "row",
         backgroundColor: "#fff",
@@ -200,7 +197,6 @@ const styles = StyleSheet.create({
         fontWeight: "500",
     },
 
-    // Calendar
     calendarWrap: {
         gap: 8,
     },
@@ -214,7 +210,6 @@ const styles = StyleSheet.create({
         overflow: "hidden",
     },
 
-    // Hint
     hintRow: {
         flexDirection: "row",
         alignItems: "center",

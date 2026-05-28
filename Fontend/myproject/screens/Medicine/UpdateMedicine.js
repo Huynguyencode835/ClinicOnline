@@ -31,7 +31,6 @@ const UpdateMedicine = ({ navigation, route }) => {
     const [errors, setErrors] = useState({});
 
 
-    // ─── SUBMIT ───
     const handleSubmit = async () => {
         if (!name.trim()) {
             showSnackbar("Vui lòng nhập tên thuốc", "error");

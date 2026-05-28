@@ -1,4 +1,3 @@
-// screens/MedicalRecord/MedicalRecordList.js
 import { useCallback, useContext, useEffect, useState } from "react";
 import { View, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { Text } from "react-native-paper";

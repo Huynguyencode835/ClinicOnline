@@ -117,10 +117,7 @@ const MedicalRecordDetail = ({ route }) => {
         (item, index, self) => index === self.findIndex(r => r.id === item.id)
     );
     
-    // console.log('test_results:', JSON.stringify(test_results.map(r => r.id)));
     const hasPrescription = prescription?.details?.length > 0;
-    // console.log("record:", JSON.stringify(record, null, 2));
-    console.log("appointment status:", record.appointment);
 
     return (
         <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
@@ -128,7 +125,6 @@ const MedicalRecordDetail = ({ route }) => {
 
             <ScrollView contentContainerStyle={styles.scroll}>
 
-                {/* ── BỆNH NHÂN ── */}
                 <SectionTitle icon="account" text="Thông tin bệnh nhân" />
                 <InfoCard2Col
                     rows={[
@@ -145,7 +141,7 @@ const MedicalRecordDetail = ({ route }) => {
                     ]}
                 />
 
-                {/* ── BÁC SĨ ── */}
+
                 <SectionTitle icon="account-tie" text="Thông tin bác sĩ" />
                 <InfoCard
                     rows={[
@@ -156,7 +152,7 @@ const MedicalRecordDetail = ({ route }) => {
                     iconBgColor="#c2dcfa"
                 />
 
-                {/* ── HỒ SƠ BỆNH ÁN ── */}
+        
                 <SectionTitle icon="file-document-outline" text="Hồ sơ bệnh án" />
                 <InfoCard
                     rows={[
@@ -169,7 +165,7 @@ const MedicalRecordDetail = ({ route }) => {
                     iconBgColor="#FFF3E0"
                 />
 
-                {/* ── KẾT QUẢ XÉT NGHIỆM ── */}
+            
                 <SectionTitle icon="test-tube" text="Kết quả xét nghiệm" />
                 {test_results.length > 0 ? (
                     <Card>
@@ -200,7 +196,6 @@ const MedicalRecordDetail = ({ route }) => {
                     </Card>
                 )}
 
-                {/* ── ĐƠN THUỐC ── */}
                 <SectionTitle icon="pill" text="Đơn thuốc" />
                 {hasPrescription ? (
                     <Card>
@@ -219,7 +214,6 @@ const MedicalRecordDetail = ({ route }) => {
                             </>
                         )}
 
-                        {/* Danh sách thuốc */}
                         {prescription.details?.map((detail, index) => (
                             <View key={detail.medicine_name ?? index}>
                                 <View style={styles.medicineRow}>
@@ -340,7 +334,6 @@ export default MedicalRecordDetail;
 const styles = StyleSheet.create({
     center: { flex: 1, justifyContent: "center", alignItems: "center" },
     scroll: { padding: 16, paddingBottom: 32 },
-     // ===== ACTION BUTTONS =====
     actionContainer: {
         flexDirection: "row",
         flexWrap: "wrap",
@@ -356,7 +349,6 @@ const styles = StyleSheet.create({
     actionButton: {
         marginHorizontal: 0,
     },
-    //===Card===
     card: {
         borderRadius: 12,
         padding: 14,
@@ -373,7 +365,6 @@ const styles = StyleSheet.create({
 
     rowDivider: { marginVertical: 10 },
 
-    // InfoRow
     infoRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
     iconWrap: {
         width: 30, height: 30, borderRadius: 8,
@@ -383,7 +374,6 @@ const styles = StyleSheet.create({
     infoLabel: { fontSize: 11, color: COLORS.textMuted, marginBottom: 2 },
     infoValue: { fontSize: 13, fontWeight: "600", color: COLORS.text },
 
-    // Test results
     testRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 4 },
     testIconWrap: {
         width: 32, height: 32, borderRadius: 8,
@@ -393,14 +383,12 @@ const styles = StyleSheet.create({
     testName: { fontSize: 13, fontWeight: "500", color: "#2C3E50" },
     testResult: { fontSize: 13, color: "#3a4040", marginTop: 2 },
 
-    // Prescription
     prescriptionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
     prescriptionTitle: { fontWeight: "600", fontSize: 14, color: "#2C3E50" },
     prescriptionNote: { fontSize: 15, color: "#2C3E50", marginTop: 2 },
     chip: { backgroundColor: "#E8F5E9" },
     chipText: { fontSize: 11, color: "#2E7D32" },
 
-    // Medicine
     medicineRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 4 },
     medicineIconWrap: {
         width: 32, height: 32, borderRadius: 8,
@@ -411,7 +399,6 @@ const styles = StyleSheet.create({
     medicineSub: { fontSize: 11, color: "#7F8C8D", marginTop: 2 },
     medicinePrice: { fontSize: 12, fontWeight: "600", color: COLORS.primary },
 
-    // Total
     totalRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
     totalLabel: { fontWeight: "600", fontSize: 14, color: "#2C3E50" },
     totalValue: { fontWeight: "700", fontSize: 16, color: COLORS.primary },

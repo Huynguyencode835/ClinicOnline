@@ -50,73 +50,6 @@ const CHART_TYPES = [
     { key: "pie", label: "Tròn" },
 ];
 
-// const DATA_BY_REPORT = {
-//     patient: {
-//         age: {
-//             line: { labels: ["0-18", "19-30", "31-45", "46-60", "60+"], datasets: [{ data: [20, 45, 38, 28, 15] }] },
-//             bar: { labels: ["0-18", "19-30", "31-45", "46-60", "60+"], datasets: [{ data: [20, 45, 38, 28, 15] }] },
-//             pie: [
-//                 { name: "0-18", population: 20, color: "#1976D2", legendFontColor: "#64748b", legendFontSize: 12 },
-//                 { name: "19-30", population: 45, color: "#2E7D32", legendFontColor: "#64748b", legendFontSize: 12 },
-//                 { name: "31-45", population: 38, color: "#E65100", legendFontColor: "#64748b", legendFontSize: 12 },
-//                 { name: "46-60", population: 28, color: "#C62828", legendFontColor: "#64748b", legendFontSize: 12 },
-//                 { name: "60+", population: 15, color: "#6A1B9A", legendFontColor: "#64748b", legendFontSize: 12 },
-//             ],
-//         },
-//         gender: {
-//             line: { labels: ["T1", "T2", "T3", "T4", "T5", "T6"], datasets: [{ data: [60, 55, 70, 65, 72, 68] }] },
-//             bar: { labels: ["T1", "T2", "T3", "T4", "T5", "T6"], datasets: [{ data: [60, 55, 70, 65, 72, 68] }] },
-//             pie: [
-//                 { name: "Nam", population: 58, color: "#1976D2", legendFontColor: "#64748b", legendFontSize: 12 },
-//                 { name: "Nữ", population: 65, color: "#D4537E", legendFontColor: "#64748b", legendFontSize: 12 },
-//                 { name: "Khác", population: 5, color: "#94a3b8", legendFontColor: "#64748b", legendFontSize: 12 },
-//             ],
-//         },
-//         specialty: {
-//             line: { labels: ["Nội", "Ngoại", "Tim", "Da", "Mắt"], datasets: [{ data: [40, 30, 25, 20, 13] }] },
-//             bar: { labels: ["Nội", "Ngoại", "Tim", "Da", "Mắt"], datasets: [{ data: [40, 30, 25, 20, 13] }] },
-//             pie: [
-//                 { name: "Nội tổng quát", population: 40, color: "#1976D2", legendFontColor: "#64748b", legendFontSize: 12 },
-//                 { name: "Ngoại tổng quát", population: 30, color: "#2E7D32", legendFontColor: "#64748b", legendFontSize: 12 },
-//                 { name: "Tim mạch", population: 25, color: "#E65100", legendFontColor: "#64748b", legendFontSize: 12 },
-//                 { name: "Da liễu", population: 20, color: "#C62828", legendFontColor: "#64748b", legendFontSize: 12 },
-//                 { name: "Mắt", population: 13, color: "#6A1B9A", legendFontColor: "#64748b", legendFontSize: 12 },
-//             ],
-//         },
-//     },
-//     service: {
-//         line: { labels: ["T1", "T2", "T3", "T4", "T5", "T6"], datasets: [{ data: [30, 42, 38, 50, 45, 55] }] },
-//         bar: { labels: ["T1", "T2", "T3", "T4", "T5", "T6"], datasets: [{ data: [30, 42, 38, 50, 45, 55] }] },
-//         pie: [
-//             { name: "Khám thường", population: 60, color: "#1976D2", legendFontColor: "#64748b", legendFontSize: 12 },
-//             { name: "Khám chuyên sâu", population: 35, color: "#2E7D32", legendFontColor: "#64748b", legendFontSize: 12 },
-//             { name: "Khám định kỳ", population: 20, color: "#E65100", legendFontColor: "#64748b", legendFontSize: 12 },
-//             { name: "Khám tổng quát", population: 13, color: "#C62828", legendFontColor: "#64748b", legendFontSize: 12 },
-//         ],
-//     },
-//     disease: {
-//         line: { labels: ["T1", "T2", "T3", "T4", "T5", "T6"], datasets: [{ data: [15, 20, 18, 25, 22, 28] }] },
-//         bar: { labels: ["T1", "T2", "T3", "T4", "T5", "T6"], datasets: [{ data: [15, 20, 18, 25, 22, 28] }] },
-//         pie: [
-//             { name: "Cao huyết áp", population: 30, color: "#C62828", legendFontColor: "#64748b", legendFontSize: 12 },
-//             { name: "Tiểu đường", population: 25, color: "#E65100", legendFontColor: "#64748b", legendFontSize: 12 },
-//             { name: "Tim mạch", population: 20, color: "#1976D2", legendFontColor: "#64748b", legendFontSize: 12 },
-//             { name: "Hô hấp", population: 15, color: "#2E7D32", legendFontColor: "#64748b", legendFontSize: 12 },
-//             { name: "Khác", population: 10, color: "#94a3b8", legendFontColor: "#64748b", legendFontSize: 12 },
-//         ],
-//     },
-//     revenue: {
-//         line: { labels: ["T12", "T1", "T2", "T3", "T4", "T5"], datasets: [{ data: [38, 32, 41, 36, 44, 45] }] },
-//         bar: { labels: ["T12", "T1", "T2", "T3", "T4", "T5"], datasets: [{ data: [38, 32, 41, 36, 44, 45] }] },
-//         pie: [
-//             { name: "Khám thường", population: 40, color: "#1976D2", legendFontColor: "#64748b", legendFontSize: 12 },
-//             { name: "Khám chuyên sâu", population: 30, color: "#2E7D32", legendFontColor: "#64748b", legendFontSize: 12 },
-//             { name: "Khám định kỳ", population: 20, color: "#E65100", legendFontColor: "#64748b", legendFontSize: 12 },
-//             { name: "Khám tổng quát", population: 10, color: "#C62828", legendFontColor: "#64748b", legendFontSize: 12 },
-//         ],
-//     },
-// };
-
 const SectionTitle = ({ text }) => (
     <Text style={styles.sectionTitle}>{text}</Text>
 );
@@ -440,7 +373,7 @@ const Total = ({ navigation }) => {
                             </Card.Content>
                         </Card>
 
-                        {/* Cao nhất / Thấp nhất */}
+                        
                         <View style={{ flexDirection: 'row', gap: 10 }}>
                             <Card style={[styles.statCard, { flex: 1 }]}>
                                 <Card.Content style={{ alignItems: 'center' }}>

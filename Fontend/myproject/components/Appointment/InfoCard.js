@@ -45,8 +45,7 @@ const InfoCard2Col = ({ style, rows }) => {
                                                 color={COLORS.primary}
                                             />
                                         </View>
-
-                                        {/* TEXT BLOCK */}
+                            
                                         <View style={{ flex: 1 }}>
                                             <Text style={styles.rowLabel}>
                                                 {row.label}
@@ -60,7 +59,6 @@ const InfoCard2Col = ({ style, rows }) => {
                                 </View>
                             ))}
 
-                            {/* nếu lẻ thì fill cho cân */}
                             {pair.length === 1 && <View style={styles.halfCol} />}
                         </View>
                     </React.Fragment>

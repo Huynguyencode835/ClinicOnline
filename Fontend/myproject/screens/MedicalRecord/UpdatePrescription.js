@@ -73,7 +73,6 @@ const UpdatePrescription = ({ navigation , route}) => {
     const handleApiError = (type, msg, errData) => {
         console.log("handleApiError:", type, msg, JSON.stringify(errData));
         if (errData && typeof errData === "object") {
-            // Lỗi dạng { details: [{non_field_errors: [...]}] }
             if (Array.isArray(errData.details)) {
                 const messages = errData.details
                     .flatMap(item => item?.non_field_errors ?? [])
@@ -81,7 +80,6 @@ const UpdatePrescription = ({ navigation , route}) => {
                     .join("\n");
                 if (messages) { showSnackbar(messages, "error"); return; }
             }
-            // Lỗi dạng { field: ["lỗi"] } hoặc { detail: "..." }
             const messages = Object.entries(errData)
                 .flatMap(([_, errors]) =>
                     Array.isArray(errors) ? errors : [String(errors)]
@@ -110,7 +108,6 @@ const UpdatePrescription = ({ navigation , route}) => {
             console.log("body:", JSON.stringify(body, null, 2));
 
             if (prescription?.id) {
-                // Cập nhật đơn thuốc đã có
                 await updatePatchWithAuth(
                     endpoints.prescriptionDetail(prescription.id),
                     body,
@@ -123,7 +120,6 @@ const UpdatePrescription = ({ navigation , route}) => {
                     setLoading
                 );
             } else {
-                // Tạo mới đơn thuốc
                 await createWithAuth(
                     endpoints.prescriptions,
                     { ...body, medical_record_id: medicalRecordId },
@@ -136,7 +132,6 @@ const UpdatePrescription = ({ navigation , route}) => {
                     setLoading
                 );
             }
-            // navigation.goBack();
         } catch (err) {
             console.log("submit error:", err);
             showSnackbar("Đã có lỗi xảy ra. Vui lòng thử lại.", "error");
@@ -154,7 +149,6 @@ const UpdatePrescription = ({ navigation , route}) => {
             />   
             <ScrollView contentContainerStyle={{ padding: 16, gap: 10 }}>
                 <SectionTitle title="Thông tin đơn thuốc" />
-                {/* ── ĐƠN THUỐC ── */}
                 <View style={styles.card}>
                     <Field
                         label="Hướng dẫn sử dụng"
@@ -163,7 +157,6 @@ const UpdatePrescription = ({ navigation , route}) => {
                         multiline
                     />
 
-                    {/* Thanh tìm kiếm thuốc dùng chung */}
                     <TextInput
                         mode="outlined"
                         label="Tìm và thêm thuốc..."
@@ -181,7 +174,6 @@ const UpdatePrescription = ({ navigation , route}) => {
                         style={styles.input}
                     />
 
-                    {/* Kết quả tìm kiếm */}
                     {medicineSearch.trim().length > 0 && (
                         <View style={localStyles.searchResults}>
                             <ScrollView
@@ -209,9 +201,8 @@ const UpdatePrescription = ({ navigation , route}) => {
                             </ScrollView>
                         </View>
                     )}
-                    {/* Danh sách thuốc đã thêm */}
-                    {prescriptionDetails.map((detail, index) => (
-                        
+
+                    {prescriptionDetails.map((detail, index) => (                      
                         <View key={`medicine-${detail.medicine_id}`} style={localStyles.medicineItem}>
                             <View style={localStyles.medicineHeader}>
                                 <View style={localStyles.selectedMedicine}>

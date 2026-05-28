@@ -18,7 +18,6 @@ const MyCalender = ({ workDays = [], onSelectDay, selectedDay}) => {
     };
 
     const isSelected = (dateStr) => selectedDay === dateStr;
-    // chỉnh lại ko cho xóa lịch hẹn đã có trong appoitnment
     return (
         <Card style={{ borderRadius: 16, backgroundColor: "#fff", elevation: 2, marginBottom: 16 }}>
             <Card.Content>

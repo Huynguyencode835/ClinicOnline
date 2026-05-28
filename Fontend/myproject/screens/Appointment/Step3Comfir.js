@@ -26,7 +26,7 @@ const Step3Confirm = () => {
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
         >
-            {/* ── BANNER ── */}
+            
             <View style={styles.banner}>
                 <View style={styles.bannerIcon}>
                     <MaterialCommunityIcons name="clipboard-check-outline" size={28} color={COLORS.primary} />
@@ -37,7 +37,7 @@ const Step3Confirm = () => {
                 </View>
             </View>
 
-            {/* ── LỊCH KHÁM ── */}
+            
             <SectionTitle icon="calendar-clock" text="Thông tin lịch khám" />
             <InfoCard
                 rows={[
@@ -50,7 +50,7 @@ const Step3Confirm = () => {
                 ]}
             />
 
-            {/* ── BỆNH NHÂN ── */}
+            
             <SectionTitle icon="account" text="Thông tin bệnh nhân" />
             <InfoCard
                 rows={[
@@ -62,7 +62,7 @@ const Step3Confirm = () => {
                 ]}
             />
 
-            {/* ── Y TẾ ── */}
+            
             <SectionTitle icon="heart-pulse" text="Thông tin y tế" />
             <InfoCard
                 style={{ marginBottom: 8 }}
@@ -93,7 +93,7 @@ const Step3Confirm = () => {
                 ]}
             />
 
-            {/* ── LÝ DO KHÁM ── */}
+        
             <SectionTitle icon="clipboard-text-outline" text="Lý do khám" />
             <InfoCard
                 style={{ marginBottom: 16 }}
@@ -103,7 +103,6 @@ const Step3Confirm = () => {
                 ]}
             />
 
-            {/* ── WARNING ── */}
             <View style={styles.warningBadge}>
                 <MaterialCommunityIcons name="clock-alert-outline" size={16} color={COLORS.warning} />
                 <Text style={styles.warningText}>

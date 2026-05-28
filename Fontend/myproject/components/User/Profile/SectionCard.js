@@ -12,8 +12,6 @@ const SectionCard = ({ title, icon, children, containerColor }) => {
                 padding: 14,
                 backgroundColor: containerColor || COLORS.white,
                 flex: 1,
-
-                // shadow nhẹ cho đẹp hơn
                 shadowColor: COLORS.primary,
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.05,
@@ -21,7 +19,6 @@ const SectionCard = ({ title, icon, children, containerColor }) => {
             }}
             elevation={1}
         >
-            {/* Header */}
             <View
                 style={{
                     flexDirection: 'row',
@@ -49,7 +46,6 @@ const SectionCard = ({ title, icon, children, containerColor }) => {
                 </Text>
             </View>
 
-            {/* Content */}
             <View style={{ marginTop: 8 }}>
                 {children}
             </View>

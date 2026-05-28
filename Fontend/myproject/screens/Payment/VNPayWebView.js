@@ -34,7 +34,7 @@ const VNPayWebView = ({ route }) => {
             });
         }
 
-         // Bắt trang lỗi VNPay — link hết hạn hoặc lỗi sandbox
+
         if (url.includes("vnpayment.vn/paymentv2/Payment/Error"))  {
             showAlert({
                 type: "warning",

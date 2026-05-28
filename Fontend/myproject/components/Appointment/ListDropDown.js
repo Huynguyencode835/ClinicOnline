@@ -43,7 +43,6 @@ const ListDropDown = ({ title, value, icon, data, onSelect, setPage, Icon }) => 
                                     paddingHorizontal: 14,
                                     gap: 10,
                                 }}>
-                                    {/* Tên + gender */}
                                     <View style={{ flex: 1 }}>
                                         <Text style={{ fontSize: 14, fontWeight: '700', color: '#1e293b' }}>
                                             BS. {item.name}
@@ -64,7 +63,6 @@ const ListDropDown = ({ title, value, icon, data, onSelect, setPage, Icon }) => 
                                         </View>
                                     </View>
 
-                                    {/* Email + Phone */}
                                     <View style={{ alignItems: 'flex-end', gap: 4 }}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>

@@ -57,7 +57,6 @@ const MedicalRecordCard = ({ item, onPress }) => {
   return (
     <TouchableOpacity activeOpacity={0.85} onPress={onPress}>
       <View style={styles.card}>
-        {/* HEADER */}
         <View style={styles.header}>
           {targetAvatar ? (
             <Image source={{ uri: targetAvatar }} style={styles.avatar} />
@@ -81,21 +80,10 @@ const MedicalRecordCard = ({ item, onPress }) => {
 
             <Text style={styles.role}>{roleLabel}</Text>
           </View>
-
-          {/* <View style={styles.recordBadge}>
-            <MaterialCommunityIcons
-              name="file-document-outline"
-              size={14}
-              color="#0F766E"
-            />
-
-            <Text style={styles.recordBadgeText}>Hồ sơ bệnh án</Text>
-          </View> */}
         </View>
 
         <View style={styles.divider} />
 
-        {/* BODY */}
         <View style={styles.infoBlock}>
           <InfoRow
             icon="stethoscope"

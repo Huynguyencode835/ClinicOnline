@@ -91,7 +91,6 @@ const UserProfile = ({ navigation, onLogin, onRegister, onMenuItem }) => {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scroll}
             >
-                {/* ── Hero header ── */}
                 <Surface style={[styles.hero, { backgroundColor: COLORS.secondary }]} elevation={0}>
                     <View style={styles.heroInner}>
                         <Surface style={styles.avatarRing} elevation={2}>
@@ -156,7 +155,7 @@ const UserProfile = ({ navigation, onLogin, onRegister, onMenuItem }) => {
                                     Đăng nhập để trải nghiệm đầy đủ tính năng
                                 </Text>
 
-                                {/* Nút đăng nhập / đăng ký */}
+                                
                                 <View style={styles.authRow}>
 
                                     <AppButton
@@ -177,11 +176,11 @@ const UserProfile = ({ navigation, onLogin, onRegister, onMenuItem }) => {
 
                     </View>
 
-                    {/* Wave bottom */}
+                    
                     <View style={[styles.wave, { backgroundColor: theme.colors.background }]} />
                 </Surface>
 
-                {/* ── Menu sections ── */}
+                
                 <View style={styles.menuWrap}>
                     {MENU_SECTIONS.map((section, si) => (
                         <View key={section.title} style={styles.section}>
@@ -239,7 +238,7 @@ const UserProfile = ({ navigation, onLogin, onRegister, onMenuItem }) => {
                         </View>
                     ))}
 
-                    {/* App version */}
+        
                     <Text
                         variant="bodySmall"
                         style={[styles.version, { color: theme.colors.onSurfaceVariant }]}
@@ -263,7 +262,6 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
 
-    /* Hero */
     hero: {
         paddingBottom: 0,
         overflow: 'hidden',
@@ -312,14 +310,12 @@ const styles = StyleSheet.create({
         borderWidth: 1.5,
     },
 
-    /* Wave separator */
     wave: {
         height: 24,
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
     },
 
-    /* Menu */
     menuWrap: {
         paddingHorizontal: 16,
         gap: 16,

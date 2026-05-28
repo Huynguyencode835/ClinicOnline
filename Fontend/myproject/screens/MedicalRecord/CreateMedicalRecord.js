@@ -11,32 +11,31 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { TextInput } from "react-native-paper";
 import SectionTitle from "../../components/Appointment/SectionTilte";
 import Field from "../../components/MedicalRecord/Field";
+import DateField from "../../components/Medicine/DateField";
 
 const CreateMedicalRecord = ({ navigation, route }) => {
     const { appointmentId } = route.params;
     const { showSnackbar } = useSnackbar();
     const [loading, setLoading] = useState(false);
 
-    // ─── HỒ SƠ BỆNH ÁN ───
     const [diagnosis, setDiagnosis] = useState("");
     const [symptoms, setSymptoms] = useState("");
     const [medical_notes, setMedicalNotes] = useState("");
-    const [followUpDate, setFollowUpDate] = useState("");
+    const [followUpDate, setFollowUpDate] = useState(null);
 
-    // ─── DANH SÁCH THUỐC (để load từ API) ───
     const [medicineResults, setMedicineResults] = useState([]);
     const medicineDebounce = useRef(null);
 
-    // ─── ĐƠN THUỐC (các thuốc đã thêm vào) ───
+   
     const [instructionNotes, setInstructionNotes] = useState("");
     const [prescriptionDetails, setPrescriptionDetails] = useState([]);
     const [medicineSearch, setMedicineSearch] = useState("");
 
-    // ─── DANH SÁCH XÉT NGHIỆM (để load từ API) ───
+   
     const [tests, setTests] = useState([]);
     const testDebounce = useRef(null);
 
-    // ─── KẾT QUẢ XÉT NGHIỆM (các xét nghiệm đã thêm vào) ───
+    
     const [testResults, setTestResults] = useState([]);
     const [testSearch, setTestSearch] = useState("");
 
@@ -50,12 +49,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
         setSearchingMedicine(true);
         await fetchWithAuth(
             url,
-            (data) => {
-                setMedicineResults(Array.isArray(data) ? data : (data.results ?? []));
-                // console.log("RAW data:", JSON.stringify(data, null, 2));
-                // console.log("Tổng kết quả:", data.count ?? results.length); // count từ API hoặc length array
-                // console.log("Đang hiển thị:", results.length); 
-            },
+            (data) => {setMedicineResults(Array.isArray(data) ? data : (data.results ?? []));},
             () => showSnackbar("Không tìm được thuốc", "error")
         );
         setSearchingMedicine(false);
@@ -68,17 +62,13 @@ const CreateMedicalRecord = ({ navigation, route }) => {
         setSearchingTest(true);
         await fetchWithAuth(
             url,
-            (data) => {
-                // setTests(data.results ?? []);
-                setTests(Array.isArray(data) ? data : (data.results ?? []));
-                console.log("RAW data:", JSON.stringify(data, null, 2));
-            },
+            (data) => {setTests(Array.isArray(data) ? data : (data.results ?? []));},
             (type,msg) => showSnackbar("Không tìm được xét nghiệm", "error")
         );
         setSearchingTest(false);
     };
 
-    // ─── QUẢN LÝ THUỐC ───
+    
     const filteredMedicines = medicineResults.filter(
         m => !prescriptionDetails.find(d => d.medicine_id === m.id)
     );
@@ -94,7 +84,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                 dosage: ""
             }
         ]);
-        setMedicineSearch(""); // Xóa search sau khi thêm
+        setMedicineSearch(""); 
     };
 
     const removeMedicine = (index) => {
@@ -117,7 +107,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
         );
     };
 
-    // ─── QUẢN LÝ XÉT NGHIỆM ───
+    
     const filteredTests = tests.filter(
         t => !testResults.find(r => r.test_id === t.id)
     );
@@ -133,7 +123,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                 file: null,
             }
         ]);
-        setTestSearch(""); // Xóa search sau khi thêm
+        setTestSearch(""); 
     };
 
     const removeTestResult = (index) => {
@@ -146,7 +136,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
         );
     };
 
-    // ─── SUBMIT ───
+    
     const handleSubmit = async () => {
         if (!diagnosis.trim()) {
             showSnackbar("Vui lòng nhập chẩn đoán", "error");
@@ -208,21 +198,15 @@ const CreateMedicalRecord = ({ navigation, route }) => {
 
             <ScrollView contentContainerStyle={styles.scroll}>
 
-                {/* ── HỒ SƠ BỆNH ÁN ── */}
                 <SectionTitle icon="file-document-outline" text="Hồ sơ bệnh án" />
                 <View style={styles.card}>
                     <Field label="Chẩn đoán *" value={diagnosis} onChangeText={setDiagnosis} multiline />
                     <Field label="Triệu chứng" value={symptoms} onChangeText={setSymptoms} multiline />
                     <Field label="Ghi chú" value={medical_notes} onChangeText={setMedicalNotes} multiline />
-                    <Field
-                        label="Ngày tái khám (YYYY-MM-DD)"
-                        value={followUpDate}
-                        onChangeText={setFollowUpDate}
-                        placeholder="2026-06-01"
-                    />
+                    <DateField label="Ngày tái khám" value={followUpDate} onChange={setFollowUpDate} placeholder="01/01/2026"/>
                 </View>
 
-                {/* ── ĐƠN THUỐC ── */}
+                
                 <SectionTitle icon="pill" text="Đơn thuốc" />
                 <View style={styles.card}>
                     <Field
@@ -232,7 +216,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                         multiline
                     />
 
-                    {/* Thanh tìm kiếm thuốc */}
+                    
                     <TextInput
                         mode="outlined"
                         label="Tìm và thêm thuốc..."
@@ -250,7 +234,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                         style={styles.input}
                     />
 
-                    {/* Kết quả tìm kiếm thuốc */}
+                    
                     {medicineSearch.trim().length > 0 && (
                         <View style={localStyles.searchResults}>
                             <ScrollView
@@ -277,7 +261,6 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                     )}
 
                 
-                    {/* Danh sách thuốc đã thêm */}
                     {prescriptionDetails.map((detail, index) => (
                         <View key={`medicine-${detail.medicine_id}`} style={localStyles.medicineItem}>
                             <View style={localStyles.medicineHeader}>
@@ -305,7 +288,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                     ))}
                 </View>
 
-                {/* ── KẾT QUẢ XÉT NGHIỆM ── */}
+                
                 <SectionTitle icon="test-tube" text="Kết quả xét nghiệm" />
                 <View style={styles.card}>
                     <TextInput
@@ -325,7 +308,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                         style={styles.input}
                     />
 
-                    {/* Kết quả tìm kiếm xét nghiệm */}
+        
                     {testSearch.trim().length > 0 && (
                         <View style={localStyles.searchResults}>
                             <ScrollView
@@ -352,7 +335,7 @@ const CreateMedicalRecord = ({ navigation, route }) => {
                         </View>
                     )}
 
-                    {/* Danh sách xét nghiệm đã thêm */}
+
                     {testResults.map((test, index) => (
                         <View
                             key={`test-${test.test_id}`}

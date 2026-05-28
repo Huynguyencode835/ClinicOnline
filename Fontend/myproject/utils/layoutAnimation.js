@@ -8,7 +8,7 @@ export const animateLayout = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 };
 
-// Custom nếu muốn
+
 export const animateSpring = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
 };

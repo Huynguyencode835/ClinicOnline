@@ -148,8 +148,6 @@ const AppointmentCard = ({ item, onPress, onConfirm, onReject }) => {
                 delayLongPress={350}
             >
                 <View style={[styles.card, selected && styles.cardSelected]}>
-
-                    {/* ── Header ── */}
                     <View style={styles.header}>
                         {target?.avatar ? (
                             <Image source={{ uri: target.avatar }} style={styles.avatar} />
@@ -171,7 +169,7 @@ const AppointmentCard = ({ item, onPress, onConfirm, onReject }) => {
 
                     <View style={styles.divider} />
 
-                    {/* ── Info ── */}
+                  
                     <View style={styles.infoBlock}>
                         <InfoRow label="Lý do" value={reason} />
                         <InfoRow label="Triệu chứng" value={symptoms} />
@@ -182,8 +180,7 @@ const AppointmentCard = ({ item, onPress, onConfirm, onReject }) => {
                     {user?.role === "doctor" && status === "Pending" && (
                         <View>
                             <View style={styles.divider} />
-
-                            {/* ── Footer ── */}
+        
                             <View style={styles.footer}>
                                 <Text style={styles.appointmentId}>Mã lịch hẹn #{id}</Text>
                                 {selected
@@ -223,8 +220,6 @@ const AppointmentCard = ({ item, onPress, onConfirm, onReject }) => {
                     {user?.role === "customer" && (status === "Pending" || status === "Canceled") && (
                         <View>
                             <View style={styles.divider} />
-
-                            {/* ── Footer ── */}
                             <View style={styles.footer}>
                                 <Text style={styles.appointmentId}>Mã lịch hẹn #{id}</Text>
                                 {selected
@@ -252,7 +247,6 @@ const AppointmentCard = ({ item, onPress, onConfirm, onReject }) => {
                         <View>
                             <View style={styles.divider} />
 
-                            {/* ── Footer ── */}
                             <View style={styles.footer}>
                                 <Text style={styles.appointmentId}>Mã lịch hẹn #{id}</Text>
                                 {selected

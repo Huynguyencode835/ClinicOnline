@@ -110,7 +110,7 @@ export default StyleSheet.create({
     shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
-    position: "absolute", // bắt buộc để border radius hiện
+    position: "absolute", 
   },
   tabLabel: {
     fontSize: 11,
@@ -127,7 +127,6 @@ export default StyleSheet.create({
         marginTop: 2,
     },
 
-    // Filter
     filterRow: {
         paddingHorizontal: 16,
         gap: 8,

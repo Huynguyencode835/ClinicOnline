@@ -78,10 +78,8 @@ const DoctorDetail = ({ route }) => {
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
-                {/* ── Header ── */}
                 <ProfileHeader user={detailDoctor} />
 
-                {/* ── Kinh nghiệm & Trình độ ── */}
                 <View style={styles.rowCards}>
                     <SectionCard title="Kinh nghiệm" containerColor={COLORS.primaryLight}>
                         <View style={styles.expRow}>
@@ -106,7 +104,6 @@ const DoctorDetail = ({ route }) => {
                     </SectionCard>
                 </View>
 
-                {/* ── Giới thiệu ── */}
                 <Card style={styles.card}>
                     <Card.Title
                         title="Giới thiệu"
@@ -122,7 +119,6 @@ const DoctorDetail = ({ route }) => {
                     </Card.Content>
                 </Card>
 
-                {/* ── Chuyên khoa ── */}
                 <ProfileInfoRow
                     title="Chuyên khoa"
                     icon="stethoscope"
@@ -151,7 +147,6 @@ const DoctorDetail = ({ route }) => {
                     })) ?? []}
                 />
 
-                {/* ── Thông tin liên hệ ── */}
                 <ProfileInfoRow
                     title="Thông tin liên hệ"
                     icon="card-account-details-outline"
@@ -226,13 +221,11 @@ const styles = StyleSheet.create({
         gap: 14,
     },
 
-    // ── Row cards ──
     rowCards: {
         flexDirection: 'row',
         gap: 12,
     },
 
-    // ── Kinh nghiệm ──
     expRow: {
         flexDirection: 'row',
         alignItems: 'flex-end',
@@ -251,7 +244,6 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
 
-    // ── Trình độ ──
     degreeRow: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -266,7 +258,6 @@ const styles = StyleSheet.create({
         flexShrink: 1,
     },
 
-    // ── Card giới thiệu ──
     card: {
         borderRadius: 16,
         backgroundColor: COLORS.bgCard,
@@ -284,8 +275,6 @@ const styles = StyleSheet.create({
         lineHeight: 22,
         color: COLORS.textSecondary,
     },
-
-    // ── Booking bar ──
     bookingBar: {
         position: 'absolute',
         bottom: 0,

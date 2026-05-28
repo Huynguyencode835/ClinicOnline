@@ -15,6 +15,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { TextInput } from "react-native-paper";
 import SectionTitle from "../../components/Appointment/SectionTilte";
 import Field from "../../components/MedicalRecord/Field";
+import DateField from "../../components/Medicine/DateField";
 
 const UpdateMedicalRecord = ({ navigation, route }) => {
     const { id, record } = route.params;
@@ -24,7 +25,7 @@ const UpdateMedicalRecord = ({ navigation, route }) => {
     const [diagnosis, setDiagnosis] = useState(record?.diagnosis ?? "");
     const [symptoms, setSymptoms] = useState(record?.symptoms ?? "");
     const [medicalNotes, setMedicalNotes] = useState(record?.medical_notes ?? "");
-    const [followUpDate, setFollowUpDate] = useState(record?.follow_up_date ?? "");
+    const [followUpDate, setFollowUpDate] = useState(record?.follow_up_date ?? null);
 
     const handleSubmit = async () => {
         if (!diagnosis.trim()) {
@@ -46,7 +47,6 @@ const UpdateMedicalRecord = ({ navigation, route }) => {
             },
             (type, msg, errData) => {
                 console.log("errData:", JSON.stringify(errData, null, 2));
-                // Parse lỗi validation từ Django
                 if (errData && typeof errData === "object") {
                     const messages = Object.entries(errData).map(([field, errors]) =>Array.isArray(errors)? errors.join(", "): errors).join("\n");
                     showSnackbar(messages || "Lưu hồ sơ thất bại", "error");
@@ -67,7 +67,7 @@ const UpdateMedicalRecord = ({ navigation, route }) => {
                     <Field label="Chẩn đoán *" value={diagnosis} onChangeText={setDiagnosis}  multiline/>
                     <Field label="Triệu chứng" value={symptoms} onChangeText={setSymptoms} multiline/>
                     <Field label="Ghi chú" value={medicalNotes} onChangeText={setMedicalNotes} multiline/>
-                    <Field label="Ngày tái khám (YYYY-MM-DD)" value={followUpDate} onChangeText={setFollowUpDate} placeholder="2026-06-01"/>
+                    <DateField label="Ngày tái khám" value={followUpDate}  onChange={setFollowUpDate} placeholder="01/01/2026"/>
                 </View>
                 <AppButton
                     type="create"

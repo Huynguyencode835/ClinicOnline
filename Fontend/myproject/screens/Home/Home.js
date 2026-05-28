@@ -148,7 +148,7 @@ const Home = ({ navigation, route }) => {
                 <SectionLabel text="Sự kiện Ưu đãi" />
                 <BannerSlider />
 
-                {/* Danh sách bác sĩ */}
+                
                 <View style={{ marginTop: 12 }}>
                     <View style={{
                         flexDirection: 'row',

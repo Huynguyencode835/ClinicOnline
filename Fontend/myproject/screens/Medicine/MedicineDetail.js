@@ -56,7 +56,6 @@ const MedicineDetail = ({ route }) => {
             <AppHeader titles="Chi tiết thuốc" onBack={() => navigation.goBack()} />
 
             <ScrollView contentContainerStyle={StyleMedicine.scrollContent}>
-                {/* Hero Card */}
                 <View style={StyleMedicine.heroCard}>
                     <View style={StyleMedicine.heroIconWrapper}>
                         <MaterialCommunityIcons name="pill" size={40} color={COLORS.primary} />
@@ -64,7 +63,6 @@ const MedicineDetail = ({ route }) => {
                     <Text style={StyleMedicine.medicineNameDetail}>{medicine.name}</Text>
                 </View>
 
-                {/* Price & Stock Row */}
                 <View style={StyleMedicine.statsRow}>
                     <View style={StyleMedicine.statBox}>
                         <MaterialCommunityIcons name="currency-usd" size={20} color={COLORS.primary} />
@@ -87,7 +85,6 @@ const MedicineDetail = ({ route }) => {
                     </View>
                 </View>
 
-                {/* Description */}
                 {medicine.description && (
                     <View style={StyleMedicine.section}>
                         <View style={StyleMedicine.sectionHeader}>
@@ -99,7 +96,6 @@ const MedicineDetail = ({ route }) => {
                 )}
 
 
-                {/* Metadata Row */}
                 <View style={StyleMedicine.metaRow}>
                     {medicine.production_date && (
                         <View style={StyleMedicine.metaItem}>
@@ -115,7 +111,6 @@ const MedicineDetail = ({ route }) => {
                     )}
                 </View>
 
-                {/* Low stock warning */}
                 {isLowStock && (
                     <View style={StyleMedicine.lowStockBanner}>
                         <MaterialCommunityIcons name="alert" size={20} color="#e53935" />

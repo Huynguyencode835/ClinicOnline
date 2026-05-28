@@ -19,7 +19,7 @@ const DoctorCard = ({ item, navigation }) => {
                 mode="elevated"
             >
                 <Card.Content style={StylesDoctorCard.cardContent}>
-                    {/* Avatar */}
+                   
                     <View style={StylesDoctorCard.avatarWrapper}>
                         {item.avatar
                             ? <Avatar.Image size={80} source={{ uri: item.avatar }} />
@@ -27,12 +27,12 @@ const DoctorCard = ({ item, navigation }) => {
                         }
                     </View>
 
-                    {/* Họ tên đầy đủ */}
+                    
                     <Text style={StylesDoctorCard.name} numberOfLines={1}>
                         {item.last_name} {item.first_name}
                     </Text>
 
-                    {/* Info rows */}
+                    
                     <View style={StylesDoctorCard.infoRow}>
                         <Text style={{ fontSize: 12 }}>📧</Text>
                         <Text style={StylesDoctorCard.infoText} numberOfLines={1}>{item.email}</Text>

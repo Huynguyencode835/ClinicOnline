@@ -49,9 +49,7 @@ const StyledInput = ({ style, showBorder = false, value, ...props }) => (
     />
 );
 
-const Step2Profile = () => {//{ data, updatePatient, updateProfile }
-    // const p = data.patient;
-
+const Step2Profile = () => {
     const { updatePatient, updateProfile, bookingData } = useBooking();
     const navigation = useNavigation();
     const p = bookingData.patient;
@@ -77,7 +75,7 @@ const Step2Profile = () => {//{ data, updatePatient, updateProfile }
                 <MedicalInfoCard data={bookingData} updateProfile={updateProfile} />
             </View>
 
-            {/* ── LÝ DO KHÁM ── */}
+            
             <SectionLabel icon="clipboard-text-outline" text="Lý do khám" />
             <Card style={[styles.card, { marginBottom: 8 }]}>
                 <Card.Content style={styles.cardContent}>

@@ -41,18 +41,14 @@ const UpdateTestResults = ({ navigation, route }) => {
         setSearchingTest(true);
         await fetchWithAuth(
             url,
-            (data) => {
-                // setTests(data.results ?? []);
-                setTests(Array.isArray(data) ? data : (data.results ?? []));
-                console.log("RAW data:", JSON.stringify(data, null, 2));
-            },
+            (data) => {setTests(Array.isArray(data) ? data : (data.results ?? []));},
             (type,msg) => showSnackbar("Không tìm được xét nghiệm", "error")
         );
         setSearchingTest(false);
     };
 
    
-     const filteredTests = tests.filter(
+    const filteredTests = tests.filter(
         t => !testResults.find(r => r.test_id === t.id)
     );
 
@@ -68,7 +64,7 @@ const UpdateTestResults = ({ navigation, route }) => {
                 file: null,
             }
         ]);
-        setTestSearch(""); // Xóa search sau khi thêm
+        setTestSearch(""); 
     };
 
     const removeTestResult = async (index) => {
@@ -106,7 +102,6 @@ const UpdateTestResults = ({ navigation, route }) => {
             const existingItems = testResults.filter(t => t.id);
             const newItems = testResults.filter(t => !t.id);
 
-            // PATCH từng item đã có
             for (const t of existingItems) {
                 await updatePatchWithAuth(
                     endpoints.testResultDetail(t.id),
@@ -125,7 +120,6 @@ const UpdateTestResults = ({ navigation, route }) => {
                 );
             }
 
-            // POST bulk item mới
             if (newItems.length > 0) {
                 await createWithAuth(
                     endpoints.testResults,
@@ -185,7 +179,6 @@ const UpdateTestResults = ({ navigation, route }) => {
                         style={styles.input}
                     />
                     
-                    {/* Kết quả tìm kiếm xét nghiệm */}
                     {testSearch.trim().length > 0 && (
                         <View style={localStyles.searchResults}>
                             <ScrollView
@@ -211,7 +204,6 @@ const UpdateTestResults = ({ navigation, route }) => {
                         </View>
                     )}
 
-                    {/* Danh sách xét nghiệm đã thêm */}
                     {testResults.map((test, index) => (
                         <View
                             key={`test-${test.test_id}-${index}`}

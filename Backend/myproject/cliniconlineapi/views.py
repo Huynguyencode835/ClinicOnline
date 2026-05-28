@@ -249,33 +249,33 @@ class AppointmentViewSet(viewsets.ViewSet,
 
         updated = serializer.save()
 
-        if updated.status == Appointment.Status.CANCELED:
-            updated.time_slot.status = TimeSlot.Status.AVAILABLE
-            updated.time_slot.save()
-
-            send_push_to_user(
-                user_id=updated.customer.id,
-                title='Lịch hẹn bị từ chối',
-                body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã từ chối lịch hẹn của bạn.',
-                data={'type': 'appointment', 'id': str(updated.id),'sub_type': 'canceled'}
-            )
-
-        elif updated.status == Appointment.Status.CONFIRMED:
-            send_push_to_user(
-                user_id=updated.customer.id,
-                title='Lịch hẹn được xác nhận',
-                body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã xác nhận lịch hẹn của bạn.',
-                data={'type': 'appointment', 'id': str(updated.id), 'sub_type': 'confirmed'}
-            )
-
-        elif updated.status == Appointment.Status.PENDING_PAYMENT:
-            print("Hóa đơn đã sẳn sàng chờ bạn thanh toán")
-            send_push_to_user(
-                user_id=updated.customer.id,
-                title='Hóa đơn đã sẳn sàng chờ bạn thanh toán',
-                body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã xác nh của bạn.',
-                data={'type': 'appointment', 'id': str(updated.id), 'sub_type': 'pending_payment'}
-            )
+        # if updated.status == Appointment.Status.CANCELED:
+        #     updated.time_slot.status = TimeSlot.Status.AVAILABLE
+        #     updated.time_slot.save()
+        #
+        #     send_push_to_user(
+        #         user_id=updated.customer.id,
+        #         title='Lịch hẹn bị từ chối',
+        #         body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã từ chối lịch hẹn của bạn.',
+        #         data={'type': 'appointment', 'id': str(updated.id),'sub_type': 'canceled'}
+        #     )
+        #
+        # elif updated.status == Appointment.Status.CONFIRMED:
+        #     send_push_to_user(
+        #         user_id=updated.customer.id,
+        #         title='Lịch hẹn được xác nhận',
+        #         body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã xác nhận lịch hẹn của bạn.',
+        #         data={'type': 'appointment', 'id': str(updated.id), 'sub_type': 'confirmed'}
+        #     )
+        #
+        # elif updated.status == Appointment.Status.PENDING_PAYMENT:
+        #     print("Hóa đơn đã sẳn sàng chờ bạn thanh toán")
+        #     send_push_to_user(
+        #         user_id=updated.customer.id,
+        #         title='Hóa đơn đã sẳn sàng chờ bạn thanh toán',
+        #         body=f'Bác sĩ {updated.doctor.last_name} {updated.doctor.first_name} đã xác nh của bạn.',
+        #         data={'type': 'appointment', 'id': str(updated.id), 'sub_type': 'pending_payment'}
+        #     )
 
 
     def perform_destroy(self, instance):
@@ -342,7 +342,6 @@ class AppointmentViewSet(viewsets.ViewSet,
     def vnpay_create(self, request, pk):
         appointment = get_object_or_404(Appointment, pk=pk)
         data = calculate_invoice_total(appointment)
-        # Thêm timestamp để tránh trùng TxnRef
         txn_ref = f"{appointment.id}_{int(time.time())}"
         payment_url = create_vnpay_url(
             order_id=txn_ref,
@@ -387,7 +386,6 @@ class AppointmentViewSet(viewsets.ViewSet,
 
         vnp_response_code = request.GET.get("vnp_ResponseCode")
         vnp_txn_ref = request.GET.get("vnp_TxnRef")
-        # Tách appointment_id từ txn_ref
         appointment_id = vnp_txn_ref.split("_")[0]
 
         if vnp_response_code == "00":
@@ -445,7 +443,7 @@ class AppointmentViewSet(viewsets.ViewSet,
             response["ngrok-skip-browser-warning"] = "true"
             return response
 
-        # Thanh toán thất bại
+
         from django.http import HttpResponse
         response = HttpResponse("""
                 <html>

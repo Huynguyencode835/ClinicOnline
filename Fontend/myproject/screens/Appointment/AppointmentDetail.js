@@ -75,11 +75,6 @@ const AppointmentDetail = ({ route }) => {
         )
     }
 
-    console.log("role:", user?.role);
-    console.log("status:", appointmentDetail?.status);
-    console.log("check:", user?.role === "doctor" && appointmentDetail?.status === "Pending");
-    console.log("has_medical_record:", appointmentDetail?.has_medical_record);
-    console.log("Status : ",appointmentDetail.status)
     return (
         <View style={{ flex: 1, backgroundColor: COLORS.bg, }}>
             <AppHeader titles="Chi tiết lịch hẹn" onBack={() => {
@@ -89,8 +84,6 @@ const AppointmentDetail = ({ route }) => {
             </AppHeader>
 
             <ScrollView contentContainerStyle={{ padding: 16 }}>
-
-                {/* ── PHIẾU ĐẶT ── */}
                 <SectionTitle icon="calendar-clock" text="Thông tin phiếu đặt" />
                 <InfoCard2Col
                     rows={[
@@ -105,7 +98,7 @@ const AppointmentDetail = ({ route }) => {
                     ]}
                 />
 
-                {/* ── BÁC SĨ ── */}
+                
                 <SectionTitle icon="account-tie" text="Thông tin bác sĩ" />
                 <InfoCard
                     rows={[
@@ -116,7 +109,7 @@ const AppointmentDetail = ({ route }) => {
                     ]}
                 />
 
-                {/* ── BỆNH NHÂN ── */}
+                
                 <SectionTitle icon="account" text="Thông tin bệnh nhân" />
                 <InfoCard2Col
                     rows={[

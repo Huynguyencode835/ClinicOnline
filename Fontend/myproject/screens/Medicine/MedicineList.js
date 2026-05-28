@@ -44,7 +44,6 @@ const MedicineList = () => {
 
     const [activeFilter, setActiveFilter] = useState("all");
 
-    // ========== API ==========
 
     const loadMedicines = async (pageNum, searchTerm, filterKey = "all") => {
         if (isLoadingRef.current) return;
@@ -84,7 +83,6 @@ const MedicineList = () => {
         loadMedicines(1, currentQ.current, key);
     };
 
-    // ========== SEARCH ==========
 
     const handleSearchChange = (v) => {
         setQ(v);
@@ -97,7 +95,6 @@ const MedicineList = () => {
         }, 500);
     };
 
-    // ========== PAGINATION ==========
 
     const handlePrev = () => {
         if (page <= 1 || loading) return;
@@ -113,14 +110,12 @@ const MedicineList = () => {
         loadMedicines(nextPage, currentQ.current, activeFilter);
     };
 
-    // ========== EFFECTS ==========
 
-    // Cleanup debounce khi unmount
     useEffect(() => {
         return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
     }, []);
 
-    // Reset + load lại khi vào screen
+
     useFocusEffect(
         useCallback(() => {
             if (!user) { setLoadingScreen(false); return; }
@@ -134,8 +129,7 @@ const MedicineList = () => {
         }, [user])
     );
 
-    // ========== RENDER ==========
-
+    
     if (loadingScreen) return <LoadingScreen text="Đang tải danh sách thuốc..." />;
 
     return (

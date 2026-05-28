@@ -1,4 +1,3 @@
-// BookingContext.jsx
 import { createContext, useContext, useReducer } from "react";
 import BookingReducer, { initialState } from "../reducers/BookingReducer";
 

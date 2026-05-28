@@ -193,14 +193,12 @@ class PrescriptionCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Đơn thuốc phải có ít nhất 1 thuốc"
             )
-        # Kiểm tra trùng thuốc
         medicine_ids = [d['medicine'].id for d in value]
         if len(medicine_ids) != len(set(medicine_ids)):
             raise serializers.ValidationError("Thuốc bị trùng trong đơn")
         return value
 
     def validate(self, attrs):
-        #bác sĩ phụ trách mới được tạo
         medical_record = attrs.get('medical_record')
         request = self.context.get('request')
         self.validator.validate_create_permission(medical_record, request.user)
@@ -269,38 +267,6 @@ class PrescriptionUpdateSerializer(serializers.ModelSerializer):
             if len(medicine_ids) != len(set(medicine_ids)):
                 raise serializers.ValidationError("Thuốc bị trùng trong đơn")
         return value
-
-    # def validate(self, attrs):
-    #     details = attrs.get('details')
-    #     if not details:
-    #         return attrs
-    #
-    #     # Tính stock thực tế sau khi hoàn trả stock cũ
-    #     old_details = self.instance.details.all() if self.instance else []
-    #
-    #     # Map stock sẽ được hoàn trả: {medicine_id: quantity}
-    #     restored_stock = {}
-    #     for old in old_details:
-    #         restored_stock[old.medicine.id] = (
-    #                 restored_stock.get(old.medicine.id, 0) + old.quantity
-    #         )
-    #
-    #     for detail in details:
-    #         medicine = detail['medicine']
-    #         quantity = detail['quantity']
-    #
-    #         # Stock thực tế = stock hiện tại + phần sẽ hoàn trả
-    #         effective_stock = medicine.stock + restored_stock.get(medicine.id, 0)
-    #
-    #         if quantity > effective_stock:
-    #             raise serializers.ValidationError({
-    #                 'details': (
-    #                     f"Thuốc '{medicine.name}' không đủ! "
-    #                     f"Yêu cầu {quantity}, còn {effective_stock} {medicine.unit}."
-    #                 )
-    #             })
-    #
-    #     return attrs
 
     def update(self, instance, validated_data):
         details_data = validated_data.pop('details', None)

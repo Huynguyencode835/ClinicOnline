@@ -65,22 +65,18 @@ const Payment = ({ route }) => {
 
             <ScrollView contentContainerStyle={{ padding: 16 }}>
 
-                {/* Thông tin lịch hẹn */}
                 <Section title="Thông tin lịch hẹn" icon="calendar-check">
                     <Row label="Mã phiếu" value={`#${invoice.appointment_id}`} />
                 </Section>
 
-                {/* Dịch vụ */}
                 <Section title="Dịch vụ khám" icon="medical-bag">
                     <Row label={invoice.service.name || "—"} value={invoice.service.fee} isCurrency />
                 </Section>
 
-                {/* Bác sĩ */}
                 <Section title="Phí bác sĩ" icon="account-tie">
                     <Row label={invoice.doctor.name} value={invoice.doctor.fee} isCurrency />
                 </Section>
 
-                {/* Thuốc */}
                 {invoice.prescription.items.length > 0 && (
                     <Section title="Đơn thuốc" icon="pill">
                         {invoice.prescription.items.map((item, i) => (
@@ -96,7 +92,6 @@ const Payment = ({ route }) => {
                     </Section>
                 )}
 
-                {/* Xét nghiệm */}
                 {invoice.tests.items.length > 0 && (
                     <Section title="Xét nghiệm" icon="test-tube">
                         {invoice.tests.items.map((item, i) => (
@@ -107,7 +102,7 @@ const Payment = ({ route }) => {
                     </Section>
                 )}
 
-                {/* Tổng cộng */}
+
                 <View style={styles.totalCard}>
                     <Text style={styles.totalLabel}>Tổng cộng</Text>
                     <Text style={styles.totalValue}>{invoice.total?.toLocaleString()} VNĐ</Text>

@@ -1,4 +1,3 @@
-// utils/apiHelper.js
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Apis, { authApis, endpoints } from "../configs/Apis";
 
@@ -19,7 +18,6 @@ const handleError = (err, onError) => {
     }
 };
 
-// ============ CÓ AUTH ============
 
 export const fetchWithAuth = async (endpoint, onSuccess, onError, params = {}, setLoading) => {
     setLoading?.(true);
@@ -76,7 +74,6 @@ export const deleteWithAuth = async (endpoint, onSuccess, onError, setLoading) =
     finally { setLoading?.(false); }
 };
 
-// ============ KHÔNG AUTH ============
 
 export const fetchPublic = async (endpoint, onSuccess, onError, params = {}, setLoading) => {
     setLoading?.(true);

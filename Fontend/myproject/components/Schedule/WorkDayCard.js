@@ -52,7 +52,7 @@ const WorkdayCard = ({ item, onPress, onDelete, onLongPress, selected }) => {
                     ]
                 }
             ]}>
-                {/* Icon */}
+        
                 <View style={[styles.iconBox, selected && styles.iconBoxSelected]}>
                     <MaterialCommunityIcons
                         name={selected ? "trash-can-outline" : "calendar-week"}
@@ -61,13 +61,13 @@ const WorkdayCard = ({ item, onPress, onDelete, onLongPress, selected }) => {
                     />
                 </View>
 
-                {/* Info */}
+              
                 <View style={styles.info}>
                     <Text style={styles.dayOfWeek}>{DAY_VI_FULL[day_of_week] ?? day_of_week}</Text>
                     <Text style={styles.date}>{formatDate(date)}</Text>
                 </View>
 
-                {/* Nút xóa slide in/out */}
+             
                 <Animated.View style={{ width: deleteWidth, overflow: 'hidden' }}>
                     <TouchableOpacity
                         style={styles.deleteBtn}
@@ -78,7 +78,7 @@ const WorkdayCard = ({ item, onPress, onDelete, onLongPress, selected }) => {
                     </TouchableOpacity>
                 </Animated.View>
 
-                {/* Arrow - ẩn khi selected */}
+            
                 {!selected && (
                     <MaterialCommunityIcons name="chevron-right" size={20} color={COLORS.textMuted} />
                 )}

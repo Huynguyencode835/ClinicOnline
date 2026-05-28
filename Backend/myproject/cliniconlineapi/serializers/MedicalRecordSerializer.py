@@ -4,7 +4,6 @@ from django.db import transaction
 from rest_framework import serializers
 
 from cliniconlineapi.models import MedicalRecord, Appointment, Prescription, PrescriptionDetail, TestResult
-from cliniconlineapi.serializers.AppointmentSerializer import AppointmentSerializer
 from cliniconlineapi.serializers.MedicalSerializer import PrescriptionCreateSerializer, PrescriptionDetailedSerializer,PrescriptionNestedCreateSerializer
 from cliniconlineapi.serializers.TestResultSerializer import TestResultSerializer, TestResultCreateSerializer, \
     TestResultNestedCreateSerializer
@@ -121,7 +120,6 @@ class MedicalRecordDetailSerializer(serializers.ModelSerializer):
             "status": obj.appointment.status,
         }
 
-    #Lấy thong tin bác sĩ cho hồ sơ bênh án nếu cần
     def get_doctor(self, obj):
         doctor = obj.appointment.doctor
         specialties = []

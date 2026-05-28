@@ -8,8 +8,6 @@ import { formatDate } from "../../utils/format";
 
 const DateField = ({ label, value, onChange, error }) => {
     const [show, setShow] = useState(false);
-    console.log("DateField show:", show, "value:", value); // debug
-
     return (
         <View style={{ marginBottom: 4 }}>
             <FieldWithError

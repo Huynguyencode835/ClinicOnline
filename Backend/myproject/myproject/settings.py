@@ -77,7 +77,7 @@ ALLOWED_HOSTS = [
     '192.168.100.173',
     'localhost',
     '192.168.100.152', #hung
-    '192.168.1.177',
+    '192.168.1.186',
     "unbalked-kayce-spindly.ngrok-free.dev",
     ".ngrok-free.dev",
 ]

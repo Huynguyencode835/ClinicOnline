@@ -199,7 +199,6 @@ const styles = StyleSheet.create({
         paddingTop: 50
     },
 
-    // Header
     header: {
         paddingHorizontal: 16,
         paddingVertical: 5,
@@ -215,10 +214,8 @@ const styles = StyleSheet.create({
         marginTop: 2,
     },
 
-    // Filter
     filterRow: {
         paddingHorizontal: 16,
-        // paddingBottom: 12,
         gap: 8,
         flexDirection: "row",
     },
@@ -245,13 +242,11 @@ const styles = StyleSheet.create({
         fontWeight: "700",
     },
 
-    // List
     listContent: {
         paddingHorizontal: 16,
         paddingBottom: 24,
     },
 
-    // Empty / center states
     center: {
         flex: 1,
         justifyContent: "center",
@@ -279,7 +274,6 @@ const styles = StyleSheet.create({
         lineHeight: 20,
     },
 
-    // Retry
     retryBtn: {
         marginTop: 8,
         paddingHorizontal: 24,
