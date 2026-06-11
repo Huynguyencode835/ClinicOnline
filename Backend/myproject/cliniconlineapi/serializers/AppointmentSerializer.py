@@ -33,6 +33,9 @@ class AppointmentSerializer(serializers.ModelSerializer):
             if value not in allowed_status:
                 raise serializers.ValidationError("Trạng thái không hợp lệ.")
 
+            if current_status not in [Appointment.Status.PENDING, Appointment.Status.CONFIRMED]:
+                raise serializers.ValidationError("Chỉ có thể cập nhật lịch hẹn đang chờ xác nhận hoặc đã xác nhận.")
+
             if current_status == Appointment.Status.CANCELED and value == Appointment.Status.CONFIRMED:
                 raise serializers.ValidationError("Không thể xác nhận phiếu.")
 

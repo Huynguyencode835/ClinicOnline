@@ -1,13 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import {
-    Modal,
-    View,
-    Text,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    Animated,
-    StyleSheet,
-} from 'react-native';
+import {Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback, Animated, StyleSheet,} from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const CONFIGS = {

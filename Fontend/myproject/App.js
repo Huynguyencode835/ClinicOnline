@@ -248,7 +248,9 @@ const TabNavigatior = () => {
         <>
           <Tab.Screen
             name="CreateStaff"
-            component={() => <Register is_superuser={true} />}
+            component={({ navigation }) => (
+              <Register navigation={navigation} is_superuser={true} />
+            )}
             options={{
               tabBarLabel: "Tạo tài khoản nhân viên",
               tabBarIcon: ({ color }) => (
@@ -331,7 +333,7 @@ const AppContent = () => {
                 {
                   text: 'Đăng nhặp',
                   onPress: () => {
-                    navigation.navigate("User", {
+                    navigationRef.navigate("User", {
                       screen: "Login"
                     })
                   },

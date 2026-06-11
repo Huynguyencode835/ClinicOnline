@@ -225,7 +225,9 @@ const Register = ({ navigation, is_superuser }) => {
 
     return (
         <View style={{ flex: 1 }}>
-            <AppHeader titles={titles} onBack={() => { navigation.goBack()}}>
+            <AppHeader titles={titles} onBack={() => { 
+                    navigation.goBack()
+                }}>
 
             </AppHeader>
             <ScrollView style={{ flex: 1, backgroundColor: COLORS.bg }}

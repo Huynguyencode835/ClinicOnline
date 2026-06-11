@@ -26,7 +26,6 @@ const Home = ({ navigation, route }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
     const [refreshing, setRefreshing] = useState(false);
-    const [hasMore, setHasMore] = useState(true);
     const { showSnackbar } = useSnackbar();
     const [loading, setLoading] = useState(true);
     const { user } = useContext(MyUserContext);
@@ -41,7 +40,6 @@ const Home = ({ navigation, route }) => {
                 if (next == null) {
                     animateLayout();
                     setPage(null);
-                    setHasMore(false);
                 }
                 setDoctors(prev => [...prev, ...data]);
             },
@@ -175,7 +173,7 @@ const Home = ({ navigation, route }) => {
                         listContentStyle={StylesDoctorCard.listContainer}
                         flatListProps={{
                             horizontal: true,
-                            onEndReached: () => hasMore ? setPage(prev => prev + 1) : setPage(null),
+                            onEndReached: () => setPage(prev => prev !== null ? prev + 1 : null),
                             onEndReachedThreshold: 0.3,
                             onScroll: Animated.event(
                                 [{ nativeEvent: { contentOffset: { x: doctorScrollX } } }],

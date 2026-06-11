@@ -133,7 +133,6 @@ class TimeSlotNormal(serializers.ModelSerializer):
         fields = ["id", "status"]
 
 class TimeSlotSerializer(TimeSlotNormal):
-    id = serializers.IntegerField(required=False)
     class Meta:
         model = TimeSlotNormal.Meta.model
         fields = TimeSlotNormal.Meta.fields + ["start_time", "end_time"]
@@ -152,7 +151,6 @@ class TimeSlotSerializer(TimeSlotNormal):
         if not value:
             raise serializers.ValidationError("Phải có ít nhất 1 time slot.")
 
-        # sort theo start_time
         sorted_slots = sorted(value, key=lambda x: x["start_time"])
 
         for i in range(len(sorted_slots) - 1):
@@ -187,8 +185,8 @@ class WorkDayLiteSerializer(serializers.ModelSerializer):
         last_day = monthrange(today.year, today.month)[1]
         end_of_month = today.replace(day=last_day)
 
-        # if value > end_of_month:
-        #     raise serializers.ValidationError("Chỉ được đặt lịch trong tháng hiện tại.")
+        if value > end_of_month:
+            raise serializers.ValidationError("Chỉ được đặt lịch trong tháng hiện tại.")
         if value < today:
             raise serializers.ValidationError("Không được đặt lịch trong quá khứ.")
 

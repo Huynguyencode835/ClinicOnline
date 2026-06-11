@@ -3,8 +3,6 @@ from datetime import date, timedelta
 import time
 from django.db.models import Count, Q, Case, When, Value, CharField, Sum, F
 from django.db.models.functions import ExtractYear, TruncMonth
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 from oauth2_provider.contrib.rest_framework import permissions
 from django.utils.timezone import now
 from rest_framework import viewsets, generics, parsers, status, permissions, pagination, filters
@@ -15,9 +13,8 @@ from rest_framework.mixins import UpdateModelMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from cliniconlineapi import paginators, permission
-from cliniconlineapi.serializers import userserializer, ChatBoxSerializer
 from cliniconlineapi.models import User, Specialty, WorkDay, Appointment, TimeSlot, Medicine, MedicalRecord, TestResult, \
-    Prescription, ServiceNormal,PrescriptionDetail, Test
+    Prescription, ServiceNormal, Test
 from cliniconlineapi.serializers import userserializer, StaffSerializer
 from cliniconlineapi.serializers.AppointmentSerializer import AppointmentSerializer, AppointmentDetailSerializer
 from cliniconlineapi.serializers.ChatBoxSerializer import GeminiChatSerializer
@@ -38,6 +35,8 @@ from cliniconlineapi.services.verifyVNPay import verify_vnpay_signature
 from cliniconlineapi.services.firebase import send_push_to_user
 from cliniconlineapi.services.ocrService import extract_text_from_image, parse_insurance_card
 from cliniconlineapi.validators import MedicalRecordDataValidator, PrescriptionDataValidator, TestResultDataValidator
+from django.utils.timezone import make_aware
+from datetime import datetime
 
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
     queryset = User.objects.filter(is_active=True)
@@ -90,6 +89,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
             s = WorkDaySerializer(data=request.data, context={"request": request})
             s.is_valid(raise_exception=True)
             c = s.save(staff_profile=request.user.staff_profile)
+            c = WorkDay.objects.prefetch_related('time_slots').get(pk=c.pk)
             return Response(WorkDaySerializer(c).data, status=status.HTTP_201_CREATED)
         else:
             month = request.query_params.get("month")
@@ -100,7 +100,6 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
 
             return Response(WorkDayLiteSerializer(querry, many=True).data, status=status.HTTP_200_OK)
 
-
     @action(
         methods=["GET", "DELETE"],
         url_path="workday/(?P<pk>[^/.]+)",
@@ -110,7 +109,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
     )
     def workday_detail(self, request, pk=None):
         try:
-            workday = WorkDay.objects.get(pk=pk, staff_profile=request.user.staff_profile)
+            workday = WorkDay.objects.prefetch_related('time_slots').get(pk=pk, staff_profile=request.user.staff_profile)
         except WorkDay.DoesNotExist:
             return Response({"detail": "Không tìm thấy."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -237,16 +236,6 @@ class AppointmentViewSet(viewsets.ViewSet,
         return self.queryset.none()
 
     def perform_update(self, serializer):
-        instance = self.get_object()
-        allowed_statuses = [
-            Appointment.Status.PENDING,
-            Appointment.Status.CONFIRMED
-        ]
-        if instance.status not in allowed_statuses:
-            raise ValidationError(
-                "Chỉ có thể cập nhật lịch hẹn đang chờ xác nhận hoặc đã xác nhận."
-            )
-
         updated = serializer.save()
 
         if updated.status == Appointment.Status.CANCELED:
@@ -510,7 +499,7 @@ class SpecialtyViewSet(viewsets.ViewSet, generics.ListAPIView):
         q = User.objects.select_related('staff_profile').filter(
             role=User.Role.DOCTOR,
             staff_profile__specialties__id=pk
-        ).select_related('staff_profile')
+        )
         return Response(DoctorSerializer(q, many=True).data, status=status.HTTP_200_OK)
 
     def get_queryset(self):
@@ -528,14 +517,11 @@ class ServiceNormalViewSet(viewsets.ViewSet, generics.ListAPIView):
     serializer_class = ServiceNormalSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class GeminiChatViewSet(viewsets.ViewSet, generics.CreateAPIView):
-
+class GeminiChatViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
-    serializer_class = GeminiChatSerializer
-
     def create(self, request):
-        serializer = self.get_serializer(data=request.data)
+        serializer = GeminiChatSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         message = serializer.validated_data["message"]
         try:
@@ -556,7 +542,6 @@ class InsuranceCardOCRView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Kiểm tra định dạng
         allowed_types = ["image/jpeg", "image/png", "image/jpg"]
         if image_file.content_type not in allowed_types:
             return Response(
@@ -689,7 +674,6 @@ class PrescriptionViewSet(viewsets.ViewSet, generics.ListCreateAPIView):
             status=status.HTTP_200_OK
         )
 
-#Kết quả xét nghiệm
 class TestViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Test.objects.filter(active=True)
     serializer_class = TestSerializer
@@ -703,7 +687,6 @@ class TestViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_permissions(self):
         return [permission.IsStaffRole()]
-
 
 class TestResultViewSet(viewsets.ModelViewSet):
     queryset = TestResult.objects.select_related('test', 'medical_record')
@@ -783,7 +766,6 @@ class TestResultViewSet(viewsets.ModelViewSet):
             status=status.HTTP_204_NO_CONTENT
         )
 
-#Bệnh án
 class MedicalRecordViewSet(viewsets.ViewSet, generics.ListCreateAPIView, generics.RetrieveAPIView):
     queryset = MedicalRecord.objects.filter(active=True)
     serializer_class = MedicalRecordListSerializer
@@ -866,8 +848,6 @@ class MedicalRecordViewSet(viewsets.ViewSet, generics.ListCreateAPIView, generic
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
 class TotalStatView(APIView):
     permission_classes = [permission.IsAdminRole]
 
@@ -941,9 +921,6 @@ class TotalStatView(APIView):
         ).order_by('name'))
 
     def get_totalSales(self, request):
-        from django.utils.timezone import make_aware
-        from datetime import datetime
-
         start = request.query_params.get('start')
         end = request.query_params.get('end')
 

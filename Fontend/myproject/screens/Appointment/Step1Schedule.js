@@ -131,7 +131,6 @@ const Step1Schedule = ({ doctor, specialty }) => {
         }, [user, services.length, specialies.length, doctors.length, bookingData.doctor?.id])
     );
 
-
     if (loading) return <LoadingScreen text="Đang tải thông tin bác sĩ và lịch làm việc..." />;
 
     const specialiesWithSelected = bookingData.specialty

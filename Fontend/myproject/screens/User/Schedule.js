@@ -111,6 +111,7 @@ const Schedule = ({ route }) => {
             }, {},
             setLoadingFetch
         )
+        setLoadingInit(false)
     }
 
     const deleteWorkday = async (id) => {
@@ -249,8 +250,8 @@ const Schedule = ({ route }) => {
                                         setCurrentMonth(key);
                                     }}
                                     markedDates={markedDates}
-                                    // minDate={minDate}
-                                // maxDate={maxDate}
+                                    minDate={minDate}
+                                    maxDate={maxDate}
                                 />
                             </Card.Content>
                         </Card>

@@ -99,7 +99,7 @@ const Total = ({ navigation }) => {
                 console.log(converData(data))
                 setDataChart(converData(data));
             },
-            (type, msg) => showSnackbar(msg, 'warning', 'dữ liệu không hợp lệ vui lòng chọn khoảng thời gian khác'),
+            (type, msg, errData) => showSnackbar(errData || msg, 'warning', 'dữ liệu không hợp lệ vui lòng chọn khoảng thời gian khác'),
             isMonthRange ? { type: type, start: monthRange?.start.toISOString().split('T')[0], end: monthRange?.end.toISOString().split('T')[0] } : { type: type },
             setLoading
         )

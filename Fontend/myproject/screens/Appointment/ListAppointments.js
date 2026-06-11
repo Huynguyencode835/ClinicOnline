@@ -94,7 +94,7 @@ const ListAppointments = ({ navigation }) => {
             },
             (type, msg, errData) => {
                 if (type === "client") {
-                    showSnackbar("Duyệt phiếu thất bại!", "error", msg);
+                    showSnackbar("Xóa phiếu thất bại!", "error", errData);
                 } else if (type === "server") {
                     showSnackbar("Lỗi máy chủ!", msg, "error");
                 } else {
